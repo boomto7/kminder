@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.kminder.minder.ui.screen.splash.SplashScreen
 import com.kminder.minder.ui.screen.home.HomeScreen
 import com.kminder.minder.ui.screen.write.WriteEntryScreen
 import com.kminder.minder.ui.screen.list.EntryListScreen
@@ -18,12 +19,24 @@ import com.kminder.minder.ui.screen.statistics.StatisticsScreen
 @Composable
 fun MinderNavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.Home.route
+    startDestination: String = Screen.Splash.route
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        // 스플래시 화면
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        // 스플래시 화면을 백스택에서 제거
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
         // 홈 화면
         composable(Screen.Home.route) {
             HomeScreen(

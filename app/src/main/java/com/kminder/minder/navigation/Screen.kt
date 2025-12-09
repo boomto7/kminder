@@ -5,6 +5,11 @@ package com.kminder.minder.navigation
  */
 sealed class Screen(val route: String) {
     /**
+     * 스플래시 화면
+     */
+    data object Splash : Screen("splash")
+    
+    /**
      * 홈/대시보드 화면
      */
     data object Home : Screen("home")
