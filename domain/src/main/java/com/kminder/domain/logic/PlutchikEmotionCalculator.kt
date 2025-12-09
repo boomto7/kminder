@@ -30,13 +30,15 @@ object PlutchikEmotionCalculator {
         val primaryEmotion: EmotionType,
         val secondaryEmotion: EmotionType?,
         val score: Float,            // 해당 조합의 점수 (평균)
-        val category: Category       // 분류 (2차, 3차, 충돌 등)
+        val category: Category,      // 분류 (2차, 3차, 충돌 등)
+        val complexEmotionType: ComplexEmotionType? = null // 매칭된 복합 감정 타입
     )
 
     enum class Category {
         SINGLE,    // 단일 감정 (하나가 압도적일 때)
         PRIMARY_DYAD, // 2차 감정 (인접: 조화로움)
         TERTIARY_DYAD, // 3차 감정 (거리 2~3: 복합적)
+        SECONDARY_DYAD, // 2치 (거리 2) - Added to match ComplexEmotionType
         CONFLICT   // 상반 감정 (거리 4: 충돌)
     }
 
@@ -76,19 +78,21 @@ object PlutchikEmotionCalculator {
 
         // 평균 점수
         val avgScore = (first.second + second.second) / 2
+        
+        // Find Complex Type first if possible
+        val complexType = findComplexEmotionType(first.first, second.first)
 
         return when (distance) {
             1 -> {
-                // === 2차 감정 (인접) ===
-                // 미리 정의된 ComplexEmotionType에서 찾습니다.
-                val complexType = findComplexEmotionType(first.first, second.first)
+                // === 1차 이중감정 (Primary Dyad) ===
                 EmotionResult(
                     label = complexType?.title ?: "${getKoreanName(first.first)} + ${getKoreanName(second.first)}",
                     description = complexType?.description ?: "두 감정이 조화롭게 섞여 있습니다.",
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
-                    category = Category.PRIMARY_DYAD
+                    category = Category.PRIMARY_DYAD,
+                    complexEmotionType = complexType
                 )
             }
             4 -> {
@@ -99,42 +103,39 @@ object PlutchikEmotionCalculator {
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
-                    category = Category.CONFLICT
+                    category = Category.CONFLICT,
+                    complexEmotionType = complexType // Might be null usually for conflicts unless defined
+                )
+            }
+            2 -> {
+                // === 2차 이중감정 (Secondary Dyad) ===
+                 EmotionResult(
+                    label = complexType?.title ?: "복합적인 감정",
+                    description = complexType?.description ?: "미묘한 감정의 결합입니다.",
+                    primaryEmotion = first.first,
+                    secondaryEmotion = second.first,
+                    score = avgScore,
+                    category = Category.SECONDARY_DYAD,
+                    complexEmotionType = complexType
                 )
             }
             else -> {
-                // === 3차 감정 (거리 2 or 3) ===
-                // 필요하다면 여기서도 3차 감정용 매핑(Guilt 등)을 추가할 수 있습니다.
-                val complexType = findComplexEmotionType(first.first, second.first) // 3차 감정도 일부 정의되어 있다면 찾음
-                
-                if (complexType != null) {
-                     EmotionResult(
-                        label = complexType.title,
-                        description = complexType.description,
-                        primaryEmotion = first.first,
-                        secondaryEmotion = second.first,
-                        score = avgScore,
-                        category = Category.TERTIARY_DYAD
-                    )
-                } else {
-                    EmotionResult(
-                        label = "복합적인 ${getKoreanName(first.first)}과(와) ${getKoreanName(second.first)}",
-                        description = "서로 다른 성격의 두 감정이 복잡하게 얽혀 있습니다.",
-                        primaryEmotion = first.first,
-                        secondaryEmotion = second.first,
-                        score = avgScore,
-                        category = Category.TERTIARY_DYAD
-                    )
-                }
+                // === 3차 이중감정 (Tertiary Dyad) ===
+                EmotionResult(
+                    label = complexType?.title ?: "복잡한 감정",
+                    description = complexType?.description ?: "여러 감정이 섞여 있습니다.",
+                    primaryEmotion = first.first,
+                    secondaryEmotion = second.first,
+                    score = avgScore,
+                    category = Category.TERTIARY_DYAD,
+                    complexEmotionType = complexType
+                )
             }
         }
     }
 
     private fun findComplexEmotionType(type1: EmotionType, type2: EmotionType): ComplexEmotionType? {
-        return ComplexEmotionType.values().find {
-            (it.composition.first == type1 && it.composition.second == type2) ||
-            (it.composition.first == type2 && it.composition.second == type1)
-        }
+        return ComplexEmotionType.find(type1, type2)
     }
 
     private fun getKoreanName(type: EmotionType): String {
