@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -180,9 +181,9 @@ fun SplashScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 앱 이름
+            // 앱 이름
                 Text(
-                    text = "Minder",
+                    text = stringResource(R.string.app_name),
                     fontSize = 48.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF424242), // 진한 회색 (밝은 배경 대비)
@@ -193,7 +194,7 @@ fun SplashScreen(
                 
                 // 슬로건
                 Text(
-                    text = "당신의 감정을 기록하다",
+                    text = stringResource(R.string.splash_slogan),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color(0xFF616161), // 회색

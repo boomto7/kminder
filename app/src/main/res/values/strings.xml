@@ -1,3 +1,27 @@
 <resources>
-    <string name="app_name">minder</string>
+    <string name="app_name">Minder</string>
+    
+    <!-- Splash Screen -->
+    <string name="splash_slogan">당신의 감정을 기록하다</string>
+    
+    <!-- Home Screen -->
+    <string name="home_title">Minder</string>
+    <string name="home_new_diary_desc">새 일기 작성</string>
+    <string name="home_view_all">전체 보기</string>
+    <string name="home_statistics">통계</string>
+    <string name="home_recent_diaries">최근 일기</string>
+    <string name="home_empty_title">아직 작성된 일기가 없습니다</string>
+    <string name="home_empty_desc">+ 버튼을 눌러 첫 일기를 작성해보세요</string>
+    <string name="home_dominant_emotion_prefix">주요 감정: %s</string>
+    
+    <!-- Emotions -->
+    <string name="emotion_anger">분노</string>
+    <string name="emotion_anticipation">기대</string>
+    <string name="emotion_joy">기쁨</string>
+    <string name="emotion_trust">신뢰</string>
+    <string name="emotion_fear">두려움</string>
+    <string name="emotion_sadness">슬픔</string>
+    <string name="emotion_disgust">혐오</string>
+    <string name="emotion_surprise">놀람</string>
+    <string name="emotion_unknown">알 수 없음</string>
 </resources>

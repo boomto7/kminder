@@ -25,16 +25,16 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = CoffeeBrown,
-    secondary = LatteBeige,
-    tertiary = LatteTan,
-    background = BackgroundLight,
-    surface = SurfaceLight,
-    onPrimary = CreamWhite,
-    onSecondary = TextPrimary,
-    onTertiary = TextPrimary,
-    onBackground = TextPrimary,
-    onSurface = TextPrimary
+    primary = MinderLavender,
+    secondary = MinderSkyBlue,
+    tertiary = MinderPeach,
+    background = MinderBackground,
+    surface = MinderSurface,
+    onPrimary = MinderTextDark,
+    onSecondary = MinderTextDark,
+    onTertiary = MinderTextDark,
+    onBackground = MinderTextDark,
+    onSurface = MinderTextDark
 )
 
 @Composable

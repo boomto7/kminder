@@ -15,7 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kminder.minder.R
 import com.kminder.domain.model.JournalEntry
 import java.time.format.DateTimeFormatter
 
@@ -35,7 +37,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Minder") },
+                title = { Text(stringResource(R.string.home_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -49,7 +51,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "새 일기 작성"
+                    contentDescription = stringResource(R.string.home_new_diary_desc)
                 )
             }
         }
@@ -75,7 +77,7 @@ fun HomeScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("전체 보기")
+                    Text(stringResource(R.string.home_view_all))
                 }
                 
                 OutlinedButton(
@@ -88,7 +90,7 @@ fun HomeScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("통계")
+                    Text(stringResource(R.string.home_statistics))
                 }
             }
             
@@ -96,7 +98,7 @@ fun HomeScreen(
             
             // 최근 일기 섹션
             Text(
-                text = "최근 일기",
+                text = stringResource(R.string.home_recent_diaries),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -124,12 +126,12 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "아직 작성된 일기가 없습니다",
+                                text = stringResource(R.string.home_empty_title),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "+ 버튼을 눌러 첫 일기를 작성해보세요",
+                                text = stringResource(R.string.home_empty_desc),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -190,7 +192,7 @@ fun RecentEntryCard(entry: JournalEntry) {
                 
                 val dominantEmotion = entry.emotionAnalysis?.getDominantEmotion()
                 Text(
-                    text = "주요 감정: ${getEmotionName(dominantEmotion)}",
+                    text = stringResource(R.string.home_dominant_emotion_prefix, getEmotionLabel(dominantEmotion)),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -202,16 +204,18 @@ fun RecentEntryCard(entry: JournalEntry) {
 /**
  * 감정 타입을 한글 이름으로 변환
  */
-private fun getEmotionName(emotionType: com.kminder.domain.model.EmotionType?): String {
-    return when (emotionType) {
-        com.kminder.domain.model.EmotionType.ANGER -> "분노"
-        com.kminder.domain.model.EmotionType.ANTICIPATION -> "기대"
-        com.kminder.domain.model.EmotionType.JOY -> "기쁨"
-        com.kminder.domain.model.EmotionType.TRUST -> "신뢰"
-        com.kminder.domain.model.EmotionType.FEAR -> "두려움"
-        com.kminder.domain.model.EmotionType.SADNESS -> "슬픔"
-        com.kminder.domain.model.EmotionType.DISGUST -> "혐오"
-        com.kminder.domain.model.EmotionType.SURPRISE -> "놀람"
-        null -> "알 수 없음"
+@Composable
+private fun getEmotionLabel(emotionType: com.kminder.domain.model.EmotionType?): String {
+    val resId = when (emotionType) {
+        com.kminder.domain.model.EmotionType.ANGER -> R.string.emotion_anger
+        com.kminder.domain.model.EmotionType.ANTICIPATION -> R.string.emotion_anticipation
+        com.kminder.domain.model.EmotionType.JOY -> R.string.emotion_joy
+        com.kminder.domain.model.EmotionType.TRUST -> R.string.emotion_trust
+        com.kminder.domain.model.EmotionType.FEAR -> R.string.emotion_fear
+        com.kminder.domain.model.EmotionType.SADNESS -> R.string.emotion_sadness
+        com.kminder.domain.model.EmotionType.DISGUST -> R.string.emotion_disgust
+        com.kminder.domain.model.EmotionType.SURPRISE -> R.string.emotion_surprise
+        null -> R.string.emotion_unknown
     }
+    return stringResource(resId)
 }

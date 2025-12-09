@@ -21,15 +21,15 @@ val EspressoDark = Color(0xFF3E2723)
 val CreamWhite = Color(0xFFFFFBF5)
 val MochaLight = Color(0xFFBCAA99)
 
-// Emotion Colors (Plutchik 8 emotions)
-val EmotionAnger = Color(0xFFE57373)      // 분노 - 빨강
-val EmotionAnticipation = Color(0xFFFFB74D) // 기대 - 주황
-val EmotionJoy = Color(0xFFFFF176)        // 기쁨 - 노랑
-val EmotionTrust = Color(0xFF81C784)      // 신뢰 - 초록
-val EmotionFear = Color(0xFF64B5F6)       // 두려움 - 파랑
-val EmotionSadness = Color(0xFF9575CD)    // 슬픔 - 보라
-val EmotionDisgust = Color(0xFFBA68C8)    // 혐오 - 자주
-val EmotionSurprise = Color(0xFF4DD0E1)   // 놀람 - 청록
+// Emotion Colors (Plutchik 8 emotions - Pastel Tones)
+val EmotionJoy = Color(0xFFFFF59D)        // 기쁨 (Joy) - Pastel Yellow
+val EmotionTrust = Color(0xFFC5E1A5)      // 신뢰 (Trust) - Pastel Light Green
+val EmotionFear = Color(0xFFA5D6A7)       // 두려움 (Fear) - Pastel Green
+val EmotionSurprise = Color(0xFF80DEEA)   // 놀람 (Surprise) - Pastel Cyan
+val EmotionSadness = Color(0xFF90CAF9)    // 슬픔 (Sadness) - Pastel Blue
+val EmotionDisgust = Color(0xFFCE93D8)    // 혐오 (Disgust) - Pastel Purple
+val EmotionAnger = Color(0xFFEF9A9A)      // 분노 (Anger) - Pastel Red
+val EmotionAnticipation = Color(0xFFFFCC80) // 기대 (Anticipation) - Pastel Orange
 
 // Background Colors
 val BackgroundLight = Color(0xFFFFFBF5)
@@ -42,3 +42,13 @@ val TextPrimary = Color(0xFF3E2723)
 val TextSecondary = Color(0xFF6F4E37)
 val TextTertiary = Color(0xFF8B6F47)
 val TextOnDark = Color(0xFFFFFBF5)
+
+// Minder Splash Theme Colors (Main Theme)
+val MinderSkyBlue = Color(0xFFB3E5FC)
+val MinderLavender = Color(0xFFE1BEE7)
+val MinderPeach = Color(0xFFFFCCBC)
+val MinderMint = Color(0xFFB2DFDB)
+val MinderBackground = Color(0xFFFAFAFA)
+val MinderTextDark = Color(0xFF424242)
+val MinderTextGray = Color(0xFF616161)
+val MinderSurface = Color(0xFFFFFFFF)
