@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "900077328750",
+    "project_id": "kminder-3bb20",
+    "storage_bucket": "kminder-3bb20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900077328750:android:c159086f6b813ffe92c97f",
+        "android_client_info": {
+          "package_name": "com.kminder.minder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXkztERkyRZq1icQ94DSP9E0n2E7pv8HE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

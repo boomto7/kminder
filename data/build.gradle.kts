@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -58,6 +59,7 @@ dependencies {
     
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.google.firebase.ai)
     ksp(libs.hilt.compiler)
     
     // Room
@@ -75,11 +77,15 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     
-    // Gemini API
-    implementation(libs.generativeai)
-    
+    // Firebase Vertex AI (Gemini)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+//    implementation(libs.firebase.vertexai)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.mockito.kotlin)
+
 }

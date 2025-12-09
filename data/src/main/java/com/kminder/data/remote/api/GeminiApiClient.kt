@@ -1,7 +1,8 @@
 package com.kminder.data.remote.api
 
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.generationConfig
+import com.google.firebase.Firebase
+import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.GenerativeBackend
 import com.google.gson.Gson
 import com.kminder.data.remote.model.EmotionAnalysisResponse
 import com.kminder.data.remote.prompt.EmotionAnalysisPrompt
@@ -9,7 +10,10 @@ import com.kminder.domain.model.EmotionAnalysis
 import javax.inject.Inject
 
 /**
- * Gemini API 클라이언트
+ * Firebase Vertex AI (Gemini) 클라이언트
+ * 
+ * 참고: 기존 com.google.ai.client.generativeai는 deprecated되었습니다.
+ * Firebase Vertex AI를 사용합니다.
  */
 class GeminiApiClient @Inject constructor(
     private val apiKey: String
@@ -17,19 +21,26 @@ class GeminiApiClient @Inject constructor(
     private val gson = Gson()
     
     /**
-     * Gemini 모델 인스턴스
+     * Gemini 모델 인스턴스 (Firebase Vertex AI)
+     * 
+     * 사용 가능한 모델:
+     * - "gemini-1.5-flash" (빠르고 효율적)
+     * - "gemini-1.5-pro" (더 강력한 분석)
      */
     private val generativeModel by lazy {
-        GenerativeModel(
-            modelName = "gemini-1.5-flash",
-            apiKey = apiKey,
-            generationConfig = generationConfig {
-                temperature = 0.7f
-                topK = 40
-                topP = 0.95f
-                maxOutputTokens = 1024
-            }
-        )
+//        GenerativeModel(
+//            modelName = "gemini-1.5-flash",
+//            apiKey = apiKey,
+//            generationConfig = generationConfig {
+//                temperature = 0.7f
+//                topK = 40
+//                topP = 0.95f
+//                maxOutputTokens = 1024
+//            }
+//        )
+        Firebase.ai(backend = GenerativeBackend.googleAI())
+            .generativeModel("gemini-2.5-flash")
+
     }
     
     /**
@@ -44,7 +55,7 @@ class GeminiApiClient @Inject constructor(
             // 프롬프트 생성
             val prompt = EmotionAnalysisPrompt.getPrompt(language, text)
             
-            // Gemini API 호출
+            // Firebase Vertex AI (Gemini) 호출
             val response = generativeModel.generateContent(prompt)
             val responseText = response.text ?: throw Exception("응답이 비어있습니다.")
             
