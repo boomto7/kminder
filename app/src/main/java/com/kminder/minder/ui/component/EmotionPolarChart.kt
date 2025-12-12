@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -18,9 +19,16 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.minder.R
 import com.kminder.minder.ui.theme.EmotionAnger
 import com.kminder.minder.ui.theme.EmotionAnticipation
 import com.kminder.minder.ui.theme.EmotionDisgust
@@ -29,6 +37,7 @@ import com.kminder.minder.ui.theme.EmotionJoy
 import com.kminder.minder.ui.theme.EmotionSadness
 import com.kminder.minder.ui.theme.EmotionSurprise
 import com.kminder.minder.ui.theme.EmotionTrust
+import com.kminder.minder.ui.theme.MinderTheme
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -45,14 +54,14 @@ fun EmotionPolarChart(
 ) {
     // 순서: Plutchik Wheel Order
     val emotionList = listOf(
-        Triple(emotions.joy, EmotionJoy, "Joy"),
-        Triple(emotions.trust, EmotionTrust, "Trust"),
-        Triple(emotions.fear, EmotionFear, "Fear"),
-        Triple(emotions.surprise, EmotionSurprise, "Surprise"),
-        Triple(emotions.sadness, EmotionSadness, "Sadness"),
-        Triple(emotions.disgust, EmotionDisgust, "Disgust"),
-        Triple(emotions.anger, EmotionAnger, "Anger"),
-        Triple(emotions.anticipation, EmotionAnticipation, "Anticipation")
+        Triple(emotions.joy, EmotionJoy, stringResource(R.string.emotion_joy)),
+        Triple(emotions.trust, EmotionTrust, stringResource(R.string.emotion_trust)),
+        Triple(emotions.fear, EmotionFear, stringResource(R.string.emotion_fear)),
+        Triple(emotions.surprise, EmotionSurprise, stringResource(R.string.emotion_surprise)),
+        Triple(emotions.sadness, EmotionSadness, stringResource(R.string.emotion_sadness)),
+        Triple(emotions.disgust, EmotionDisgust, stringResource(R.string.emotion_disgust)),
+        Triple(emotions.anger, EmotionAnger, stringResource(R.string.emotion_anger)),
+        Triple(emotions.anticipation, EmotionAnticipation, stringResource(R.string.emotion_anticipation))
     )
 
     val progress = remember { Animatable(0f) }
@@ -65,6 +74,9 @@ fun EmotionPolarChart(
     }
 
     val gapDp = 2.dp
+
+    val textMeasurer = rememberTextMeasurer()
+    val textColor = MaterialTheme.colorScheme.onPrimary
     
     Canvas(
         modifier = modifier
@@ -87,9 +99,9 @@ fun EmotionPolarChart(
         )
 
         // 1. 모든 슬라이스 (배경 + 데이터) 그리기
-        emotionList.forEachIndexed { index, (intensity, color, _) ->
+        emotionList.forEachIndexed { index, (intensity, color, category) ->
             val startAngle = -90f + (index * sliceAngle)
-            
+
             // 배경
             val bgPath = androidx.compose.ui.graphics.Path().apply {
                 addRoundedWedge(
@@ -119,6 +131,37 @@ fun EmotionPolarChart(
                 }
                 drawPath(path = dataPath, color = color.copy(alpha = 0.8f))
             }
+
+            // category
+            val textRadius = maxRadius * 0.7f
+            // 텍스트의 중심 각도 (시작점 + 절반 각도)
+            val angleDegrees = startAngle + sliceAngle / 2f
+            // Compose의 삼각함수는 라디안(Radian) 값을 받기 때문에 변환 필요
+            val angleRadians = angleDegrees * PI.toFloat() / 180f
+            // 극좌표계를 직교 좌표계(X, Y)로 변환
+            val textX = center.x + textRadius * cos(angleRadians)
+            val textY = center.y + textRadius * sin(angleRadians)
+            val textLayoutResult = textMeasurer.measure(
+                text = category,
+                style = androidx.compose.ui.text.TextStyle(
+                    fontSize = 8.sp,
+                    textAlign = TextAlign.Center
+                )
+            )
+
+            drawText(
+                textMeasurer = textMeasurer,
+                text = category,
+                topLeft = Offset(
+                    x = textX - textLayoutResult.size.width / 2f,
+                    y = textY - textLayoutResult.size.height / 2f
+                ),
+                style = TextStyle(
+                    fontSize = 8.sp,
+                    color = textColor
+                )
+            )
+
         }
 
         // 2. 갭/간격 마스킹 (BlendMode.Clear)
@@ -326,8 +369,10 @@ fun PreviewEmotionPolarChart() {
         anger = 0.6f,
         anticipation = 0.7f
     )
-    
-    Box(modifier = Modifier.fillMaxWidth().padding(32.dp)) {
-        EmotionPolarChart(emotions = mockAnalysis)
+
+    MinderTheme() {
+        Box(modifier = Modifier.fillMaxWidth().padding(32.dp)) {
+            EmotionPolarChart(emotions = mockAnalysis)
+        }
     }
 }

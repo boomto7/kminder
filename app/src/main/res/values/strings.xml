@@ -13,6 +13,30 @@
     <string name="home_empty_title">아직 작성된 일기가 없습니다</string>
     <string name="home_empty_desc">+ 버튼을 눌러 첫 일기를 작성해보세요</string>
     <string name="home_dominant_emotion_prefix">주요 감정: %s</string>
+    <string name="home_today_mood_weather">오늘의 마음 날씨</string>
+    <string name="date_format_pattern_korean">M월 d일 EEEE</string>
+    <string name="home_current_status">지금 당신의 상태</string>
+    <string name="keyword_chip_format">#%1$s</string>
+    <string name="home_empty_state_message">작성된 일기가 없습니다.\n오늘 하루를 기록해보세요.</string>
+    <string name="home_list">목록</string>
+    
+    <!-- Common -->
+    <string name="common_back">뒤로가기</string>
+    
+    <!-- Write Screen -->
+    <string name="write_entry_title">일기 작성</string>
+    <string name="write_entry_placeholder">일기 작성 화면 (구현 예정)</string>
+    
+    <!-- Entry Detail Screen -->
+    <string name="entry_detail_title">일기 상세</string>
+    <string name="entry_detail_placeholder">일기 상세 화면 (구현 예정)\nEntry ID: %1$d</string>
+    
+    <!-- Statistics Screen -->
+    <string name="statistics_title">감정 통계</string>
+    <string name="statistics_placeholder">통계 화면 (구현 예정)</string>
+    
+    <!-- List Screen -->
+    <string name="date_format_pattern_list_item">yyyy년 MM월 dd일 HH:mm</string>
     
     <!-- Emotions -->
     <string name="emotion_anger">분노</string>

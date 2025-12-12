@@ -21,10 +21,10 @@ fun WriteEntryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("일기 작성") },
+                title = { Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.write_entry_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
+                        Icon(Icons.Default.ArrowBack, contentDescription = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.common_back))
                     }
                 }
             )
@@ -36,7 +36,7 @@ fun WriteEntryScreen(
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Text("일기 작성 화면 (구현 예정)")
+            Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.write_entry_placeholder))
         }
     }
 }

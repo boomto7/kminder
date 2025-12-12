@@ -58,7 +58,7 @@ fun EntryListScreen(
                 title = { Text(stringResource(R.string.home_view_all)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -124,7 +124,7 @@ fun EntryListItem(
                 .padding(16.dp)
         ) {
             Text(
-                text = entry.createdAt.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm")),
+                text = entry.createdAt.format(DateTimeFormatter.ofPattern(stringResource(R.string.date_format_pattern_list_item))),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

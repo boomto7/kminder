@@ -21,10 +21,10 @@ fun EntryDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("일기 상세") },
+                title = { Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.entry_detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
+                        Icon(Icons.Default.ArrowBack, contentDescription = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.common_back))
                     }
                 }
             )
@@ -36,7 +36,7 @@ fun EntryDetailScreen(
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Text("일기 상세 화면 (구현 예정)\nEntry ID: $entryId")
+            Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.entry_detail_placeholder, entryId))
         }
     }
 }

@@ -20,10 +20,10 @@ fun StatisticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("감정 통계") },
+                title = { Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.statistics_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
+                        Icon(Icons.Default.ArrowBack, contentDescription = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.common_back))
                     }
                 }
             )
@@ -35,7 +35,7 @@ fun StatisticsScreen(
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Text("통계 화면 (구현 예정)")
+            Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.statistics_placeholder))
         }
     }
 }

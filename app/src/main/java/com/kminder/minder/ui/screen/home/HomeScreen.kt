@@ -162,13 +162,13 @@ fun HomeScreen(
                     modifier = Modifier.align(Alignment.TopStart)
                 ) {
                     Text(
-                        text = "오늘의 마음 날씨",
+                        text = stringResource(R.string.home_today_mood_weather),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = LocalDate.now().format(DateTimeFormatter.ofPattern("M월 d일 EEEE")),
+                        text = LocalDate.now().format(DateTimeFormatter.ofPattern(stringResource(R.string.date_format_pattern_korean))),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -204,7 +204,7 @@ fun HomeScreen(
                             ) {
                                 // 1. 복합 감정 타이틀
                                 Text(
-                                    text = "지금 당신의 상태",
+                                    text = stringResource(R.string.home_current_status),
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.secondary
                                 )
@@ -228,7 +228,7 @@ fun HomeScreen(
                                     analysis.keywords.forEach { keyword ->
                                         SuggestionChip(
                                             onClick = { },
-                                            label = { Text("#$keyword") },
+                                            label = { Text(stringResource(R.string.keyword_chip_format, keyword)) },
                                             colors = SuggestionChipDefaults.suggestionChipColors(
                                                 containerColor = MaterialTheme.colorScheme.surface.copy(
                                                     alpha = 0.5f
@@ -272,7 +272,7 @@ fun HomeScreen(
                 } else {
                     // Empty State
                     Text(
-                        text = "작성된 일기가 없습니다.\n오늘 하루를 기록해보세요.",
+                        text = stringResource(R.string.home_empty_state_message),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         modifier = Modifier.align(Alignment.Center),
@@ -288,10 +288,10 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     IconButton(onClick = onNavigateToList) {
-                        Icon(imageVector = Icons.Default.List, contentDescription = "목록")
+                        Icon(imageVector = Icons.Default.List, contentDescription = stringResource(R.string.home_list))
                     }
                     IconButton(onClick = onNavigateToStatistics) {
-                        Icon(imageVector = Icons.Default.ShowChart, contentDescription = "통계")
+                        Icon(imageVector = Icons.Default.ShowChart, contentDescription = stringResource(R.string.home_statistics))
                     }
                 }
             }
