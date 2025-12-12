@@ -41,7 +41,8 @@ private val LightColorScheme = lightColorScheme(
 fun MinderTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // User requested specific background color, so disabling dynamic color by default to ensure it shows
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
