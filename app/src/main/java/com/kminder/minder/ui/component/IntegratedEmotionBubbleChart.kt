@@ -75,8 +75,22 @@ fun IntegratedEmotionBubbleChart(
     val textMeasurer = rememberTextMeasurer()
     val scope = rememberCoroutineScope()
     
-    val bubbleNodes = remember(emotionCounts) {
-        createAllEmotionNodes(emotionCounts)
+    // Names from Resources
+    val basicNames = remember { mutableMapOf<EmotionType, String>() }
+    EmotionType.entries.forEach { 
+        basicNames[it] = androidx.compose.ui.res.stringResource(EmotionColorUtil.getEmotionNameResId(it)) 
+    }
+    
+    val complexNames = remember { mutableMapOf<ComplexEmotionType, String>() }
+    ComplexEmotionType.entries.forEach {
+        val fullTitle = androidx.compose.ui.res.stringResource(EmotionColorUtil.getComplexEmotionNameResId(it))
+        complexNames[it] = fullTitle.substringBefore(" (")
+    }
+
+    val conflictFormat = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.analysis_conflict_format)
+
+    val bubbleNodes = remember(emotionCounts, basicNames, complexNames) {
+        createAllEmotionNodes(emotionCounts, basicNames, complexNames, conflictFormat)
     }
 
     // Entrance Animation
@@ -295,12 +309,17 @@ data class BubbleNode(
     val count: Int
 )
 
-private fun createAllEmotionNodes(counts: Map<String, Int>): List<BubbleNode> {
+private fun createAllEmotionNodes(
+    counts: Map<String, Int>,
+    basicNames: Map<EmotionType, String>,
+    complexNames: Map<ComplexEmotionType, String>,
+    conflictFormat: String
+): List<BubbleNode> {
     val nodes = mutableListOf<BubbleNode>()
     
     // 1. Basic 8 Emotions
     EmotionType.entries.forEach { type ->
-        val koreanName = EmotionColorUtil.getKoreanName(type)
+        val koreanName = basicNames[type] ?: type.name
         nodes.add(BubbleNode(
             id = type.name, 
             name = koreanName,
@@ -314,7 +333,7 @@ private fun createAllEmotionNodes(counts: Map<String, Int>): List<BubbleNode> {
         val color1 = EmotionColorUtil.getEmotionColor(complex.composition.first)
         val color2 = EmotionColorUtil.getEmotionColor(complex.composition.second)
         val blended = EmotionColorUtil.blendColors(color1, color2, 0.5f)
-        val simpleName = complex.title.substringBefore(" (")
+        val simpleName = complexNames[complex] ?: complex.name
         
         nodes.add(BubbleNode(
             id = complex.name,
@@ -333,10 +352,10 @@ private fun createAllEmotionNodes(counts: Map<String, Int>): List<BubbleNode> {
     )
     
     conflicts.forEach { (t1, t2) ->
-        val name1 = EmotionColorUtil.getKoreanName(t1)
-        val name2 = EmotionColorUtil.getKoreanName(t2)
+        val name1 = basicNames[t1] ?: t1.name
+        val name2 = basicNames[t2] ?: t2.name
         val conflictName = "${name1}/${name2}"
-        val keyName = "${name1}과(와) ${name2}의 충돌" 
+        val keyName = String.format(conflictFormat, name1, name2) // e.g. "기쁨과(와) 슬픔의 충돌"
         
         val color = EmotionColorUtil.blendColors(EmotionColorUtil.getEmotionColor(t1), EmotionColorUtil.getEmotionColor(t2), 0.5f)
         val count = counts[conflictName] ?: counts[keyName] ?: 0
@@ -350,6 +369,7 @@ private fun createAllEmotionNodes(counts: Map<String, Int>): List<BubbleNode> {
     }
     return nodes
 }
+
 
 @Preview(showBackground = true)
 @Composable

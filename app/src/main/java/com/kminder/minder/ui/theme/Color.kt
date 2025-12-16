@@ -31,6 +31,8 @@ val EmotionDisgust = Color(0xFFCE93D8)    // 혐오 (Disgust) - Pastel Purple
 val EmotionAnger = Color(0xFFEF9A9A)      // 분노 (Anger) - Pastel Red
 val EmotionAnticipation = Color(0xFFFFCC80) // 기대 (Anticipation) - Pastel Orange
 
+val EmotionEmpty = Color(0xFF90b0aa)
+
 // Background Colors
 val BackgroundLight = Color(0xFFFFFBF5)
 val BackgroundDark = Color(0xFF1C1410)

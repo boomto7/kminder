@@ -6,52 +6,50 @@ package com.kminder.domain.model
  *
  * @property baseType 기본 감정 타입 (8가지 원형)
  * @property intensityLevel 강도 레벨 (3: 강함, 2: 중간, 1: 약함)
- * @property koreanName 한글명
  */
 enum class DetailedEmotionType(
     val baseType: EmotionType,
-    val intensityLevel: Int,
-    val koreanName: String
+    val intensityLevel: Int
 ) {
     // === JOY (기쁨) 계열 ===
-    ECSTASY(EmotionType.JOY, 3, "황홀"),
-    JOY(EmotionType.JOY, 2, "기쁨"),
-    SERENITY(EmotionType.JOY, 1, "평온"),
+    ECSTASY(EmotionType.JOY, 3),
+    JOY(EmotionType.JOY, 2),
+    SERENITY(EmotionType.JOY, 1),
 
     // === TRUST (신뢰) 계열 ===
-    ADMIRATION(EmotionType.TRUST, 3, "존경"),
-    TRUST(EmotionType.TRUST, 2, "신뢰"),
-    ACCEPTANCE(EmotionType.TRUST, 1, "용인"), // 혹은 수용
+    ADMIRATION(EmotionType.TRUST, 3),
+    TRUST(EmotionType.TRUST, 2),
+    ACCEPTANCE(EmotionType.TRUST, 1), 
 
     // === FEAR (두려움) 계열 ===
-    TERROR(EmotionType.FEAR, 3, "공포"),
-    FEAR(EmotionType.FEAR, 2, "두려움"),
-    APPREHENSION(EmotionType.FEAR, 1, "우려"), // 혹은 근심
+    TERROR(EmotionType.FEAR, 3),
+    FEAR(EmotionType.FEAR, 2),
+    APPREHENSION(EmotionType.FEAR, 1),
 
     // === SURPRISE (놀람) 계열 ===
-    AMAZEMENT(EmotionType.SURPRISE, 3, "경탄"),
-    SURPRISE(EmotionType.SURPRISE, 2, "놀람"),
-    DISTRACTION(EmotionType.SURPRISE, 1, "산만"),
+    AMAZEMENT(EmotionType.SURPRISE, 3),
+    SURPRISE(EmotionType.SURPRISE, 2),
+    DISTRACTION(EmotionType.SURPRISE, 1),
 
     // === SADNESS (슬픔) 계열 ===
-    GRIEF(EmotionType.SADNESS, 3, "비탄"),
-    SADNESS(EmotionType.SADNESS, 2, "슬픔"),
-    PENSIVENESS(EmotionType.SADNESS, 1, "수심"), // 혹은 우수
+    GRIEF(EmotionType.SADNESS, 3),
+    SADNESS(EmotionType.SADNESS, 2),
+    PENSIVENESS(EmotionType.SADNESS, 1), 
 
     // === DISGUST (혐오) 계열 ===
-    LOATHING(EmotionType.DISGUST, 3, "증오"),
-    DISGUST(EmotionType.DISGUST, 2, "혐오"),
-    BOREDOM(EmotionType.DISGUST, 1, "지루함"),
+    LOATHING(EmotionType.DISGUST, 3),
+    DISGUST(EmotionType.DISGUST, 2),
+    BOREDOM(EmotionType.DISGUST, 1),
 
     // === ANGER (분노) 계열 ===
-    RAGE(EmotionType.ANGER, 3, "격분"),
-    ANGER(EmotionType.ANGER, 2, "분노"),
-    ANNOYANCE(EmotionType.ANGER, 1, "짜증"),
+    RAGE(EmotionType.ANGER, 3),
+    ANGER(EmotionType.ANGER, 2),
+    ANNOYANCE(EmotionType.ANGER, 1),
 
     // === ANTICIPATION (기대) 계열 ===
-    VIGILANCE(EmotionType.ANTICIPATION, 3, "경계"),
-    ANTICIPATION(EmotionType.ANTICIPATION, 2, "기대"),
-    INTEREST(EmotionType.ANTICIPATION, 1, "관심");
+    VIGILANCE(EmotionType.ANTICIPATION, 3),
+    ANTICIPATION(EmotionType.ANTICIPATION, 2),
+    INTEREST(EmotionType.ANTICIPATION, 1);
 
     companion object {
         /**

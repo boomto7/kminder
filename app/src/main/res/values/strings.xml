@@ -48,4 +48,161 @@
     <string name="emotion_disgust">혐오</string>
     <string name="emotion_surprise">놀람</string>
     <string name="emotion_unknown">알 수 없음</string>
+    <!-- Detailed Emotions (Plutchik) -->
+    <!-- Joy Group -->
+    <string name="emotion_detail_ecstasy">황홀</string>
+    <string name="emotion_detail_joy">기쁨</string>
+    <string name="emotion_detail_serenity">평온</string>
+    
+    <!-- Trust Group -->
+    <string name="emotion_detail_admiration">존경</string>
+    <string name="emotion_detail_trust">신뢰</string>
+    <string name="emotion_detail_acceptance">용인</string>
+    
+    <!-- Fear Group -->
+    <string name="emotion_detail_terror">공포</string>
+    <string name="emotion_detail_fear">두려움</string>
+    <string name="emotion_detail_apprehension">우려</string>
+    
+    <!-- Surprise Group -->
+    <string name="emotion_detail_amazement">경탄</string>
+    <string name="emotion_detail_surprise">놀람</string>
+    <string name="emotion_detail_distraction">산만</string>
+    
+    <!-- Sadness Group -->
+    <string name="emotion_detail_grief">비탄</string>
+    <string name="emotion_detail_sadness">슬픔</string>
+    <string name="emotion_detail_pensiveness">수심</string>
+    
+    <!-- Disgust Group -->
+    <string name="emotion_detail_loathing">증오</string>
+    <string name="emotion_detail_disgust">혐오</string>
+    <string name="emotion_detail_boredom">지루함</string>
+    
+    <!-- Anger Group -->
+    <string name="emotion_detail_rage">격분</string>
+    <string name="emotion_detail_anger">분노</string>
+    <string name="emotion_detail_annoyance">짜증</string>
+    
+    <!-- Anticipation Group -->
+    <string name="emotion_detail_vigilance">경계</string>
+    <string name="emotion_detail_anticipation">기대</string>
+    <string name="emotion_detail_interest">관심</string>
+
+    <!-- Complex Emotions (Dyads) -->
+    <!-- Primary -->
+    <string name="emotion_complex_love_title">사랑 (Love)</string>
+    <string name="emotion_complex_love_desc">기쁨과 신뢰가 만나 따뜻하고 깊은 애정을 형성합니다.</string>
+    
+    <string name="emotion_complex_submission_title">수용 (Submission)</string>
+    <string name="emotion_complex_submission_desc">신뢰와 두려움이 섞여 어쩔 수 없는 상황을 받아들이거나 순응하는 마음입니다.</string>
+    
+    <string name="emotion_complex_awe_title">경외감 (Awe)</string>
+    <string name="emotion_complex_awe_desc">두려움과 놀람이 결합되어 압도적이거나 신비로운 대상을 향한 느낌입니다.</string>
+    
+    <string name="emotion_complex_disapproval_title">실망 (Disapproval)</string>
+    <string name="emotion_complex_disapproval_desc">놀람과 슬픔이 만나, 예상치 못한 부정적 결과에 대해 불만을 가집니다.</string>
+    
+    <string name="emotion_complex_remorse_title">후회 (Remorse)</string>
+    <string name="emotion_complex_remorse_desc">슬픔과 혐오가 섞여 과거의 행동이나 자신에 대한 깊은 자책감을 만듭니다.</string>
+    
+    <string name="emotion_complex_contempt_title">경멸 (Contempt)</string>
+    <string name="emotion_complex_contempt_desc">혐오와 분노가 결합되어 대상을 낮잡아보거나 강한 거부감을 보입니다.</string>
+    
+    <string name="emotion_complex_aggressiveness_title">공격성 (Aggressiveness)</string>
+    <string name="emotion_complex_aggressiveness_desc">분노와 기대가 만나 목표를 향해 거칠게 나아가거나 도전하려는 에너지입니다.</string>
+    
+    <string name="emotion_complex_optimism_title">낙관 (Optimism)</string>
+    <string name="emotion_complex_optimism_desc">기대와 기쁨이 어우러져 미래가 잘 풀릴 것이라는 긍정적인 희망을 가집니다.</string>
+    
+    <!-- Secondary -->
+    <string name="emotion_complex_guilt_title">죄책감 (Guilt)</string>
+    <string name="emotion_complex_guilt_desc">기쁨을 누리는 것 같으면서도 두려움이 개입되어 느끼는 마음의 불편함입니다.</string>
+    
+    <string name="emotion_complex_curiosity_title">호기심 (Curiosity)</string>
+    <string name="emotion_complex_curiosity_desc">믿음 안에서 새로운 것에 대해 놀라움을 느끼며 탐구하려는 마음입니다.</string>
+    
+    <string name="emotion_complex_despair_title">절망 (Despair)</string>
+    <string name="emotion_complex_despair_desc">두려움과 슬픔이 만나 희망을 잃고 깊은 어둠에 빠진 상태입니다.</string>
+    
+    <string name="emotion_complex_unbelief_title">불신 (Unbelief)</string>
+    <string name="emotion_complex_unbelief_desc">놀람과 혐오가 섞여 상황을 믿을 수 없어 하거나 거부하는 태도입니다.</string>
+    
+    <string name="emotion_complex_envy_title">질투 (Envy)</string>
+    <string name="emotion_complex_envy_desc">슬픔과 분노가 섞여 타인의 행복을 보며 자신의 결핍에 괴로워합니다.</string>
+    
+    <string name="emotion_complex_cynicism_title">냉소 (Cynicism)</string>
+    <string name="emotion_complex_cynicism_desc">혐오와 기대가 기묘하게 섞여, 결과에 대해 부정적으로 예측하고 비웃는 태도입니다.</string>
+    
+    <string name="emotion_complex_pride_title">자부심 (Pride)</string>
+    <string name="emotion_complex_pride_desc">분노(자아 주장)와 기쁨이 결합되어 자신의 성취나 가치에 대해 강한 확신을 가집니다.</string>
+    
+    <string name="emotion_complex_fatalism_title">숙명 (Fatalism)</string>
+    <string name="emotion_complex_fatalism_desc">기대와 신뢰가 섞여 미래의 일을 정해진 것으로 받아들이는 태도입니다.</string>
+    
+    <!-- Tertiary -->
+    <string name="emotion_complex_delight_title">환희 (Delight)</string>
+    <string name="emotion_complex_delight_desc">기쁨과 놀람이 만나 예상치 못한 즐거움에 크게 기뻐하는 상태입니다.</string>
+    
+    <string name="emotion_complex_sentimentality_title">감상 (Sentimentality)</string>
+    <string name="emotion_complex_sentimentality_desc">신뢰와 슬픔이 섞여 지나간 인연이나 추억에 젖어드는 마음입니다.</string>
+    
+    <string name="emotion_complex_shame_title">수치심 (Shame)</string>
+    <string name="emotion_complex_shame_desc">두려움과 혐오가 만나 자신의 모습에 대해 부끄러움을 느끼고 숨고 싶은 마음입니다.</string>
+    
+    <string name="emotion_complex_outrage_title">격분 (Outrage)</string>
+    <string name="emotion_complex_outrage_desc">놀람과 분노가 섞여 예상치 못한 일에 대해 강하게 화를 내는 상태입니다.</string>
+    
+    <string name="emotion_complex_pessimism_title">비관 (Pessimism)</string>
+    <string name="emotion_complex_pessimism_desc">슬픔과 기대가 섞여 미래에 대해 부정적인 결과를 예상하고 미리 슬퍼하는 마음입니다.</string>
+    
+    <string name="emotion_complex_morbidness_title">병적 흥미 (Morbidness)</string>
+    <string name="emotion_complex_morbidness_desc">혐오스러운 대상에게서 묘한 기쁨을 느끼는 복잡한 심리입니다.</string>
+    
+    <string name="emotion_complex_dominance_title">지배 (Dominance)</string>
+    <string name="emotion_complex_dominance_desc">분노와 신뢰가 만나 자신의 주장을 믿고 타인을 통제하려는 태도입니다.</string>
+    
+    <string name="emotion_complex_anxiety_title">불안 (Anxiety)</string>
+    <string name="emotion_complex_anxiety_desc">기대와 두려움이 섞여 다가올 미래에 대해 알 수 없어 초조해하는 마음입니다.</string>
+
+    <!-- Advice Messages -->
+    <string name="advice_joy">지금의 좋은 기분을 기록으로 남겨두세요.</string>
+    <string name="advice_sadness">따뜻한 차를 마시며 잠시 쉬어가는 건 어떨까요?</string>
+    <string name="advice_anger">심호흡을 크게 3번 하고 산책을 다녀오세요.</string>
+    <string name="advice_trust">소중한 사람들에게 안부 인사를 전해보세요.</string>
+    <string name="advice_fear">걱정거리를 종이에 적고 하나씩 지워보세요.</string>
+    <string name="advice_anticipation">미래를 위한 작은 계획을 세워보는 게 어때요?</string>
+    <string name="advice_disgust">잠시 불편한 상황에서 벗어나 나만의 시간을 가지세요.</string>
+    <string name="advice_surprise">예상치 못한 변화를 즐겁게 받아들여 보세요.</string>
+    
+    <string name="keyword_energy">에너지</string>
+    <string name="keyword_achievement">성취</string>
+    <string name="keyword_comfort">위로</string>
+    <string name="keyword_rest">휴식</string>
+    <string name="keyword_resolve">해소</string>
+    <string name="keyword_exercise">운동</string>
+    <string name="keyword_stability">안정</string>
+    <string name="keyword_relationship">관계</string>
+    <string name="keyword_courage">용기</string>
+    <string name="keyword_preparation">준비</string>
+    <string name="keyword_plan">계획</string>
+    <string name="keyword_flutter">설렘</string>
+    <string name="keyword_distance">거리두기</string>
+    <string name="keyword_ventilation">환기</string>
+    <string name="keyword_discovery">발견</string>
+    <string name="keyword_transition">전환</string>
+
+    <!-- Analysis Formats -->
+    <string name="analysis_impossible">분석 불가</string>
+    <string name="analysis_insufficient_data">데이터가 부족하여 분석할 수 없습니다.</string>
+    <string name="analysis_try_journaling">일기를 작성해보세요!</string>
+    <string name="analysis_single_desc_format">뚜렷하게 %1$s을(를) 느끼고 계시네요.</string>
+    <string name="analysis_conflict_format">%1$s과(와) %2$s의 충돌</string>
+    <string name="analysis_conflict_desc">서로 반대되는 감정이 마음속에서 충돌하고 있어 혼란스러울 수 있습니다.</string>
+    <string name="analysis_harmony_desc_default">두 감정이 조화롭게 섞여 있습니다.</string>
+    <string name="analysis_complex_desc_default">미묘한 감정의 결합입니다.</string>
+    <string name="analysis_complicated_desc_default">여러 감정이 섞여 있습니다.</string>
+    <string name="analysis_complex_label_default">복합적인 감정</string>
+    <string name="analysis_complicated_label_default">복잡한 감정</string>
+    
 </resources>

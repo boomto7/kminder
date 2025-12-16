@@ -3,6 +3,7 @@ package com.kminder.domain.logic
 import com.kminder.domain.model.ComplexEmotionType
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionType
+import com.kminder.domain.provider.EmotionStringProvider
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -47,6 +48,7 @@ object PlutchikEmotionCalculator {
      */
     fun analyzeDominantEmotionCombination(
         analysis: EmotionAnalysis,
+        stringProvider: EmotionStringProvider,
         singleEmotionThresholdRatio: Float = 0.5f // 2등 점수가 1등 점수의 50% 미만이면 단일 감정으로 처리할 비율
     ): EmotionResult {
         // 1. 모든 감정을 점수 내림차순으로 정렬
@@ -59,9 +61,10 @@ object PlutchikEmotionCalculator {
         // 2. 단일 감정 처리 로직
         // 2등 감정이 1등 감정에 비해 너무 미미하거나, 2등 점수 자체가 너무 낮으면(예: 0.1 미만) 단일 감정으로 봅니다.
         if (second.second < 0.1f || second.second < (first.second * singleEmotionThresholdRatio)) {
+            val emotionName = stringProvider.getEmotionName(first.first)
             return EmotionResult(
-                label = getKoreanName(first.first),
-                description = "뚜렷하게 ${getKoreanName(first.first)}을(를) 느끼고 계시네요.",
+                label = emotionName,
+                description = stringProvider.getSingleEmotionDescription(emotionName),
                 primaryEmotion = first.first,
                 secondaryEmotion = null,
                 score = first.second,
@@ -82,12 +85,15 @@ object PlutchikEmotionCalculator {
         // Find Complex Type first if possible
         val complexType = findComplexEmotionType(first.first, second.first)
 
+        val emotionName1 = stringProvider.getEmotionName(first.first)
+        val emotionName2 = stringProvider.getEmotionName(second.first)
+
         return when (distance) {
             1 -> {
                 // === 1차 이중감정 (Primary Dyad) ===
                 EmotionResult(
-                    label = complexType?.title ?: "${getKoreanName(first.first)} + ${getKoreanName(second.first)}",
-                    description = complexType?.description ?: "두 감정이 조화롭게 섞여 있습니다.",
+                    label = complexType?.let { stringProvider.getComplexEmotionTitle(it) } ?: "$emotionName1 + $emotionName2",
+                    description = complexType?.let { stringProvider.getComplexEmotionDescription(it) } ?: stringProvider.getHarmonyDescription(),
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
@@ -98,20 +104,20 @@ object PlutchikEmotionCalculator {
             4 -> {
                 // === 상반 감정 (정반대) ===
                 EmotionResult(
-                    label = "${getKoreanName(first.first)}과(와) ${getKoreanName(second.first)}의 충돌",
-                    description = "서로 반대되는 감정이 마음속에서 충돌하고 있어 혼란스러울 수 있습니다.",
+                    label = stringProvider.getConflictLabel(emotionName1, emotionName2),
+                    description = stringProvider.getConflictDescription(),
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
                     category = Category.CONFLICT,
-                    complexEmotionType = complexType // Might be null usually for conflicts unless defined
+                    complexEmotionType = complexType
                 )
             }
             2 -> {
                 // === 2차 이중감정 (Secondary Dyad) ===
                  EmotionResult(
-                    label = complexType?.title ?: "복합적인 감정",
-                    description = complexType?.description ?: "미묘한 감정의 결합입니다.",
+                    label = complexType?.let { stringProvider.getComplexEmotionTitle(it) } ?: stringProvider.getComplexEmotionDefaultLabel(),
+                    description = complexType?.let { stringProvider.getComplexEmotionDescription(it) } ?: stringProvider.getComplexEmotionDefaultDescription(),
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
@@ -122,8 +128,8 @@ object PlutchikEmotionCalculator {
             else -> {
                 // === 3차 이중감정 (Tertiary Dyad) ===
                 EmotionResult(
-                    label = complexType?.title ?: "복잡한 감정",
-                    description = complexType?.description ?: "여러 감정이 섞여 있습니다.",
+                    label = complexType?.let { stringProvider.getComplexEmotionTitle(it) } ?: stringProvider.getComplicatedEmotionDefaultLabel(),
+                    description = complexType?.let { stringProvider.getComplexEmotionDescription(it) } ?: stringProvider.getComplicatedEmotionDefaultDescription(),
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
@@ -136,18 +142,5 @@ object PlutchikEmotionCalculator {
 
     private fun findComplexEmotionType(type1: EmotionType, type2: EmotionType): ComplexEmotionType? {
         return ComplexEmotionType.find(type1, type2)
-    }
-
-    private fun getKoreanName(type: EmotionType): String {
-        return when(type) {
-            EmotionType.ANGER -> "분노"
-            EmotionType.ANTICIPATION -> "기대"
-            EmotionType.JOY -> "기쁨"
-            EmotionType.TRUST -> "신뢰"
-            EmotionType.FEAR -> "두려움"
-            EmotionType.SADNESS -> "슬픔"
-            EmotionType.DISGUST -> "혐오"
-            EmotionType.SURPRISE -> "놀람"
-        }
     }
 }
