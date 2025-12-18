@@ -6,7 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.kminder.minder.ui.screen.splash.SplashScreen
+import com.kminder.minder.ui.screen.splash.SplashScreenV2
 import com.kminder.minder.ui.screen.home.HomeScreen
 import com.kminder.minder.ui.screen.write.WriteEntryScreen
 import com.kminder.minder.ui.screen.list.EntryListScreen
@@ -27,7 +27,7 @@ fun MinderNavGraph(
     ) {
         // 스플래시 화면
         composable(Screen.Splash.route) {
-            SplashScreen(
+            SplashScreenV2(
                 onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
                         // 스플래시 화면을 백스택에서 제거

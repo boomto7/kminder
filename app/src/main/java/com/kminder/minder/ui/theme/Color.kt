@@ -51,7 +51,8 @@ val MinderLavender = Color(0xFFE1BEE7)
 val MinderPeach = Color(0xFFFFCCBC)
 val MinderMint = Color(0xFFB2DFDB)
 // User Request: fef8ee color for app background
-val MinderBackground = Color(0xFFFEF8EE) // Was: 0xFFFAFAFA
+//val MinderBackground = Color(0xFFFEF8EE) // Was: 0xFFFAFAFA
+val MinderBackground = Color(0xFFe5e4c8) // Was: 0xFFFAFAFA
 val MinderTextDark = Color(0xFF424242)
 val MinderTextGray = Color(0xFF616161)
 val MinderSurface = Color(0xFFFFFFFF)

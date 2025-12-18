@@ -83,6 +83,42 @@ class AppEmotionStringProvider @Inject constructor(
             ComplexEmotionType.MORBIDNESS -> R.string.emotion_complex_morbidness_title
             ComplexEmotionType.DOMINANCE -> R.string.emotion_complex_dominance_title
             ComplexEmotionType.ANXIETY -> R.string.emotion_complex_anxiety_title
+
+            // Opposite Emotions
+            ComplexEmotionType.BITTERSWEETNESS -> R.string.emotion_complex_bittersweetness_title
+            ComplexEmotionType.AMBIVALENCE -> R.string.emotion_complex_ambivalence_title
+            ComplexEmotionType.FROZENNESS -> R.string.emotion_complex_frozenness_title
+            ComplexEmotionType.CONFUSION -> R.string.emotion_complex_confusion_title
+
+            // Single Emotions (Detailed) - Strong
+            ComplexEmotionType.ECSTASY -> R.string.emotion_detail_ecstasy
+            ComplexEmotionType.ADMIRATION -> R.string.emotion_detail_admiration
+            ComplexEmotionType.TERROR -> R.string.emotion_detail_terror
+            ComplexEmotionType.AMAZEMENT -> R.string.emotion_detail_amazement
+            ComplexEmotionType.GRIEF -> R.string.emotion_detail_grief
+            ComplexEmotionType.LOATHING -> R.string.emotion_detail_loathing
+            ComplexEmotionType.RAGE -> R.string.emotion_detail_rage
+            ComplexEmotionType.VIGILANCE -> R.string.emotion_detail_vigilance
+
+            // Single Emotions (Detailed) - Medium (Normal)
+            ComplexEmotionType.JOY -> R.string.emotion_joy
+            ComplexEmotionType.TRUST -> R.string.emotion_trust
+            ComplexEmotionType.FEAR -> R.string.emotion_fear
+            ComplexEmotionType.SURPRISE -> R.string.emotion_surprise
+            ComplexEmotionType.SADNESS -> R.string.emotion_sadness
+            ComplexEmotionType.DISGUST -> R.string.emotion_disgust
+            ComplexEmotionType.ANGER -> R.string.emotion_anger
+            ComplexEmotionType.ANTICIPATION -> R.string.emotion_anticipation
+
+            // Single Emotions (Detailed) - Weak
+            ComplexEmotionType.SERENITY -> R.string.emotion_detail_serenity
+            ComplexEmotionType.ACCEPTANCE -> R.string.emotion_detail_acceptance
+            ComplexEmotionType.APPREHENSION -> R.string.emotion_detail_apprehension
+            ComplexEmotionType.DISTRACTION -> R.string.emotion_detail_distraction
+            ComplexEmotionType.PENSIVENESS -> R.string.emotion_detail_pensiveness
+            ComplexEmotionType.BOREDOM -> R.string.emotion_detail_boredom
+            ComplexEmotionType.ANNOYANCE -> R.string.emotion_detail_annoyance
+            ComplexEmotionType.INTEREST -> R.string.emotion_detail_interest
         }
         return context.getString(resId)
     }
@@ -113,6 +149,49 @@ class AppEmotionStringProvider @Inject constructor(
             ComplexEmotionType.MORBIDNESS -> R.string.emotion_complex_morbidness_desc
             ComplexEmotionType.DOMINANCE -> R.string.emotion_complex_dominance_desc
             ComplexEmotionType.ANXIETY -> R.string.emotion_complex_anxiety_desc
+
+            // Opposite Emotions
+            ComplexEmotionType.BITTERSWEETNESS -> R.string.emotion_complex_bittersweetness_desc
+            ComplexEmotionType.AMBIVALENCE -> R.string.emotion_complex_ambivalence_desc
+            ComplexEmotionType.FROZENNESS -> R.string.emotion_complex_frozenness_desc
+            ComplexEmotionType.CONFUSION -> R.string.emotion_complex_confusion_desc
+
+            // Single Emotions - Reuse single emotion description format or specific resources if added
+            // For now, mapping to a default generic description or specific if available
+            // Assuming we use the same resources or just fallback to simple names for now to avoid compilation error.
+            // Ideally should have specific descriptions like R.string.emotion_detail_ecstasy_desc
+            
+            // Using title resource temporarily as placeholder for desc if specific desc not available, 
+            // OR mapped to a generic single emotion desc.
+            // But since return type implies unique resId, let's map to TITLE for now to fix compile error 
+            // and user can add proper desc later.
+            
+            ComplexEmotionType.ECSTASY -> R.string.emotion_detail_ecstasy
+            ComplexEmotionType.ADMIRATION -> R.string.emotion_detail_admiration
+            ComplexEmotionType.TERROR -> R.string.emotion_detail_terror
+            ComplexEmotionType.AMAZEMENT -> R.string.emotion_detail_amazement
+            ComplexEmotionType.GRIEF -> R.string.emotion_detail_grief
+            ComplexEmotionType.LOATHING -> R.string.emotion_detail_loathing
+            ComplexEmotionType.RAGE -> R.string.emotion_detail_rage
+            ComplexEmotionType.VIGILANCE -> R.string.emotion_detail_vigilance
+
+            ComplexEmotionType.JOY -> R.string.emotion_joy
+            ComplexEmotionType.TRUST -> R.string.emotion_trust
+            ComplexEmotionType.FEAR -> R.string.emotion_fear
+            ComplexEmotionType.SURPRISE -> R.string.emotion_surprise
+            ComplexEmotionType.SADNESS -> R.string.emotion_sadness
+            ComplexEmotionType.DISGUST -> R.string.emotion_disgust
+            ComplexEmotionType.ANGER -> R.string.emotion_anger
+            ComplexEmotionType.ANTICIPATION -> R.string.emotion_anticipation
+
+            ComplexEmotionType.SERENITY -> R.string.emotion_detail_serenity
+            ComplexEmotionType.ACCEPTANCE -> R.string.emotion_detail_acceptance
+            ComplexEmotionType.APPREHENSION -> R.string.emotion_detail_apprehension
+            ComplexEmotionType.DISTRACTION -> R.string.emotion_detail_distraction
+            ComplexEmotionType.PENSIVENESS -> R.string.emotion_detail_pensiveness
+            ComplexEmotionType.BOREDOM -> R.string.emotion_detail_boredom
+            ComplexEmotionType.ANNOYANCE -> R.string.emotion_detail_annoyance
+            ComplexEmotionType.INTEREST -> R.string.emotion_detail_interest
         }
         return context.getString(resId)
     }

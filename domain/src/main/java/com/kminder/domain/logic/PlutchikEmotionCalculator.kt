@@ -31,17 +31,9 @@ object PlutchikEmotionCalculator {
         val primaryEmotion: EmotionType,
         val secondaryEmotion: EmotionType?,
         val score: Float,            // 해당 조합의 점수 (평균)
-        val category: Category,      // 분류 (2차, 3차, 충돌 등)
+        val category: ComplexEmotionType.Category,      // 분류 (2차, 3차, 충돌 등)
         val complexEmotionType: ComplexEmotionType? = null // 매칭된 복합 감정 타입
     )
-
-    enum class Category {
-        SINGLE,    // 단일 감정 (하나가 압도적일 때)
-        PRIMARY_DYAD, // 2차 감정 (인접: 조화로움)
-        TERTIARY_DYAD, // 3차 감정 (거리 2~3: 복합적)
-        SECONDARY_DYAD, // 2치 (거리 2) - Added to match ComplexEmotionType
-        CONFLICT   // 상반 감정 (거리 4: 충돌)
-    }
 
     /**
      * 감정 분석 결과에서 상위 2개 감정을 추출하여 그 관계를 분석합니다.
@@ -61,14 +53,33 @@ object PlutchikEmotionCalculator {
         // 2. 단일 감정 처리 로직
         // 2등 감정이 1등 감정에 비해 너무 미미하거나, 2등 점수 자체가 너무 낮으면(예: 0.1 미만) 단일 감정으로 봅니다.
         if (second.second < 0.1f || second.second < (first.second * singleEmotionThresholdRatio)) {
-            val emotionName = stringProvider.getEmotionName(first.first)
+            val score = first.second
+            
+            // 점수에 따른 강도(Intensity) 결정
+            val intensity = when {
+                score >= 0.8f -> ComplexEmotionType.Intensity.STRONG
+                score <= 0.4f -> ComplexEmotionType.Intensity.WEAK
+                else -> ComplexEmotionType.Intensity.MEDIUM
+            }
+
+            // 단일 감정 타입 찾기 (예: JOY + STRONG -> ECSTASY)
+            val singleComplexType = ComplexEmotionType.findSingle(first.first, intensity)
+            
+            // 이름과 설명 가져오기 (만약 singleComplexType이 있으면 그것을 우선 사용)
+            val emotionName = singleComplexType?.let { stringProvider.getComplexEmotionTitle(it) } 
+                ?: stringProvider.getEmotionName(first.first)
+                
+            val emotionDesc = singleComplexType?.let { stringProvider.getComplexEmotionDescription(it) }
+                ?: stringProvider.getSingleEmotionDescription(emotionName)
+
             return EmotionResult(
                 label = emotionName,
-                description = stringProvider.getSingleEmotionDescription(emotionName),
+                description = emotionDesc,
                 primaryEmotion = first.first,
                 secondaryEmotion = null,
-                score = first.second,
-                category = Category.SINGLE
+                score = score,
+                category = ComplexEmotionType.Category.SINGLE_EMOTION,
+                complexEmotionType = singleComplexType
             )
         }
 
@@ -97,7 +108,7 @@ object PlutchikEmotionCalculator {
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
-                    category = Category.PRIMARY_DYAD,
+                    category = ComplexEmotionType.Category.PRIMARY_DYAD,
                     complexEmotionType = complexType
                 )
             }
@@ -109,7 +120,7 @@ object PlutchikEmotionCalculator {
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
-                    category = Category.CONFLICT,
+                    category = ComplexEmotionType.Category.OPPOSITE,
                     complexEmotionType = complexType
                 )
             }
@@ -121,7 +132,7 @@ object PlutchikEmotionCalculator {
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
-                    category = Category.SECONDARY_DYAD,
+                    category = ComplexEmotionType.Category.SECONDARY_DYAD,
                     complexEmotionType = complexType
                 )
             }
@@ -133,7 +144,7 @@ object PlutchikEmotionCalculator {
                     primaryEmotion = first.first,
                     secondaryEmotion = second.first,
                     score = avgScore,
-                    category = Category.TERTIARY_DYAD,
+                    category = ComplexEmotionType.Category.TERTIARY_DYAD,
                     complexEmotionType = complexType
                 )
             }

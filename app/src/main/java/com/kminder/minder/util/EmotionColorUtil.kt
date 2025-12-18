@@ -93,6 +93,54 @@ object EmotionColorUtil {
             ComplexEmotionType.MORBIDNESS -> com.kminder.minder.R.string.emotion_complex_morbidness_title
             ComplexEmotionType.DOMINANCE -> com.kminder.minder.R.string.emotion_complex_dominance_title
             ComplexEmotionType.ANXIETY -> com.kminder.minder.R.string.emotion_complex_anxiety_title
+
+            // Opposite Emotions
+            ComplexEmotionType.BITTERSWEETNESS -> com.kminder.minder.R.string.emotion_complex_bittersweetness_title
+            ComplexEmotionType.AMBIVALENCE -> com.kminder.minder.R.string.emotion_complex_ambivalence_title
+            ComplexEmotionType.FROZENNESS -> com.kminder.minder.R.string.emotion_complex_frozenness_title
+            ComplexEmotionType.CONFUSION -> com.kminder.minder.R.string.emotion_complex_confusion_title
+
+            // Single Emotions - Strong
+            ComplexEmotionType.ECSTASY -> com.kminder.minder.R.string.emotion_detail_ecstasy
+            ComplexEmotionType.ADMIRATION -> com.kminder.minder.R.string.emotion_detail_admiration
+            ComplexEmotionType.TERROR -> com.kminder.minder.R.string.emotion_detail_terror
+            ComplexEmotionType.AMAZEMENT -> com.kminder.minder.R.string.emotion_detail_amazement
+            ComplexEmotionType.GRIEF -> com.kminder.minder.R.string.emotion_detail_grief
+            ComplexEmotionType.LOATHING -> com.kminder.minder.R.string.emotion_detail_loathing
+            ComplexEmotionType.RAGE -> com.kminder.minder.R.string.emotion_detail_rage
+            ComplexEmotionType.VIGILANCE -> com.kminder.minder.R.string.emotion_detail_vigilance
+
+            // Single Emotions - Medium
+            ComplexEmotionType.JOY -> com.kminder.minder.R.string.emotion_joy
+            ComplexEmotionType.TRUST -> com.kminder.minder.R.string.emotion_trust
+            ComplexEmotionType.FEAR -> com.kminder.minder.R.string.emotion_fear
+            ComplexEmotionType.SURPRISE -> com.kminder.minder.R.string.emotion_surprise
+            ComplexEmotionType.SADNESS -> com.kminder.minder.R.string.emotion_sadness
+            ComplexEmotionType.DISGUST -> com.kminder.minder.R.string.emotion_disgust
+            ComplexEmotionType.ANGER -> com.kminder.minder.R.string.emotion_anger
+            ComplexEmotionType.ANTICIPATION -> com.kminder.minder.R.string.emotion_anticipation
+
+            // Single Emotions - Weak
+            ComplexEmotionType.SERENITY -> com.kminder.minder.R.string.emotion_detail_serenity
+            ComplexEmotionType.ACCEPTANCE -> com.kminder.minder.R.string.emotion_detail_acceptance
+            ComplexEmotionType.APPREHENSION -> com.kminder.minder.R.string.emotion_detail_apprehension
+            ComplexEmotionType.DISTRACTION -> com.kminder.minder.R.string.emotion_detail_distraction
+            ComplexEmotionType.PENSIVENESS -> com.kminder.minder.R.string.emotion_detail_pensiveness
+            ComplexEmotionType.BOREDOM -> com.kminder.minder.R.string.emotion_detail_boredom
+            ComplexEmotionType.ANNOYANCE -> com.kminder.minder.R.string.emotion_detail_annoyance
+            ComplexEmotionType.INTEREST -> com.kminder.minder.R.string.emotion_detail_interest
         }
+    }
+
+    /**
+     * 입력받은 색상의 반전 색상을 반환합니다.
+     */
+    fun getInvertedColor(color: Color): Color {
+        return Color(
+            red = 1f - color.red,
+            green = 1f - color.green,
+            blue = 1f - color.blue,
+            alpha = color.alpha
+        )
     }
 }

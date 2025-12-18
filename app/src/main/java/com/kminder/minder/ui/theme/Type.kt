@@ -4,137 +4,142 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.kminder.minder.R
 
-// Pretendard Font Family
-val Pretendard = FontFamily(
-    Font(R.font.pretendard_light, FontWeight.Light),
-    Font(R.font.pretendard_regular, FontWeight.Normal),
-    Font(R.font.pretendard_medium, FontWeight.Medium),
-    Font(R.font.pretendard_bold, FontWeight.Bold)
+// Bundled Fonts (Static Fonts for Stability)
+
+// Outfit (English / Geometric Sans)
+val OutfitFamily = FontFamily(
+    Font(R.font.outfit_light, FontWeight.Light),
+    Font(R.font.outfit_regular, FontWeight.Normal),
+    Font(R.font.outfit_medium, FontWeight.Medium),
+    Font(R.font.outfit_semibold, FontWeight.SemiBold),
+    Font(R.font.outfit_bold, FontWeight.Bold),
+    Font(R.font.outfit_extrabold, FontWeight.ExtraBold)
 )
 
-// Helvetica Neue Font Family (Optional / English Headings)
-val HelveticaNeue = FontFamily(
-    Font(R.font.helvetica_neue_light, FontWeight.Light),
-    Font(R.font.helvetica_neue_medium, FontWeight.Medium),
-    Font(R.font.helvetica_neue_bold, FontWeight.Bold)
+// Noto Sans KR (Korean / Body Text)
+val NotoSansKRFamily = FontFamily(
+    Font(R.font.notosanskr_light, FontWeight.Light),
+    Font(R.font.notosanskr_regular, FontWeight.Normal),
+    Font(R.font.notosanskr_medium, FontWeight.Medium),
+    Font(R.font.notosanskr_bold, FontWeight.Bold),
+    Font(R.font.notosanskr_black, FontWeight.ExtraBold) // Using Black as ExtraBold
 )
 
-// Set of Material typography styles to start with
+// Main Typography
 val Typography = Typography(
-    // Display
+    // Display (English Titles -> Outfit)
     displayLarge = TextStyle(
-        fontFamily = Pretendard,
-        fontWeight = FontWeight.Bold,
+        fontFamily = OutfitFamily,
+        fontWeight = FontWeight.ExtraBold,
         fontSize = 57.sp,
         lineHeight = 64.sp,
         letterSpacing = (-0.25).sp
     ),
     displayMedium = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = OutfitFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 45.sp,
         lineHeight = 52.sp,
         letterSpacing = 0.sp
     ),
     displaySmall = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = OutfitFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = 0.sp
     ),
 
-    // Headline
+    // Headline (English Titles -> Outfit)
     headlineLarge = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = OutfitFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = OutfitFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = OutfitFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
 
-    // Title
+    // Title (Korean/Common -> NotoSansKR)
     titleLarge = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
 
-    // Body
+    // Body (Korean/Common -> NotoSansKR)
     bodyLarge = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp
     ),
 
-    // Label
+    // Label (Buttons, Tags -> Mixed)
     labelLarge = TextStyle(
-        fontFamily = Pretendard,
-        fontWeight = FontWeight.Medium,
+        fontFamily = OutfitFamily,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = Pretendard,
+        fontFamily = NotoSansKRFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
