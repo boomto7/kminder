@@ -168,12 +168,12 @@ fun HomeScreenContent(
                             if (analysis != null) {
                                 EmotionAnalysisContent(analysis)
                             } else {
-                                Text("No Data", modifier = Modifier.align(Alignment.Center))
+                                Text(stringResource(R.string.common_no_data), modifier = Modifier.align(Alignment.Center))
                             }
                         } else if (uiState is HomeUiState.Loading) {
-                            Text("Loading...", modifier = Modifier.align(Alignment.Center))
+                            Text(stringResource(R.string.common_loading), modifier = Modifier.align(Alignment.Center))
                         } else {
-                            Text("No Data", modifier = Modifier.align(Alignment.Center))
+                            Text(stringResource(R.string.common_no_data), modifier = Modifier.align(Alignment.Center))
                         }
                     }
                 }
@@ -338,20 +338,20 @@ fun NavigationMenuSection(
             MenuButton(
                 icon = Icons.Default.List,
                 onClick = onNavigateToList,
-                description = "List"
+                description = stringResource(R.string.home_menu_list)
             )
 
             MenuButton(
                 icon = Icons.Default.ShowChart,
                 onClick = onNavigateToStatistics,
-                description = "Statistics"
+                description = stringResource(R.string.home_menu_stats)
             )
 
             // 유저 세팅 메뉴 추가 (기능은 아직 TBD -> 빈 람다)
             MenuButton(
                 icon = Icons.Default.Settings, // Settings 아이콘 사용
                 onClick = { /* TODO: Navigate to User Settings (TBD) */ },
-                description = "Settings"
+                description = stringResource(R.string.home_menu_settings)
             )
         }
 
@@ -359,7 +359,7 @@ fun NavigationMenuSection(
         MenuButton(
             icon = Icons.Default.Add,
             onClick = onNavigateToWrite,
-            description = "Add New",
+                description = stringResource(R.string.home_menu_add),
             containerColor = MaterialTheme.colorScheme.primary,
             iconColor = MaterialTheme.colorScheme.onPrimary,
 //            size = 80.dp
@@ -517,7 +517,7 @@ fun EmotionAnalysisContent(analysis: IntegratedAnalysis) {
             // 조언 (Suggested Action) 추가
             if (analysis.suggestedAction.isNotEmpty()) {
                 Text(
-                    text = "💡 Tip",
+                    text = stringResource(R.string.common_tip_prefix),
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.Black,
                     fontWeight = FontWeight.ExtraBold,
