@@ -28,7 +28,9 @@ data class JournalEntryEntity(
     val fear: Float? = null,
     val sadness: Float? = null,
     val disgust: Float? = null,
-    val surprise: Float? = null
+    val disgust: Float? = null,
+    val surprise: Float? = null,
+    val keywords: List<String> = emptyList()
 )
 
 /**
@@ -49,7 +51,8 @@ fun JournalEntry.toEntity(): JournalEntryEntity {
         fear = emotionAnalysis?.fear,
         sadness = emotionAnalysis?.sadness,
         disgust = emotionAnalysis?.disgust,
-        surprise = emotionAnalysis?.surprise
+        surprise = emotionAnalysis?.surprise,
+        keywords = emotionAnalysis?.keywords ?: emptyList()
     )
 }
 
@@ -66,7 +69,9 @@ fun JournalEntryEntity.toDomain(): JournalEntry {
             fear = fear ?: 0f,
             sadness = sadness ?: 0f,
             disgust = disgust ?: 0f,
-            surprise = surprise ?: 0f
+            disgust = disgust ?: 0f,
+            surprise = surprise ?: 0f,
+            keywords = keywords
         )
     } else null
     

@@ -36,5 +36,8 @@ data class EmotionData(
     val disgust: Float = 0f,
     
     @SerializedName("surprise")
-    val surprise: Float = 0f
+    val surprise: Float = 0f,
+
+    @SerializedName("keywords")
+    val keywords: List<String> = emptyList()
 )

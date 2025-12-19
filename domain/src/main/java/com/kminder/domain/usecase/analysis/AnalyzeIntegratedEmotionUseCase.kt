@@ -66,11 +66,8 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
             stringProvider
         )
         
-        // 3. (Mock) 키워드 및 조언 생성
-        // 실제로는 감정 조합에 따라 더 정교한 매핑이 필요하거나 Gemini에게 물어볼 부분이지만,
-        // 현재는 계산된 2차 감정을 기반으로 간단한 룰 기반 매핑을 제공합니다.
-        
-        val (keywords, summary, action) = generateMockInsights(emotionResult)
+        // 3. 키워드 및 조언 생성
+        val (keywords, summary, action) = generateInsights(emotionResult, entries)
 
         val detailedPrimary = DetailedEmotionType.from(emotionResult.primaryEmotion, emotionResult.score)
 
@@ -85,30 +82,47 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
         )
     }
 
-    private fun generateMockInsights(result: PlutchikEmotionCalculator.EmotionResult): Triple<List<String>, String, String> {
+    private fun generateInsights(
+        result: PlutchikEmotionCalculator.EmotionResult,
+        entries: List<JournalEntry>
+    ): Triple<List<String>, String, String> {
         val primary = result.primaryEmotion
         val secondary = result.secondaryEmotion
-        val score = result.score // This is average score. If single, it's the score of primary.
+        val score = result.score
         
         // 1. 상세 감정 (Intensity 기반) 확인
         val detailedPrimary = DetailedEmotionType.from(primary, score)
-        val detailedSecondary = secondary?.let { DetailedEmotionType.from(it, score) } // Note: Using avg score for secondary might be slightly inaccurate but acceptable for mock logic
+        val detailedSecondary = secondary?.let { DetailedEmotionType.from(it, score) }
 
         // 2. 키워드 생성
-        val baseKeywords = mutableListOf<String>()
-        baseKeywords.add(stringProvider.getDetailedEmotionName(detailedPrimary)) // e.g., "황홀", "기쁨", "평온"
+        val keywords = mutableSetOf<String>() // 중복 방지
+        
+        // 2-1. 상세 감정 이름
+        keywords.add(stringProvider.getDetailedEmotionName(detailedPrimary))
         if (detailedSecondary != null) {
-            baseKeywords.add(stringProvider.getDetailedEmotionName(detailedSecondary))
+            keywords.add(stringProvider.getDetailedEmotionName(detailedSecondary))
         }
         
-        // 추가 키워드 및 조언
-        val extraKeywords = stringProvider.getActionKeywords(primary)
-        val advice = stringProvider.getAdvice(primary)
+        // 2-2. AI 추출 키워드 (각 일기에서 추출된 키워드 활용)
+        // 최신 일기의 키워드를 우선적으로 포함
+        val aiKeywords = entries.sortedByDescending { it.createdAt }
+            .flatMap { it.emotionAnalysis?.keywords ?: emptyList() }
+            .distinct()
+            .take(4) // 최대 4개까지만 가져옴
+            
+        keywords.addAll(aiKeywords)
         
-        baseKeywords.addAll(extraKeywords)
+        // 2-3. 추가 키워드 (추천 행동) - 키워드가 부족할 경우 보강
+        if (keywords.size < 5) {
+            val extraKeywords = stringProvider.getActionKeywords(primary)
+            keywords.addAll(extraKeywords)
+        }
+        
+        // 조언 생성
+        val advice = stringProvider.getAdvice(primary)
 
         return Triple(
-            baseKeywords,
+            keywords.toList(),
             result.description, 
             advice
         )

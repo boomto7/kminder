@@ -20,7 +20,8 @@ data class EmotionAnalysis(
     val fear: Float = 0f,
     val sadness: Float = 0f,
     val disgust: Float = 0f,
-    val surprise: Float = 0f
+    val surprise: Float = 0f,
+    val keywords: List<String> = emptyList()
 ) {
     /**
      * 특정 감정의 강도를 가져옵니다.

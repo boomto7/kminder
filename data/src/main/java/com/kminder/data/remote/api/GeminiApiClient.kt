@@ -72,7 +72,8 @@ class GeminiApiClient @Inject constructor(
                 fear = analysisResponse.analysis.fear,
                 sadness = analysisResponse.analysis.sadness,
                 disgust = analysisResponse.analysis.disgust,
-                surprise = analysisResponse.analysis.surprise
+                surprise = analysisResponse.analysis.surprise,
+                keywords = analysisResponse.analysis.keywords
             )
             
             Result.success(emotionAnalysis)
