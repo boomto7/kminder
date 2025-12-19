@@ -12,6 +12,7 @@ import com.kminder.minder.ui.screen.write.WriteEntryScreen
 import com.kminder.minder.ui.screen.list.EntryListScreen
 import com.kminder.minder.ui.screen.detail.EntryDetailScreen
 import com.kminder.minder.ui.screen.statistics.StatisticsScreen
+import com.kminder.minder.ui.screen.guide.EmotionGuideScreen
 
 /**
  * 앱의 Navigation Graph
@@ -48,6 +49,18 @@ fun MinderNavGraph(
                 },
                 onNavigateToStatistics = {
                     navController.navigate(Screen.Statistics.route)
+                },
+                onNavigateToGuide = {
+                    navController.navigate(Screen.EmotionGuide.route)
+                }
+            )
+        }
+        
+        // 감정 가이드 화면
+        composable(Screen.EmotionGuide.route) {
+            EmotionGuideScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -72,7 +85,8 @@ fun MinderNavGraph(
                 },
                 onEntryClick = { entryId ->
                     navController.navigate(Screen.EntryDetail.createRoute(entryId))
-                }
+                },
+                onNavigateToWrite = {},
             )
         }
         

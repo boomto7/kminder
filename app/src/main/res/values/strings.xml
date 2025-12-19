@@ -229,5 +229,17 @@
     <string name="analysis_complicated_desc_default">여러 감정이 섞여 있습니다.</string>
     <string name="analysis_complex_label_default">복합적인 감정</string>
     <string name="analysis_complicated_label_default">복잡한 감정</string>
+
+    <!-- Emotion Guide -->
+    <string name="home_menu_guide">감정 가이드</string>
+    <string name="guide_title">감정 분석 가이드</string>
+    <string name="guide_plutchik_title">플루치크의 감정 수레바퀴</string>
+    <string name="guide_plutchik_desc">로버트 플루치크(Robert Plutchik) 교수가 제안한 감정 분류 모델입니다. 꽃잎처럼 펼쳐진 색상들은 8가지 기본 감정을 나타내며, 서로 인접한 감정들이 섞여 복합적인 감정을 만들어냅니다.</string>
+    <string name="guide_basic_emotions_title">8가지 기본 감정</string>
+    <string name="guide_basic_emotions_desc">기쁨, 신뢰, 두려움, 놀람, 슬픔, 혐오, 분노, 기대. 서로 마주보는 감정은 반대되는 성질을 가집니다.</string>
+    <string name="guide_complex_emotions_title">복합 감정 (Dyads)</string>
+    <string name="guide_complex_emotions_desc">두 가지 기본 감정이 결합된 감정입니다. \n예를 들어, 기쁨과 신뢰가 만나면 사랑이 됩니다.</string>
+    <string name="guide_intensity_title">감정의 강도</string>
+    <string name="guide_intensity_desc">같은 기쁨이라도 강도에 따라 평온(약함) → 기쁨(중간) → 황홀(강함)로 나뉩니다.</string>
     
 </resources>

@@ -35,4 +35,9 @@ sealed class Screen(val route: String) {
      * 통계/차트 화면
      */
     data object Statistics : Screen("statistics")
+
+    /**
+     * 감정 가이드 화면
+     */
+    data object EmotionGuide : Screen("emotion_guide")
 }

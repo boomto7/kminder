@@ -27,7 +27,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -72,6 +74,7 @@ fun HomeScreen(
     onNavigateToWrite: () -> Unit,
     onNavigateToList: () -> Unit,
     onNavigateToStatistics: () -> Unit,
+    onNavigateToGuide: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -82,7 +85,8 @@ fun HomeScreen(
         moodColor = moodColor,
         onNavigateToWrite = onNavigateToWrite,
         onNavigateToList = onNavigateToList,
-        onNavigateToStatistics = onNavigateToStatistics
+        onNavigateToStatistics = onNavigateToStatistics,
+        onNavigateToGuide = onNavigateToGuide
     )
 }
 
@@ -92,7 +96,8 @@ fun HomeScreenContent(
     moodColor: Color,
     onNavigateToWrite: () -> Unit,
     onNavigateToList: () -> Unit,
-    onNavigateToStatistics: () -> Unit
+    onNavigateToStatistics: () -> Unit,
+    onNavigateToGuide: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -188,7 +193,8 @@ fun HomeScreenContent(
                     moodColor = moodColor,
                     onNavigateToWrite = onNavigateToWrite,
                     onNavigateToList = onNavigateToList,
-                    onNavigateToStatistics = onNavigateToStatistics
+                    onNavigateToStatistics = onNavigateToStatistics,
+                    onNavigateToGuide = onNavigateToGuide
                 )
             }
         }
@@ -323,7 +329,8 @@ fun NavigationMenuSection(
     moodColor: Color = MinderBackground,
     onNavigateToWrite: () -> Unit,
     onNavigateToList: () -> Unit,
-    onNavigateToStatistics: () -> Unit
+    onNavigateToStatistics: () -> Unit,
+    onNavigateToGuide: () -> Unit
 ) {
     Column(
         modifier = modifier.padding(end = 6.dp), // Right Margin
@@ -345,6 +352,12 @@ fun NavigationMenuSection(
                 icon = Icons.Default.ShowChart,
                 onClick = onNavigateToStatistics,
                 description = stringResource(R.string.home_menu_stats)
+            )
+
+            MenuButton(
+                icon = Icons.Default.Description,
+                onClick = onNavigateToGuide,
+                description = stringResource(R.string.home_menu_guide)
             )
 
             // 유저 세팅 메뉴 추가 (기능은 아직 TBD -> 빈 람다)
@@ -555,7 +568,8 @@ fun HomeScreenPreview() {
             moodColor = EmotionEmpty,
             onNavigateToWrite = {},
             onNavigateToList = {},
-            onNavigateToStatistics = {}
+            onNavigateToStatistics = {},
+            onNavigateToGuide = {}
         )
     }
 }
