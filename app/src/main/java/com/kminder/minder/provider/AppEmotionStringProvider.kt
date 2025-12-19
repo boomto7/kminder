@@ -166,32 +166,32 @@ class AppEmotionStringProvider @Inject constructor(
             // But since return type implies unique resId, let's map to TITLE for now to fix compile error 
             // and user can add proper desc later.
             
-            ComplexEmotionType.ECSTASY -> R.string.emotion_detail_ecstasy
-            ComplexEmotionType.ADMIRATION -> R.string.emotion_detail_admiration
-            ComplexEmotionType.TERROR -> R.string.emotion_detail_terror
-            ComplexEmotionType.AMAZEMENT -> R.string.emotion_detail_amazement
-            ComplexEmotionType.GRIEF -> R.string.emotion_detail_grief
-            ComplexEmotionType.LOATHING -> R.string.emotion_detail_loathing
-            ComplexEmotionType.RAGE -> R.string.emotion_detail_rage
-            ComplexEmotionType.VIGILANCE -> R.string.emotion_detail_vigilance
+            ComplexEmotionType.ECSTASY -> R.string.emotion_detail_ecstasy_desc
+            ComplexEmotionType.ADMIRATION -> R.string.emotion_detail_admiration_desc
+            ComplexEmotionType.TERROR -> R.string.emotion_detail_terror_desc
+            ComplexEmotionType.AMAZEMENT -> R.string.emotion_detail_amazement_desc
+            ComplexEmotionType.GRIEF -> R.string.emotion_detail_grief_desc
+            ComplexEmotionType.LOATHING -> R.string.emotion_detail_loathing_desc
+            ComplexEmotionType.RAGE -> R.string.emotion_detail_rage_desc
+            ComplexEmotionType.VIGILANCE -> R.string.emotion_detail_vigilance_desc
 
-            ComplexEmotionType.JOY -> R.string.emotion_joy
-            ComplexEmotionType.TRUST -> R.string.emotion_trust
-            ComplexEmotionType.FEAR -> R.string.emotion_fear
-            ComplexEmotionType.SURPRISE -> R.string.emotion_surprise
-            ComplexEmotionType.SADNESS -> R.string.emotion_sadness
-            ComplexEmotionType.DISGUST -> R.string.emotion_disgust
-            ComplexEmotionType.ANGER -> R.string.emotion_anger
-            ComplexEmotionType.ANTICIPATION -> R.string.emotion_anticipation
+            ComplexEmotionType.JOY -> R.string.emotion_detail_joy_desc
+            ComplexEmotionType.TRUST -> R.string.emotion_detail_trust_desc
+            ComplexEmotionType.FEAR -> R.string.emotion_detail_fear_desc
+            ComplexEmotionType.SURPRISE -> R.string.emotion_detail_surprise_desc
+            ComplexEmotionType.SADNESS -> R.string.emotion_detail_sadness_desc
+            ComplexEmotionType.DISGUST -> R.string.emotion_detail_disgust_desc
+            ComplexEmotionType.ANGER -> R.string.emotion_detail_anger_desc
+            ComplexEmotionType.ANTICIPATION -> R.string.emotion_detail_anticipation_desc
 
-            ComplexEmotionType.SERENITY -> R.string.emotion_detail_serenity
-            ComplexEmotionType.ACCEPTANCE -> R.string.emotion_detail_acceptance
-            ComplexEmotionType.APPREHENSION -> R.string.emotion_detail_apprehension
-            ComplexEmotionType.DISTRACTION -> R.string.emotion_detail_distraction
-            ComplexEmotionType.PENSIVENESS -> R.string.emotion_detail_pensiveness
-            ComplexEmotionType.BOREDOM -> R.string.emotion_detail_boredom
-            ComplexEmotionType.ANNOYANCE -> R.string.emotion_detail_annoyance
-            ComplexEmotionType.INTEREST -> R.string.emotion_detail_interest
+            ComplexEmotionType.SERENITY -> R.string.emotion_detail_serenity_desc
+            ComplexEmotionType.ACCEPTANCE -> R.string.emotion_detail_acceptance_desc
+            ComplexEmotionType.APPREHENSION -> R.string.emotion_detail_apprehension_desc
+            ComplexEmotionType.DISTRACTION -> R.string.emotion_detail_distraction_desc
+            ComplexEmotionType.PENSIVENESS -> R.string.emotion_detail_pensiveness_desc
+            ComplexEmotionType.BOREDOM -> R.string.emotion_detail_boredom_desc
+            ComplexEmotionType.ANNOYANCE -> R.string.emotion_detail_annoyance_desc
+            ComplexEmotionType.INTEREST -> R.string.emotion_detail_interest_desc
         }
         return context.getString(resId)
     }

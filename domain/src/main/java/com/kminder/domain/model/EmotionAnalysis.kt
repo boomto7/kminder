@@ -35,7 +35,6 @@ data class EmotionAnalysis(
             EmotionType.SADNESS -> sadness
             EmotionType.DISGUST -> disgust
             EmotionType.SURPRISE -> surprise
-            EmotionType.UNKNOWN -> 0f
         }
     }
     
