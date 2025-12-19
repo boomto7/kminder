@@ -470,7 +470,7 @@ fun EmotionAnalysisContent(analysis: IntegratedAnalysis) {
             Text(
                 text = analysis.complexEmotionString,
                 style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.ExtraBold, // Bolder
+                fontWeight = FontWeight.Bold, // Bolder
                 color = Color.Black
             )
             
