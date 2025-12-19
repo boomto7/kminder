@@ -23,6 +23,7 @@ class AppEmotionStringProvider @Inject constructor(
             EmotionType.SADNESS -> R.string.emotion_sadness
             EmotionType.DISGUST -> R.string.emotion_disgust
             EmotionType.SURPRISE -> R.string.emotion_surprise
+            EmotionType.UNKNOWN -> R.string.emotion_unknown
         }
         return context.getString(resId)
     }
@@ -206,6 +207,7 @@ class AppEmotionStringProvider @Inject constructor(
             EmotionType.ANTICIPATION -> R.string.advice_anticipation
             EmotionType.DISGUST -> R.string.advice_disgust
             EmotionType.SURPRISE -> R.string.advice_surprise
+            EmotionType.UNKNOWN -> R.string.advice_joy // Default fallback
         }
         return context.getString(resId)
     }
@@ -220,6 +222,7 @@ class AppEmotionStringProvider @Inject constructor(
             EmotionType.ANTICIPATION -> listOf(R.string.keyword_plan, R.string.keyword_flutter)
             EmotionType.DISGUST -> listOf(R.string.keyword_distance, R.string.keyword_ventilation)
             EmotionType.SURPRISE -> listOf(R.string.keyword_discovery, R.string.keyword_transition)
+            EmotionType.UNKNOWN -> emptyList()
         }
         return resIds.map { context.getString(it) }
     }
