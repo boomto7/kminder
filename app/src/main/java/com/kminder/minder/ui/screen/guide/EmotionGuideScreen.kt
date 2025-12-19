@@ -156,9 +156,7 @@ fun EmotionColorGrid() {
         modifier = Modifier.fillMaxWidth()
     ) {
         EmotionType.entries.forEach { emotion ->
-            if (emotion != EmotionType.UNKNOWN) {
-                EmotionChip(emotion)
-            }
+            EmotionChip(emotion)
         }
     }
 }

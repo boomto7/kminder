@@ -26,8 +26,5 @@ enum class EmotionType {
     DISGUST,
     
     /** 놀람 */
-    SURPRISE,
-
-    /** 알 수 없음 */
-    UNKNOWN
+    SURPRISE
 }

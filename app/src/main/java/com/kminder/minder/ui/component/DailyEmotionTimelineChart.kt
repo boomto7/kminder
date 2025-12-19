@@ -266,6 +266,7 @@ private fun getBaseValues(type: EmotionType): Pair<Float, Float> {
         EmotionType.DISGUST -> -2.2f to 1.8f
         EmotionType.ANGER -> -2.5f to 2.9f
         EmotionType.ANTICIPATION -> 1.2f to 2.0f
+        else -> 0f to 0f
     }
 }
 

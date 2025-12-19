@@ -2,6 +2,7 @@ package com.kminder.minder.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kminder.domain.model.EmotionType
 import com.kminder.domain.model.IntegratedAnalysis
 import com.kminder.domain.model.JournalEntry
 import com.kminder.domain.usecase.analysis.AnalyzeIntegratedEmotionUseCase
@@ -66,14 +67,14 @@ class HomeViewModel @Inject constructor(
         val dominantEmotion = emotions.maxByOrNull { it.value }?.key
         
         val color = when (dominantEmotion) {
-            com.kminder.domain.model.EmotionType.ANGER -> com.kminder.minder.ui.theme.EmotionAnger
-            com.kminder.domain.model.EmotionType.ANTICIPATION -> com.kminder.minder.ui.theme.EmotionAnticipation
-            com.kminder.domain.model.EmotionType.JOY -> com.kminder.minder.ui.theme.EmotionJoy
-            com.kminder.domain.model.EmotionType.TRUST -> com.kminder.minder.ui.theme.EmotionTrust
-            com.kminder.domain.model.EmotionType.FEAR -> com.kminder.minder.ui.theme.EmotionFear
-            com.kminder.domain.model.EmotionType.SADNESS -> com.kminder.minder.ui.theme.EmotionSadness
-            com.kminder.domain.model.EmotionType.DISGUST -> com.kminder.minder.ui.theme.EmotionDisgust
-            com.kminder.domain.model.EmotionType.SURPRISE -> com.kminder.minder.ui.theme.EmotionSurprise
+            EmotionType.ANGER -> com.kminder.minder.ui.theme.EmotionAnger
+            EmotionType.ANTICIPATION -> com.kminder.minder.ui.theme.EmotionAnticipation
+            EmotionType.JOY -> com.kminder.minder.ui.theme.EmotionJoy
+            EmotionType.TRUST -> com.kminder.minder.ui.theme.EmotionTrust
+            EmotionType.FEAR -> com.kminder.minder.ui.theme.EmotionFear
+            EmotionType.SADNESS -> com.kminder.minder.ui.theme.EmotionSadness
+            EmotionType.DISGUST -> com.kminder.minder.ui.theme.EmotionDisgust
+            EmotionType.SURPRISE -> com.kminder.minder.ui.theme.EmotionSurprise
             null -> com.kminder.minder.ui.theme.MinderBackground
         }
         _moodColor.value = color

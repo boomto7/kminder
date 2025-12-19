@@ -45,7 +45,6 @@ object EmotionColorUtil {
             EmotionType.DISGUST -> EmotionDisgust
             EmotionType.ANGER -> EmotionAnger
             EmotionType.ANTICIPATION -> EmotionAnticipation
-            EmotionType.UNKNOWN -> Color.LightGray
         }
     }
 
@@ -62,7 +61,6 @@ object EmotionColorUtil {
             EmotionType.SADNESS -> com.kminder.minder.R.string.emotion_sadness
             EmotionType.DISGUST -> com.kminder.minder.R.string.emotion_disgust
             EmotionType.SURPRISE -> com.kminder.minder.R.string.emotion_surprise
-            EmotionType.UNKNOWN -> com.kminder.minder.R.string.emotion_unknown
         }
     }
 
