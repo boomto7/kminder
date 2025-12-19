@@ -20,7 +20,8 @@ data class JournalEntry(
     val question: String? = null,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val emotionAnalysis: EmotionAnalysis? = null
+    val emotionAnalysis: EmotionAnalysis? = null,
+    val status: AnalysisStatus = AnalysisStatus.NONE
 ) {
     /**
      * 감정 분석이 완료되었는지 확인합니다.

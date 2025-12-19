@@ -2,7 +2,7 @@ package com.kminder.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.AnalysisStatus
 import com.kminder.domain.model.EntryType
 import com.kminder.domain.model.JournalEntry
 import java.time.LocalDateTime
@@ -20,17 +20,8 @@ data class JournalEntryEntity(
     val createdAt: String, // LocalDateTime을 ISO String으로 저장
     val updatedAt: String,
     
-    // 감정 분석 결과 (nullable)
-    val anger: Float? = null,
-    val anticipation: Float? = null,
-    val joy: Float? = null,
-    val trust: Float? = null,
-    val fear: Float? = null,
-    val sadness: Float? = null,
-    val disgust: Float? = null,
-    val disgust: Float? = null,
-    val surprise: Float? = null,
-    val keywords: List<String> = emptyList()
+    // 분석 상태
+    val status: String
 )
 
 /**
@@ -44,37 +35,15 @@ fun JournalEntry.toEntity(): JournalEntryEntity {
         question = question,
         createdAt = createdAt.toString(),
         updatedAt = updatedAt.toString(),
-        anger = emotionAnalysis?.anger,
-        anticipation = emotionAnalysis?.anticipation,
-        joy = emotionAnalysis?.joy,
-        trust = emotionAnalysis?.trust,
-        fear = emotionAnalysis?.fear,
-        sadness = emotionAnalysis?.sadness,
-        disgust = emotionAnalysis?.disgust,
-        surprise = emotionAnalysis?.surprise,
-        keywords = emotionAnalysis?.keywords ?: emptyList()
+        status = status.name
     )
 }
 
 /**
  * Room Entity를 Domain JournalEntry로 변환
+ * (relation 없이 단독변환 시 emotionAnalysis는 null)
  */
 fun JournalEntryEntity.toDomain(): JournalEntry {
-    val emotionAnalysis = if (anger != null) {
-        EmotionAnalysis(
-            anger = anger,
-            anticipation = anticipation ?: 0f,
-            joy = joy ?: 0f,
-            trust = trust ?: 0f,
-            fear = fear ?: 0f,
-            sadness = sadness ?: 0f,
-            disgust = disgust ?: 0f,
-            disgust = disgust ?: 0f,
-            surprise = surprise ?: 0f,
-            keywords = keywords
-        )
-    } else null
-    
     return JournalEntry(
         id = id,
         content = content,
@@ -82,6 +51,7 @@ fun JournalEntryEntity.toDomain(): JournalEntry {
         question = question,
         createdAt = LocalDateTime.parse(createdAt),
         updatedAt = LocalDateTime.parse(updatedAt),
-        emotionAnalysis = emotionAnalysis
+        status = try { AnalysisStatus.valueOf(status) } catch(e: Exception) { AnalysisStatus.NONE },
+        emotionAnalysis = null
     )
 }

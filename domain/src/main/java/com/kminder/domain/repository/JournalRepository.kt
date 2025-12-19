@@ -1,6 +1,8 @@
 package com.kminder.domain.repository
 
+import com.kminder.domain.model.AnalysisStatus
 import com.kminder.domain.model.ChartPeriod
+import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionStatistics
 import com.kminder.domain.model.JournalEntry
 import kotlinx.coroutines.flow.Flow
@@ -75,6 +77,16 @@ interface JournalRepository {
      * @return 분석 대기 중인 일기 목록
      */
     suspend fun getEntriesWithoutAnalysis(): List<JournalEntry>
+
+    /**
+     * 감정 분석 결과를 저장합니다.
+     */
+    suspend fun saveEmotionAnalysis(journalId: Long, analysis: EmotionAnalysis?, status: AnalysisStatus)
+
+    /**
+     * 감정 분석 상태를 업데이트합니다.
+     */
+    suspend fun updateAnalysisStatus(journalId: Long, status: AnalysisStatus)
     
     /**
      * 특정 기간의 감정 통계를 조회합니다.

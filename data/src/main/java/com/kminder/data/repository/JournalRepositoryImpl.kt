@@ -1,8 +1,9 @@
 package com.kminder.data.repository
 
 import com.kminder.data.local.dao.JournalEntryDao
-import com.kminder.data.local.entity.toDomain
-import com.kminder.data.local.entity.toEntity
+import com.kminder.data.local.entity.*
+import com.kminder.data.local.model.toDomain
+import com.kminder.domain.model.AnalysisStatus
 import com.kminder.domain.model.ChartPeriod
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionStatistics
@@ -36,6 +37,17 @@ class JournalRepositoryImpl @Inject constructor(
     
     override suspend fun getEntryById(entryId: Long): JournalEntry? {
         return journalEntryDao.getById(entryId)?.toDomain()
+    }
+    
+    override suspend fun saveEmotionAnalysis(journalId: Long, analysis: EmotionAnalysis?, status: AnalysisStatus) {
+        if (analysis != null) {
+            journalEntryDao.insertAnalysis(analysis.toEntity(journalId))
+        }
+        journalEntryDao.updateStatus(journalId, status.name)
+    }
+
+    override suspend fun updateAnalysisStatus(journalId: Long, status: AnalysisStatus) {
+        journalEntryDao.updateStatus(journalId, status.name)
     }
     
     override fun getAllEntries(): Flow<List<JournalEntry>> {
