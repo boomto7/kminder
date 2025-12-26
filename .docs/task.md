@@ -1,0 +1,27 @@
+# 감정 가이드 기능 구현
+
+- [x] 기능 로직 및 UI 기획 <!-- id: 8 -->
+- [x] 분석 데이터 분리 및 오프라인 지원 리팩토링
+  - [x] Domain: AnalysisStatus Enum 생성
+  - [x] Domain: JournalEntry 모델 업데이트
+  - [x] Domain: SaveAnalysisResultUseCase 생성
+  - [x] Data: EmotionAnalysisEntity 생성
+  - [x] Data: JournalEntryEntity 업데이트 (컬럼 제거, 상태 추가)
+  - [x] Data: JournalWithAnalysis 관계 객체 생성
+  - [x] Data: JournalEntryDao 업데이트
+  - [x] Data: MinderDatabase 업데이트
+  - [x] Data: JournalRepositoryImpl 업데이트
+  - [x] 검증: 컴파일 및 테스트
+- [x] 내비게이션 그래프 업데이트 <!-- id: 9 -->
+    - [x] `Destinations.EmotionGuide` 추가
+    - [x] 기본 `EmotionGuideScreen` Composable 생성
+- [x] 홈 화면 업데이트 <!-- id: 10 -->
+    - [x] `NavigationMenuSection`에 문서 아이콘 버튼 추가
+    - [x] 버튼과 내비게이션 동작 연결
+- [x] 감정 가이드 화면 UI 구현 <!-- id: 11 -->
+    - [x] 레이아웃 생성 (`MinderBackground` 포함 스크롤 가능한 컬럼)
+    - [x] 헤더 "감정 가이드" 추가
+    - [x] 컨텐츠 섹션 추가:
+        - [x] 플루치크의 바퀴 설명 (이미지 + 텍스트)
+        - [x] 감정 카테고리 (단일, 혼합, 반대 감정)
+        - [x] 분석 로직 요약

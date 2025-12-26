@@ -498,20 +498,30 @@ fun EmotionAnalysisContent(analysis: IntegratedAnalysis) {
                         .padding(bottom = 16.dp)
                 ) {
                     analysis.keywords.forEach { keyword ->
+                        // Score 기반 스타일 계산
+                        val score = keyword.score.coerceIn(0f, 1f)
+                        val borderWidth = (1.5f + (score * 2)).dp
+                        val fontSize = (12 + (score * 4)).sp
+                        val paddingVertical = (6 + (score * 4)).dp
+                        val paddingHorizontal = (12 + (score * 6)).dp
+
                         // 배경색 투명, 테두리 (Background White)
                         Surface(
                             color = Color.White, // White background to stand out on potentially overlapping text
                             shape = CircleShape, // Fully rounded (Pill)
                             border = androidx.compose.foundation.BorderStroke(
-                                width = 2.dp, // Thicker border
+                                width = borderWidth,
                                 color = Color.Black
                             )
                         ) {
                             Text(
-                                text = keyword, // # 제거
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
+                                text = keyword.word, // # 제거, EmotionKeyword 객체의 word 속성 사용
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = if (score > 0.7f) FontWeight.Black else FontWeight.Bold,
+                                    fontSize = fontSize
+                                ),
                                 color = Color.Black,
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                                modifier = Modifier.padding(horizontal = paddingHorizontal, vertical = paddingVertical)
                             )
                         }
                     }
@@ -554,10 +564,15 @@ fun HomeScreenPreview() {
             EmotionType.TRUST to 0.6f
         ),
         complexEmotionString = "사랑",
-        keywords = listOf("행복", "신뢰", "따뜻함따뜻함"),
+        keywords = listOf(
+            com.kminder.domain.model.EmotionKeyword("행복", EmotionType.JOY, 0.9f),
+            com.kminder.domain.model.EmotionKeyword("신뢰", EmotionType.TRUST, 0.7f),
+            com.kminder.domain.model.EmotionKeyword("따뜻함", EmotionType.JOY, 0.6f)
+        ),
         summary = "최근 당신의 마음은 기쁨과 신뢰로 가득 차 있네요. 긍정적인 에너지가 넘치는 시기입니다.",
         suggestedAction = "사랑하는 사람들에게 감사의 마음을 표현해보세요.",
-        complexEmotionType = ComplexEmotionType.LOVE
+        complexEmotionType = ComplexEmotionType.LOVE,
+        sourceAnalyses = emptyList() // Preview용 빈 리스트
     )
 
 //    getEmotionColor(EmotionType.TRUST)

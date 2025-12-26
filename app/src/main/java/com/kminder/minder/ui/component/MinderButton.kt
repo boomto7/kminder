@@ -1,5 +1,6 @@
 package com.kminder.minder.ui.component
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -46,57 +48,68 @@ fun MinderButton(
     enabled: Boolean = true,
     shape: Shape = RoundedCornerShape(16.dp),
     contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
-    containerColor: Color = Color.White.copy(alpha = 0.4f), // Glass Effect
-    contentColor: Color = MaterialTheme.colorScheme.primary, // Text Color
-    borderColor: Color = Color.White.copy(alpha = 0.6f),
+    containerColor: Color = MaterialTheme.colorScheme.primary, // Default to Primary
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    borderColor: Color = Color.Black, // Bold Black Border
+    shadowColor: Color = Color.Black, // Hard Shadow Color
     content: @Composable RowScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
-    // 클릭 시 살짝 줄어드는 애니메이션
+    // 클릭 시 눌림 효과 (Scale + Shadow Offset 감소)
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
+        targetValue = if (isPressed) 0.97f else 1f,
         label = "button_scale"
     )
-
-    // 테두리 설정
-    val borderStroke = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
-
-    val containerModifier = if (enabled) {
-        modifier
-            .scale(scale)
-            .clip(shape)
-            .background(containerColor)
-            .border(borderStroke, shape)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-                role = Role.Button
-            )
-    } else {
-        modifier
-            .clip(shape)
-            .background(Color.Gray.copy(alpha = 0.2f))
-    }
+    
+    val shadowOffset by animateDpAsState(
+        targetValue = if (isPressed) 0.dp else 4.dp, // 눌리면 그림자가 없어짐 (바닥에 붙음)
+        label = "shadow_offset"
+    )
 
     Box(
-        modifier = containerModifier,
+        modifier = modifier
+            .scale(scale)
+            // 그림자가 짤리지 않도록 충분한 공간 확보 필요할 수 있음 (외부 padding 권장)
+            ,
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            modifier = Modifier
-                .defaultMinSize(
-                    minWidth = ButtonDefaults.MinWidth,
-                    minHeight = ButtonDefaults.MinHeight
-                )
-                .padding(contentPadding),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+        if (enabled) {
+            // Shadow Layer (Hard Shadow)
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .offset(x = shadowOffset, y = shadowOffset)
+                    .background(shadowColor, shape)
+            )
+        }
+
+        // Main Surface Layer
+        androidx.compose.material3.Surface(
+            onClick = onClick,
+            modifier = Modifier,
+            enabled = enabled,
+            shape = shape,
+            color = if (enabled) containerColor else Color.Gray.copy(alpha = 0.2f),
+            contentColor = contentColor,
+            border = androidx.compose.foundation.BorderStroke(2.dp, if (enabled) borderColor else Color.Gray),
+            interactionSource = interactionSource,
+            shadowElevation = 0.dp // Disable default soft shadow
         ) {
-            ProvideTextStyle(value = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = contentColor)) {
-                content()
+            Row(
+                modifier = Modifier
+                    .defaultMinSize(
+                        minWidth = ButtonDefaults.MinWidth,
+                        minHeight = ButtonDefaults.MinHeight
+                    )
+                    .padding(contentPadding),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProvideTextStyle(value = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)) {
+                    content()
+                }
             }
         }
     }

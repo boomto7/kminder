@@ -7,9 +7,10 @@ package com.kminder.domain.model
 data class IntegratedAnalysis(
     val recentEmotions: Map<EmotionType, Float>,
     val complexEmotionString: String, // 2차 복합 감정 (e.g., "낙관", "사랑")
-    val keywords: List<String>,      // 3차 분석 키워드
+    val keywords: List<EmotionKeyword>,      // 3차 분석 키워드 (EmotionKeyword 객체 리스트)
     val summary: String,             // 3차 분석 요약 (인사이트)
     val suggestedAction: String,      // 3차 조언
     val complexEmotionType: ComplexEmotionType? = null, // 복합 감정 타입 (enum)
-    val detailedEmotionType: DetailedEmotionType? = null // 단일/주 감정 상세 타입 (enum)
+    val detailedEmotionType: DetailedEmotionType? = null, // 단일/주 감정 상세 타입 (enum)
+    val sourceAnalyses: List<EmotionAnalysis> // [New] 통합 분석에 사용된 원본 데이터 리스트
 )

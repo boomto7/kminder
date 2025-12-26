@@ -32,7 +32,8 @@ object PlutchikEmotionCalculator {
         val secondaryEmotion: EmotionType?,
         val score: Float,            // 해당 조합의 점수 (평균)
         val category: ComplexEmotionType.Category,      // 분류 (2차, 3차, 충돌 등)
-        val complexEmotionType: ComplexEmotionType? = null // 매칭된 복합 감정 타입
+        val complexEmotionType: ComplexEmotionType? = null, // 매칭된 복합 감정 타입
+        val source: EmotionAnalysis  // [New] 결과 도출에 사용된 원본 데이터
     )
 
     /**
@@ -79,7 +80,8 @@ object PlutchikEmotionCalculator {
                 secondaryEmotion = null,
                 score = score,
                 category = ComplexEmotionType.Category.SINGLE_EMOTION,
-                complexEmotionType = singleComplexType
+                complexEmotionType = singleComplexType,
+                source = analysis
             )
         }
 
@@ -109,7 +111,8 @@ object PlutchikEmotionCalculator {
                     secondaryEmotion = second.first,
                     score = avgScore,
                     category = ComplexEmotionType.Category.PRIMARY_DYAD,
-                    complexEmotionType = complexType
+                    complexEmotionType = complexType,
+                    source = analysis
                 )
             }
             4 -> {
@@ -121,7 +124,8 @@ object PlutchikEmotionCalculator {
                     secondaryEmotion = second.first,
                     score = avgScore,
                     category = ComplexEmotionType.Category.OPPOSITE,
-                    complexEmotionType = complexType
+                    complexEmotionType = complexType,
+                    source = analysis
                 )
             }
             2 -> {
@@ -133,7 +137,8 @@ object PlutchikEmotionCalculator {
                     secondaryEmotion = second.first,
                     score = avgScore,
                     category = ComplexEmotionType.Category.SECONDARY_DYAD,
-                    complexEmotionType = complexType
+                    complexEmotionType = complexType,
+                    source = analysis
                 )
             }
             else -> {
@@ -145,7 +150,8 @@ object PlutchikEmotionCalculator {
                     secondaryEmotion = second.first,
                     score = avgScore,
                     category = ComplexEmotionType.Category.TERTIARY_DYAD,
-                    complexEmotionType = complexType
+                    complexEmotionType = complexType,
+                    source = analysis
                 )
             }
         }

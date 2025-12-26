@@ -1,5 +1,7 @@
 package com.kminder.minder.ui.screen.list
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,9 +12,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -97,38 +100,64 @@ fun EntryListScreen(
 
             // 2. List Content
             Box(modifier = Modifier.weight(1f)) {
-                when (uiState) {
-                    is EntryListUiState.Loading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = Color.Black)
-                        }
+                if (uiState.isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color.Black)
                     }
-                    is EntryListUiState.Empty -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = stringResource(R.string.home_empty_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color.Black.copy(alpha = 0.6f)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = stringResource(R.string.home_empty_desc),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Black.copy(alpha = 0.4f)
-                                )
-                            }
-                        }
-                    }
-                    is EntryListUiState.Success -> {
-                        val entries = (uiState as EntryListUiState.Success).entries
-                        LazyColumn(
-                            state = listState,
-                            contentPadding = PaddingValues(bottom = 100.dp, start = 16.dp, end = 16.dp), // FAB space
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                } else {
+                    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+                    CompositionLocalProvider(
+                        LocalOverscrollFactory provides null
+                    ) {
+                        PullToRefreshBox(
+                            isRefreshing = uiState.isRefreshing,
+                            onRefresh = { viewModel.refresh() },
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            items(entries) { entry ->
-                                JournalCard(entry = entry, onClick = { onEntryClick(entry.id) })
+                            if (uiState.entries.isEmpty()) {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = stringResource(R.string.home_empty_title),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = Color.Black.copy(alpha = 0.6f)
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.home_empty_desc),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Black.copy(alpha = 0.4f)
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                    state = listState,
+                                    contentPadding = PaddingValues(bottom = 100.dp, start = 16.dp, end = 16.dp), // FAB space
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(uiState.entries) { entry ->
+                                        JournalCard(entry = entry, onClick = { onEntryClick(entry.id) })
+                                    }
+
+                                    if (uiState.isLoadingMore) {
+                                        item {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 16.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(24.dp),
+                                                    color = Color.Black,
+                                                    strokeWidth = 2.dp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -165,7 +194,7 @@ fun EntryListHeader(
         // Back Button (Retro Style)
         RetroIconButton(
             onClick = onNavigateBack,
-            icon = Icons.Default.ArrowBack,
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = stringResource(R.string.common_back)
         )
 

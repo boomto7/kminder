@@ -1,56 +1,59 @@
-# 구현 계획 - Minder
+# 로직 분리 및 오프라인 우선 분석 리팩토링
 
-## 목표 설명
-Gemini API를 사용하여 사용자의 감정을 추적하고 분석하는 "Minder" 안드로이드 애플리케이션을 개발합니다. 이 계획은 정의된 에이전트들이 수행할 기술적 실행 단계를 설명합니다.
+## 문제 정의
+현재 구현은 `JournalEntry`와 `EmotionAnalysis`가 하나의 테이블에 결합되어 있습니다. 사용자 요청 사항:
+1.  `EmotionAnalysis`를 별도 테이블로 분리 (Journal과 1:1 관계).
+2.  일기를 **먼저** 저장한 후 분석을 시도.
+3.  분석 상태(예: 네트워크 실패)를 추적하기 위해 `JournalEntry`에 상태 필드 추가.
+4.  실패하거나 처리되지 않은 항목에 대해 재분석 허용.
 
-## 사용자 검토 필요 사항
+## 사용자 리뷰 필요
 > [!IMPORTANT]
-> **Gemini API 키**: 분석 기능을 사용하려면 Gemini에 액세스할 수 있는 유효한 Google Cloud API 키가 필요합니다.
-> **개인정보 보호**: 사용자 데이터는 로컬에 저장되지만, 텍스트는 분석을 위해 Google 서버로 전송됩니다. 이 점을 사용자에게 고지해야 합니다.
+> **데이터베이스 스키마 변경**: 이 작업은 `journal_entries`에서 감정 컬럼을 제거하고 새로운 `emotion_analyses` 테이블을 생성하는 작업을 포함합니다. 개발 중 데이터를 지우거나 재설치해야 하는 파괴적인 변경입니다.
 
-## 변경 제안
+## 제안된 변경 사항
 
-### 1단계: 프로젝트 설정 (개발자 에이전트)
-#### [수정] 멀티 모듈 구조 설정
-- `:domain` 모듈 생성 (Java/Kotlin Library).
-- `:data` 모듈 생성 (Android Library).
-- `:app` 모듈 의존성 설정 (`implementation(project(":domain"))`, `implementation(project(":data"))`).
-- Hilt 의존성 주입 설정 (각 모듈별 설정).
-- **[신규] Version Catalog 설정**: `gradle/libs.versions.toml` 생성 및 모든 `build.gradle.kts` 마이그레이션.
+### Domain Layer
+#### [수정] [JournalEntry.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/domain/src/main/java/com/kminder/domain/model/JournalEntry.kt)
+- `val status: AnalysisStatus` 필드 추가.
+- 생성자에서 `emotionAnalysis` 제거? 아니요, UI 표시를 위해 nullable `EmotionAnalysis?`로 유지합니다. Repository에서 테이블 조인을 통해 채워질 것입니다.
 
-### 2단계: 데이터 및 도메인 계층 (개발자 에이전트)
-#### [신규] 도메인 모듈 (`:domain`)
-- `Entry` 모델 (Data Class).
-- `EntryRepository` 인터페이스.
-- `AnalyzeEmotionUseCase`, `GetEntriesUseCase`.
+#### [신규] [AnalysisStatus.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/domain/src/main/java/com/kminder/domain/model/AnalysisStatus.kt)
+- Enum 클래스: `PENDING`, `COMPLETED`, `FAILED`, `NONE`.
 
-#### [신규] 데이터 모듈 (`:data`)
-- 로컬 데이터베이스 (Room): `EntryEntity`, `AppDatabase`, DAO.
-- 네트워크 (Retrofit): `GeminiService`.
-- 리포지토리 구현: `EntryRepositoryImpl`.
-- 매퍼: Entity <-> Domain Model 변환기.
+#### [신규] [SaveAnalysisResultUseCase.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/domain/src/main/java/com/kminder/domain/usecase/analysis/SaveAnalysisResultUseCase.kt)
+- 특정 일기 ID에 대한 분석 결과를 저장하는 함수.
 
-### 3단계: 프레젠테이션 계층 (디자이너 에이전트)
-#### [신규] 디자인 시스템
-- `Color.kt`, `Type.kt`, `Theme.kt`: "Minder"만의 미학 정의 (차분함, 프리미엄).
+### Data Layer
+#### [수정] [JournalEntryEntity.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/data/src/main/java/com/kminder/data/local/entity/JournalEntryEntity.kt)
+- **제거**: `anger`, `anticipation`, `joy`, `trust`, `fear`, `sadness`, `disgust`, `surprise`, `keywords`.
+- **추가**: `status: String` (`AnalysisStatus`에서 매핑).
 
-#### [신규] 화면 (Screens)
-- `HomeScreen`: 요약 정보가 있는 대시보드.
-- `WriteScreen`: 자유 작성 및 문답 입력 화면.
-- `HistoryScreen`: 기록 목록 화면.
-- `DetailScreen`: 기록 내용 및 분석 결과 보기.
-- `ChartScreen`: 차트 라이브러리(Vico 또는 MPAndroidChart 등)를 활용한 시각화.
+#### [신규] [EmotionAnalysisEntity.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/data/src/main/java/com/kminder/data/local/entity/EmotionAnalysisEntity.kt)
+- 필드: `id` (PK), `journalId` (FK), `anger`, `anticipation`... `surprise`, `keywords`.
+- 키워드를 위해 `StringListConverter` 사용.
 
-### 4단계: 검증 (테스터 에이전트)
-- Room DAO 및 Repository에 대한 단위 테스트.
-- 내비게이션 흐름에 대한 UI 테스트.
-- Gemini API 응답 수동 검증.
+#### [신규] [JournalWithAnalysis.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/data/src/main/java/com/kminder/data/local/model/JournalWithAnalysis.kt)
+- Room Relation 클래스 (`@Embedded` journal + `@Relation` analysis).
+
+#### [수정] [JournalEntryDao.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/data/src/main/java/com/kminder/data/local/dao/JournalEntryDao.kt)
+- 쿼리 메서드가 `JournalWithAnalysis`를 반환하도록 업데이트.
+- `EmotionAnalysisEntity` 삽입 메서드 추가.
+- `JournalEntryEntity` 상태 업데이트 메서드 추가.
+
+#### [수정] [MinderDatabase.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/data/src/main/java/com/kminder/data/local/database/MinderDatabase.kt)
+- `EmotionAnalysisEntity` 추가.
+- 버전 올림.
+
+#### [수정] [JournalRepositoryImpl.kt](file:///Users/hongchang-gi/Documents/work_space/antigravity/minder/data/src/main/java/com/kminder/data/repository/JournalRepositoryImpl.kt)
+- 저장 로직 구현: 일기 먼저 저장 (PENDING).
+- 조회 로직 구현: `JournalWithAnalysis`를 `JournalEntry`로 매핑.
 
 ## 검증 계획
 ### 자동화 테스트
-- 로직 검증을 위해 `./gradlew testDebugUnitTest` 실행.
-- UI 테스트를 위해 `./gradlew connectedAndroidTest` 실행.
+- `GeminiApiAppInstrumentedTest`: 분석 API가 여전히 작동하는지 확인.
+- (신규) `DatabaseTest`: 1:1 관계 및 트랜잭션 로직 검증 (선택 사항).
 
 ### 수동 검증
-- **시나리오 1**: 슬픈 일기를 작성 -> "슬픔(Sadness)"이 감지되는지 확인.
-- **시나리오 2**: 주간 차트 확인 -> 새 기록이 그래프에 반영되는지 확인.
+1.  **작성 화면**: (시뮬레이션) 일기 저장 -> DB 상태 확인 -> 분석 -> DB 상태 및 분석 테이블 확인.
+2.  **홈 화면**: 분석된 항목과 그렇지 않은 항목이 정상적으로 처리되는지 확인.

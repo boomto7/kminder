@@ -2,11 +2,14 @@ package com.kminder.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.EmotionKeyword
 
 @Entity(
     tableName = "emotion_analyses",
+    indices = [Index(value = ["journalId"])],
     foreignKeys = [
         ForeignKey(
             entity = JournalEntryEntity::class,
@@ -28,7 +31,7 @@ data class EmotionAnalysisEntity(
     val sadness: Float = 0f,
     val disgust: Float = 0f,
     val surprise: Float = 0f,
-    val keywords: List<String> = emptyList()
+    val keywords: List<EmotionKeyword> = emptyList()
 )
 
 fun EmotionAnalysis.toEntity(journalId: Long): EmotionAnalysisEntity {

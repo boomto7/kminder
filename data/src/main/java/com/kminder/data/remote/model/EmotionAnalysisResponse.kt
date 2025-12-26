@@ -39,5 +39,16 @@ data class EmotionData(
     val surprise: Float = 0f,
 
     @SerializedName("keywords")
-    val keywords: List<String> = emptyList()
+    val keywords: List<EmotionKeywordData> = emptyList()
+)
+
+data class EmotionKeywordData(
+    @SerializedName("word")
+    val word: String,
+    
+    @SerializedName("emotion")
+    val emotion: String, // String으로 받아서 Domain Layer에서 Enum으로 변환
+    
+    @SerializedName("score")
+    val score: Float
 )

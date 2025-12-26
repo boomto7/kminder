@@ -3,6 +3,7 @@ package com.kminder.data.local.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.kminder.data.local.converter.EmotionKeywordListConverter
 import com.kminder.data.local.converter.StringListConverter
 import com.kminder.data.local.dao.JournalEntryDao
 import com.kminder.data.local.entity.EmotionAnalysisEntity
@@ -13,10 +14,10 @@ import com.kminder.data.local.entity.JournalEntryEntity
  */
 @Database(
     entities = [JournalEntryEntity::class, EmotionAnalysisEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
-@TypeConverters(StringListConverter::class)
+@TypeConverters(StringListConverter::class, EmotionKeywordListConverter::class)
 abstract class MinderDatabase : RoomDatabase() {
     
     /**

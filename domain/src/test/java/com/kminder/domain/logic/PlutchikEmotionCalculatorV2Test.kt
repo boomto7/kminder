@@ -27,6 +27,7 @@ class PlutchikEmotionCalculatorV2Test {
         override fun getComplexEmotionTitle(type: ComplexEmotionType): String = when (type) {
             ComplexEmotionType.LOVE -> "사랑"
             ComplexEmotionType.GUILT -> "죄책감"
+            ComplexEmotionType.JOY -> "기쁨"
             else -> type.name
         }
 
@@ -59,7 +60,7 @@ class PlutchikEmotionCalculatorV2Test {
 
         println("Case 1 (2차 감정): ${result.label} (${result.category})")
         
-        assertEquals(PlutchikEmotionCalculator.Category.PRIMARY_DYAD, result.category)
+        assertEquals(ComplexEmotionType.Category.PRIMARY_DYAD, result.category)
         assertEquals("사랑", result.label)
     }
 
@@ -76,7 +77,7 @@ class PlutchikEmotionCalculatorV2Test {
 
         println("Case 2 (상반 감정): ${result.label} (${result.category})")
 
-        assertEquals(PlutchikEmotionCalculator.Category.CONFLICT, result.category)
+        assertEquals(ComplexEmotionType.Category.OPPOSITE, result.category)
         assertEquals("기쁨과(와) 슬픔의 충돌", result.label)
     }
     
@@ -95,7 +96,7 @@ class PlutchikEmotionCalculatorV2Test {
 
         // ComplexEmotionType에 'GUILT(죄책감)'이 정의되어 있으면 "죄책감", 아니면 "복합적인..."
         // 현재 ComplexEmotionType에 GUILT가 정의되어 있음.
-        assertEquals(PlutchikEmotionCalculator.Category.SECONDARY_DYAD, result.category)
+        assertEquals(ComplexEmotionType.Category.SECONDARY_DYAD, result.category)
         // 만약 GUILT 정의를 뺐다면 "복합적인 기쁨과(와) 두려움"이 나와야 함
         assertEquals("죄책감", result.label) 
     }
@@ -104,15 +105,15 @@ class PlutchikEmotionCalculatorV2Test {
     fun `analyze_single_emotion_should_return_Single`() {
         // 기쁨 하나만 압도적으로 높음
         val input = EmotionAnalysis(
-            joy = 0.9f,
-            trust = 0.2f // 0.9의 50%인 0.45보다 낮음 -> 무시됨
+            joy = 0.7f, // Medium Intensity
+            trust = 0.2f // 0.7의 50%인 0.35보다 낮음 -> 무시됨
         )
         
         val result = PlutchikEmotionCalculator.analyzeDominantEmotionCombination(input, fakeStringProvider)
         
         println("Case 4 (단일 감정): ${result.label} (${result.category})")
         
-        assertEquals(PlutchikEmotionCalculator.Category.SINGLE, result.category)
+        assertEquals(ComplexEmotionType.Category.SINGLE_EMOTION, result.category)
         assertEquals("기쁨", result.label)
     }
 }

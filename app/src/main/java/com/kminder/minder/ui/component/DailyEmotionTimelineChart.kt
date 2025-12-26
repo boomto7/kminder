@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kminder.domain.logic.PlutchikEmotionCalculator
 import com.kminder.domain.model.EmotionType
+import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.minder.ui.theme.MinderTheme
 import com.kminder.minder.util.EmotionColorUtil
 
@@ -274,10 +275,10 @@ private fun getBaseValues(type: EmotionType): Pair<Float, Float> {
 @Composable
 fun PreviewDailyEmotionDistribChart() {
     val mockData = mapOf(
-        10 to PlutchikEmotionCalculator.EmotionResult("경멸", "설명", EmotionType.DISGUST, EmotionType.ANGER, 0.83f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD),
-        14 to PlutchikEmotionCalculator.EmotionResult("낙관", "설명", EmotionType.JOY, EmotionType.ANTICIPATION, 0.5f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD),
-        18 to PlutchikEmotionCalculator.EmotionResult("절망", "설명", EmotionType.SADNESS, EmotionType.FEAR, 0.6f, com.kminder.domain.model.ComplexEmotionType.Category.SECONDARY_DYAD),
-        21 to PlutchikEmotionCalculator.EmotionResult("사랑", "설명", EmotionType.JOY, EmotionType.TRUST, 0.93f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD)
+        10 to PlutchikEmotionCalculator.EmotionResult("경멸", "설명", EmotionType.DISGUST, EmotionType.ANGER, 0.83f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis()),
+        14 to PlutchikEmotionCalculator.EmotionResult("낙관", "설명", EmotionType.JOY, EmotionType.ANTICIPATION, 0.5f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis()),
+        18 to PlutchikEmotionCalculator.EmotionResult("절망", "설명", EmotionType.SADNESS, EmotionType.FEAR, 0.6f, com.kminder.domain.model.ComplexEmotionType.Category.SECONDARY_DYAD, source = EmotionAnalysis()),
+        21 to PlutchikEmotionCalculator.EmotionResult("사랑", "설명", EmotionType.JOY, EmotionType.TRUST, 0.93f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis())
     )
     
     MinderTheme {

@@ -4,10 +4,13 @@
 
 **목표**: 시각적으로 훌륭하고, 차분하며, 직관적인 "Minder" 경험을 만듭니다.
 
-**디자인 철학**:
-- **미학**: 프리미엄, 깔끔함, 차분함. 일반적인 머티리얼 디자인 느낌을 피하십시오. 부드러운 그림자, 둥근 모서리, 조화로운 색상 팔레트를 사용하십시오.
-- **인터랙션**: 앱이 살아있는 것처럼 느껴지도록 부드러운 전환과 마이크로 애니메이션을 사용하십시오.
-- **데이터 시각화**: 차트는 기능적일 뿐만 아니라 아름답고 읽기 쉬워야 합니다.
+- **Concept**: **Soft Neo-Brutalism (Retro & Pop)**.
+- **Aesthetics**: Bold, Playful, Distinct. Avoid generic Material Design or soft/blurred shadows.
+- **Key Elements**:
+  - **Borders**: Thick, solid black borders (2dp+) for all containers.
+  - **Shadows**: Hard, solid black shadows with no blur (Pop effect).
+  - **Colors**: Comforting Pastel tones combined with high-contrast text and borders.
+  - **Shapes**: Round corners (RoundedCorner, Circle) to keep it friendly.
 
 **책임**:
 1.  **UI 구현**: Jetpack Compose 컴포넌트(`@Composable`)를 구축합니다.

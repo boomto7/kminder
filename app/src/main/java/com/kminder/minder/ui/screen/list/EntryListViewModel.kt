@@ -19,7 +19,7 @@ class EntryListViewModel @Inject constructor(
     // private val getAllJournalEntriesUseCase: GetAllJournalEntriesUseCase
 ) : ViewModel() {
     
-    private val _uiState = MutableStateFlow<EntryListUiState>(EntryListUiState.Loading)
+    private val _uiState = MutableStateFlow(EntryListUiState())
     val uiState: StateFlow<EntryListUiState> = _uiState.asStateFlow()
 
     // Pagination State
@@ -28,7 +28,6 @@ class EntryListViewModel @Inject constructor(
     private val allMockEntries = com.kminder.minder.data.mock.MockData.mockJournalEntries
     private val currentEntries = mutableListOf<JournalEntry>()
     private var isLastPage = false
-    private var isLoadingMore = false
     
     init {
         loadEntries()
@@ -39,38 +38,57 @@ class EntryListViewModel @Inject constructor(
      */
     fun loadEntries() {
         viewModelScope.launch {
-            currentPage = 0
-            currentEntries.clear()
-            isLastPage = false
-            isLoadingMore = false
-            
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            resetPagination()
             loadNextPage()
+            _uiState.value = _uiState.value.copy(isLoading = false)
         }
+    }
+
+    /**
+     * 당겨서 새로고침
+     */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isRefreshing = true)
+            resetPagination()
+            // Simulate network delay for refresh feel
+            delay(1000)
+            loadNextPage()
+            _uiState.value = _uiState.value.copy(isRefreshing = false)
+        }
+    }
+
+    private fun resetPagination() {
+        currentPage = 0
+        currentEntries.clear()
+        isLastPage = false
     }
 
     /**
      * 추가 데이터 로드 (스크롤 시 호출)
      */
     fun loadMoreEntries() {
-        if (isLoadingMore || isLastPage) return
+        if (_uiState.value.isLoadingMore || isLastPage) return
 
         viewModelScope.launch {
-            isLoadingMore = true
+            _uiState.value = _uiState.value.copy(isLoadingMore = true)
             delay(1000) 
             loadNextPage()
-            isLoadingMore = false
+            _uiState.value = _uiState.value.copy(isLoadingMore = false)
         }
     }
 
     private fun loadNextPage() {
-        val start = currentPage * pageSize
-        val end = minOf(start + pageSize, allMockEntries.size)
-        
-        if (start >= allMockEntries.size) {
+        // 이미 마지막 페이지라면 로드 중단 (하지만 loadMoreEntries에서 체크하므로 여기선 방어 코드)
+        if (currentPage * pageSize >= allMockEntries.size) {
             isLastPage = true
             return
         }
 
+        val start = currentPage * pageSize
+        val end = minOf(start + pageSize, allMockEntries.size)
+        
         val newEntries = allMockEntries.subList(start, end)
         currentEntries.addAll(newEntries)
         
@@ -80,19 +98,16 @@ class EntryListViewModel @Inject constructor(
             currentPage++
         }
 
-        _uiState.value = if (currentEntries.isEmpty()) {
-            EntryListUiState.Empty
-        } else {
-            EntryListUiState.Success(currentEntries.toList())
-        }
+        _uiState.value = _uiState.value.copy(entries = currentEntries.toList())
     }
 }
 
 /**
  * 일기 목록 화면 UI 상태
  */
-sealed interface EntryListUiState {
-    data object Loading : EntryListUiState
-    data object Empty : EntryListUiState
-    data class Success(val entries: List<JournalEntry>) : EntryListUiState
-}
+data class EntryListUiState(
+    val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val entries: List<JournalEntry> = emptyList()
+)

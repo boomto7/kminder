@@ -3,6 +3,7 @@ package com.kminder.domain.usecase.analysis
 import com.kminder.domain.logic.PlutchikEmotionCalculator
 import com.kminder.domain.model.DetailedEmotionType
 import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.EmotionKeyword
 import com.kminder.domain.model.EmotionType
 import com.kminder.domain.model.IntegratedAnalysis
 import com.kminder.domain.model.JournalEntry
@@ -25,9 +26,13 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
                 complexEmotionString = stringProvider.getAnalysisImpossibleLabel(),
                 keywords = emptyList(),
                 summary = stringProvider.getAnalysisInsufficientDataMessage(),
-                suggestedAction = stringProvider.getAnalysisTryJournalingAction()
+                suggestedAction = stringProvider.getAnalysisTryJournalingAction(),
+                sourceAnalyses = emptyList()
             )
         }
+
+        // sourceAnalyses 수집
+        val sourceAnalyses = entries.mapNotNull { it.emotionAnalysis }
 
         // 1. 감정 분포 계산 (평균)
         val totalEmotions = mutableMapOf<EmotionType, Float>()
@@ -78,14 +83,15 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
             summary = emotionResult.description, // 계산된 설명 사용
             suggestedAction = action,
             complexEmotionType = emotionResult.complexEmotionType,
-            detailedEmotionType = detailedPrimary
+            detailedEmotionType = detailedPrimary,
+            sourceAnalyses = sourceAnalyses
         )
     }
 
     private fun generateInsights(
         result: PlutchikEmotionCalculator.EmotionResult,
         entries: List<JournalEntry>
-    ): Triple<List<String>, String, String> {
+    ): Triple<List<EmotionKeyword>, String, String> {
         val primary = result.primaryEmotion
         val secondary = result.secondaryEmotion
         val score = result.score
@@ -94,35 +100,54 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
         val detailedPrimary = DetailedEmotionType.from(primary, score)
         val detailedSecondary = secondary?.let { DetailedEmotionType.from(it, score) }
 
-        // 2. 키워드 생성
-        val keywords = mutableSetOf<String>() // 중복 방지
+        // 2. 키워드 생성 (EmotionKeyword 객체 리스트)
+        val keywords = mutableListOf<EmotionKeyword>()
+        val addedWords = mutableSetOf<String>()
         
-        // 2-1. 상세 감정 이름
-        keywords.add(stringProvider.getDetailedEmotionName(detailedPrimary))
+        // 2-1. 상세 감정 이름 -> Keyword 변환
+        val primaryLabel = stringProvider.getDetailedEmotionName(detailedPrimary)
+        keywords.add(EmotionKeyword(word = primaryLabel, emotion = primary, score = score))
+        addedWords.add(primaryLabel)
+
         if (detailedSecondary != null) {
-            keywords.add(stringProvider.getDetailedEmotionName(detailedSecondary))
+            val secondaryLabel = stringProvider.getDetailedEmotionName(detailedSecondary)
+            if (secondaryLabel !in addedWords) {
+                keywords.add(EmotionKeyword(word = secondaryLabel, emotion = secondary ?: primary, score = score))
+                addedWords.add(secondaryLabel)
+            }
         }
         
-        // 2-2. AI 추출 키워드 (각 일기에서 추출된 키워드 활용)
-        // 최신 일기의 키워드를 우선적으로 포함
+        // 2-2. AI 추출 키워드 통합
+        // 최신 일기에서 추출된 EmotionKeyword들을 가져옵니다.
         val aiKeywords = entries.sortedByDescending { it.createdAt }
             .flatMap { it.emotionAnalysis?.keywords ?: emptyList() }
-            .distinct()
-            .take(4) // 최대 4개까지만 가져옴
-            
+            .filter { it.word !in addedWords }
+            // 점수가 높은 순, 그리고 최신 순으로 정렬되어 있음 (flatMap 순서 덕분)
+            .distinctBy { it.word } // 단어 중복 제거
+            .take(4) // 최대 4개
+
         keywords.addAll(aiKeywords)
+        aiKeywords.forEach { addedWords.add(it.word) }
         
-        // 2-3. 추가 키워드 (추천 행동) - 키워드가 부족할 경우 보강
+        // 2-3. 추가 키워드 (추천 행동) - 부족할 경우 보강
         if (keywords.size < 5) {
             val extraKeywords = stringProvider.getActionKeywords(primary)
-            keywords.addAll(extraKeywords)
+            for (word in extraKeywords) {
+                if (keywords.size >= 6) break // 적당히 제한 (기본+AI+추천 합쳐서 6개 정도)
+                if (word !in addedWords) {
+                    // 추천 키워드는 점수를 매기기 애매하므로 0.0f 또는 기본 점수 부여
+                    // 여기서는 시각적 구분을 위해 0.5f 정도 부여하거나 primaryEmotion을 따르게 함
+                    keywords.add(EmotionKeyword(word = word, emotion = primary, score = 0.5f))
+                    addedWords.add(word)
+                }
+            }
         }
         
         // 조언 생성
         val advice = stringProvider.getAdvice(primary)
 
         return Triple(
-            keywords.toList(),
+            keywords, // List<EmotionKeyword>
             result.description, 
             advice
         )

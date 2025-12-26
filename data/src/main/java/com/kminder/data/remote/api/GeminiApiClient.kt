@@ -7,6 +7,8 @@ import com.google.gson.Gson
 import com.kminder.data.remote.model.EmotionAnalysisResponse
 import com.kminder.data.remote.prompt.EmotionAnalysisPrompt
 import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.EmotionKeyword
+import com.kminder.domain.model.EmotionType
 import javax.inject.Inject
 
 /**
@@ -73,7 +75,17 @@ class GeminiApiClient @Inject constructor(
                 sadness = analysisResponse.analysis.sadness,
                 disgust = analysisResponse.analysis.disgust,
                 surprise = analysisResponse.analysis.surprise,
-                keywords = analysisResponse.analysis.keywords
+                keywords = analysisResponse.analysis.keywords.map { keywordData ->
+                    EmotionKeyword(
+                        word = keywordData.word,
+                        emotion = try {
+                            EmotionType.valueOf(keywordData.emotion.uppercase())
+                        } catch (e: Exception) {
+                            EmotionType.JOY // 기본값 또는 에러 처리
+                        },
+                        score = keywordData.score
+                    )
+                }
             )
             
             Result.success(emotionAnalysis)
