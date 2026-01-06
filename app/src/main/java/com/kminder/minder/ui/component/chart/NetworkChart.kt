@@ -59,7 +59,7 @@ fun NetworkChart(
         progress.animateTo(
             targetValue = 1f,
             animationSpec = androidx.compose.animation.core.tween(
-                durationMillis = 800,
+                durationMillis = 1000,
                 easing = androidx.compose.animation.core.FastOutSlowInEasing
             )
         )
@@ -70,12 +70,18 @@ fun NetworkChart(
     val shadowOffset = with(density) { 4.dp.toPx() }
     val blackColor = Color.Black
 
+    // Sizes (Radius)
+    val centerNodeRadius = 50.dp
+    val primaryNodeRadius = 35.dp
+    val secondaryNodeRadius = 25.dp // Keyword-only emotions
+    val keywordNodeRadius = 18.dp
+
     // 감정 색상 정의
     fun getEmotionColor(emotion: EmotionType): Color {
         return when (emotion) {
             EmotionType.ANGER -> Color(0xFFE57373)
             EmotionType.ANTICIPATION -> Color(0xFFFFB74D)
-            EmotionType.JOY -> Color(0xFFFFD54F) // Latte-like Yellow
+            EmotionType.JOY -> Color(0xFFFFD54F) 
             EmotionType.TRUST -> Color(0xFFAED581)
             EmotionType.FEAR -> Color(0xFF4DB6AC)
             EmotionType.SADNESS -> Color(0xFF64B5F6)
@@ -90,11 +96,23 @@ fun NetworkChart(
         val centerX = width / 2
         val centerY = height / 2
 
-        val componentEmotions = listOfNotNull(result.primaryEmotion, result.secondaryEmotion)
+        // 1. Data Preparation
+        val primaryEmotions = listOfNotNull(result.primaryEmotion, result.secondaryEmotion)
         
-        // 중앙 노드 반지름 (dp -> px)
-        val centerRadiusDp = 50.dp
-        val centerRadius = with(density) { centerRadiusDp.toPx() }
+        // Group keywords by emotion
+        val keywordMap = analysis.keywords.groupBy { it.emotion }
+        
+        // All related emotions (Primary + Secondary + Emotions from keywords)
+        val allRelatedEmotions = (primaryEmotions + keywordMap.keys).distinct()
+        
+        // Exclude Primary/Secondary to find "Keyword-only" emotions
+        val keywordOnlyEmotions = allRelatedEmotions - primaryEmotions.toSet()
+        
+        // Final sorted list of emotions to display in orbit
+        // To maintain consistent layout: fixed order or sorted by type ordinal? 
+        // Let's sort to keep Primary/Secondary close if possible, or just standard order.
+        // Or put Primary/Secondary first.
+        val orbitEmotions = primaryEmotions + keywordOnlyEmotions
 
         Canvas(
             modifier = Modifier
@@ -103,123 +121,300 @@ fun NetworkChart(
                     detectTapGestures { tapOffset ->
                         val dx = tapOffset.x - centerX
                         val dy = tapOffset.y - centerY
-                        if (dx * dx + dy * dy <= centerRadius * centerRadius) {
+                        val cr = with(density) { centerNodeRadius.toPx() }
+                        if (dx * dx + dy * dy <= cr * cr) {
                             onNodeClick(result)
                         }
                     }
                 }
         ) {
-             // 1. 노드 위치 계산
-            val maxDistance = minOf(width, height) * 0.35f
-            // 애니메이션 적용된 거리 (Pop out effect)
-            val currentDistance = maxDistance * progress.value
-            
-            val nodePositions = mutableMapOf<EmotionType, Offset>()
-            
-            if (componentEmotions.size == 1) {
-                // 단일
-                nodePositions[componentEmotions[0]] = Offset(centerX, centerY - currentDistance)
-            } else {
-                // 다중 (2개)
-                val baseAngle = -Math.PI / 2 // 12시
-                val spread = Math.PI / 3 // 60도
-                
-                componentEmotions.forEachIndexed { index, emotion ->
-                    val angle = if (index == 0) baseAngle - spread/2 else baseAngle + spread/2
-                    val x = centerX + currentDistance * cos(angle).toFloat()
-                    val y = centerY + currentDistance * sin(angle).toFloat()
-                    nodePositions[emotion] = Offset(x, y)
-                }
-            }
-            
-            // 2. Edges (Shadow -> Line)
-            componentEmotions.forEach { emotion ->
-                val pos = nodePositions[emotion] ?: return@forEach
-                val score = analysis.getEmotionIntensity(emotion)
-                val strokeWidth = (2.dp.toPx() * score + 2.dp.toPx()) // 조금 더 두껍게
-
-                // Line Shadow? (Optional in Neo-Brutalism, usually lines are just solid black)
-                // Here we just draw thick black lines with Rounded Cap
-                drawLine(
+             val animValue = progress.value
+             
+             // Base distance for Orbit 1 (Emotions)
+             // Reduced from 0.3f to 0.25f to make space for outer keywords
+             val orbitDistance = minOf(width, height) * 0.25f * animValue
+             
+             // Calculate positions for Orbit Emotions
+             val emotionPositions = mutableMapOf<EmotionType, Offset>()
+             val emotionAngles = mutableMapOf<EmotionType, Double>()
+             
+             val totalEmotions = orbitEmotions.size
+             val angleStep = (2 * Math.PI) / totalEmotions.coerceAtLeast(1)
+             // Start from top (-PI/2)
+             var currentAngle = -Math.PI / 2
+             
+             orbitEmotions.forEach { emotion ->
+                 val x = centerX + orbitDistance * cos(currentAngle).toFloat()
+                 val y = centerY + orbitDistance * sin(currentAngle).toFloat()
+                 emotionPositions[emotion] = Offset(x, y)
+                 emotionAngles[emotion] = currentAngle
+                 
+                 currentAngle += angleStep
+             }
+             
+             // --- Draw Lines (Edges) Phase 1: Center to Emotions ---
+             orbitEmotions.forEach { emotion ->
+                 val pos = emotionPositions[emotion] ?: return@forEach
+                 val isPrimary = emotion in primaryEmotions
+                 
+                 // Line style: Primary is thick, Others thin/dashed? Just thin for now.
+                 val intensity = analysis.getEmotionIntensity(emotion)
+                 val strokeWidth = if (isPrimary) {
+                     (3.dp.toPx() * intensity + 2.dp.toPx()) 
+                 } else {
+                     1.5.dp.toPx()
+                 }
+                 
+                 drawLine(
                     color = blackColor,
                     start = Offset(centerX, centerY),
                     end = pos,
-                    strokeWidth = strokeWidth,
+                    strokeWidth = strokeWidth * animValue,
                     cap = androidx.compose.ui.graphics.StrokeCap.Round
-                )
-            }
-            
-            // 3. Component Nodes
-             componentEmotions.forEach { emotion ->
-                val pos = nodePositions[emotion] ?: return@forEach
-                val score = analysis.getEmotionIntensity(emotion)
-                
-                // 애니메이션 적용된 반지름
-                val targetRadius = (30.dp.toPx() * score).coerceAtLeast(18.dp.toPx())
-                val nodeRadius = targetRadius * progress.value // Scale animation
-                
-                if (nodeRadius > 1f) {
-                    val color = getEmotionColor(emotion)
+                 )
+             }
+             
+             // --- Draw Keywords & Lines Phase 2: Emotions to Keywords (Greedy Placement) ---
+             
+             // 1. Define Occupied Zones (Center + Orbit Nodes)
+             // We use a simple Rect for collision detection
+             val placedRects = mutableListOf<androidx.compose.ui.geometry.Rect>()
+             
+             // Add Center Node Rect
+             val crVal = with(density) { centerNodeRadius.toPx() } * animValue
+             placedRects.add(
+                 androidx.compose.ui.geometry.Rect(
+                     centerX - crVal, centerY - crVal,
+                     centerX + crVal, centerY + crVal
+                 )
+             )
+             
+             // Add Emotion Nodes Rects
+             orbitEmotions.forEach { emotion ->
+                 val pos = emotionPositions[emotion] ?: return@forEach
+                 val isPrimary = emotion in primaryEmotions
+                 val rDp = if (isPrimary) primaryNodeRadius else secondaryNodeRadius
+                 val rVal = with(density) { rDp.toPx() } * animValue
+                 placedRects.add(
+                     androidx.compose.ui.geometry.Rect(
+                         pos.x - rVal, pos.y - rVal,
+                         pos.x + rVal, pos.y + rVal
+                     )
+                 )
+             }
 
-                    // 3.1 Hard Shadow
-                    drawCircle(
-                        color = blackColor,
-                        radius = nodeRadius,
-                        center = Offset(pos.x + shadowOffset, pos.y + shadowOffset)
-                    )
+             // 2. Place Keywords
+             orbitEmotions.forEach { emotion ->
+                 val emotionPos = emotionPositions[emotion] ?: return@forEach
+                 val baseAngle = emotionAngles[emotion] ?: 0.0
+                 val keywords = keywordMap[emotion] ?: emptyList()
+                 
+                 if (keywords.isNotEmpty()) {
+                     // Basic Fan-out logic for INITIAL angles
+                     val sectorAngle = Math.toRadians(100.0) // Wider sector
+                     val startKAngle = baseAngle - sectorAngle / 2
+                     val kAngleStep = if (keywords.size > 1) sectorAngle / (keywords.size - 1) else 0.0
+                     
+                     keywords.forEachIndexed { index, keyword ->
+                         val kAngle = if (keywords.size == 1) baseAngle else startKAngle + (kAngleStep * index)
+                         
+                         // Measure Text for Size Calculation
+                         val kText = textMeasurer.measure(
+                             text = keyword.word,
+                             style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = blackColor)
+                         )
+                         val textWidth = kText.size.width.toFloat()
+                         val textHeight = kText.size.height.toFloat()
+                         val hPadding = with(density) { 10.dp.toPx() } * animValue // Slightly tighter padding
+                         val vPadding = with(density) { 5.dp.toPx() } * animValue
+                         val pillWidth = textWidth + hPadding * 2
+                         val pillHeight = textHeight + vPadding * 2
+                         
+                         // Greedy Search for Position
+                         // Start close and push out
+                         var currentDistDp = 40.dp // Start closer (User wants "as close as possible")
+                         var foundPos: Offset? = null
+                         var finalPillRect: androidx.compose.ui.geometry.Rect? = null
+                         
+                         val maxDistDp = 150.dp // Limit iteration
+                         val distStepDp = 5.dp
+                         
+                         while (currentDistDp <= maxDistDp) {
+                             val currentDistPx = with(density) { currentDistDp.toPx() } * animValue
+                             
+                             // Proposed Position
+                             val kx = emotionPos.x + currentDistPx * cos(kAngle).toFloat()
+                             val ky = emotionPos.y + currentDistPx * sin(kAngle).toFloat()
+                             
+                             // Proposed Rect (with some buffer for spacing)
+                             val buffer = with(density) { 4.dp.toPx() } // Minimum gap between nodes
+                             val proposedRect = androidx.compose.ui.geometry.Rect(
+                                 kx - pillWidth / 2 - buffer, ky - pillHeight / 2 - buffer,
+                                 kx + pillWidth / 2 + buffer, ky + pillHeight / 2 + buffer
+                             )
+                             
+                             // Check Collision
+                             var hasCollision = false
+                             for (placed in placedRects) {
+                                 if (placed.overlaps(proposedRect)) {
+                                     hasCollision = true
+                                     break
+                                 }
+                             }
+                             
+                             if (!hasCollision) {
+                                 foundPos = Offset(kx, ky)
+                                 finalPillRect = proposedRect // Store the rect (including buffer) to reserve space
+                                 break
+                             }
+                             
+                             currentDistDp += distStepDp
+                         }
+                         
+                         // Fallback if limit reached (just place at max)
+                         if (foundPos == null) {
+                             val currentDistPx = with(density) { maxDistDp.toPx() } * animValue
+                             foundPos = Offset(
+                                 emotionPos.x + currentDistPx * cos(kAngle).toFloat(),
+                                 emotionPos.y + currentDistPx * sin(kAngle).toFloat()
+                             )
+                             // Still add to placedRects to try to avoid others overlapping this fallback
+                             finalPillRect = androidx.compose.ui.geometry.Rect(
+                                 foundPos!!.x - pillWidth/2, foundPos.y - pillHeight/2,
+                                 foundPos.x + pillWidth/2, foundPos.y + pillHeight/2
+                             )
+                         }
+                         
+                         // Mark valid position as occupied
+                         finalPillRect?.let { placedRects.add(it) }
+                         
+                         val kPos = foundPos!!
+                         
+                         // --- Draw ---
+                         // Line: Emotion -> Keyword
+                         drawLine(
+                             color = blackColor,
+                             start = emotionPos,
+                             end = kPos,
+                             strokeWidth = 1.dp.toPx() * animValue
+                         )
+                         
+                         if (pillHeight > 2f) {
+                             val cornerRadius = androidx.compose.ui.geometry.CornerRadius(pillHeight / 2, pillHeight / 2)
+                             val pillTopLeft = Offset(kPos.x - pillWidth / 2, kPos.y - pillHeight / 2)
+                             
+                             // Shadow
+                             drawRoundRect(
+                                 color = blackColor,
+                                 topLeft = Offset(pillTopLeft.x + shadowOffset, pillTopLeft.y + shadowOffset),
+                                 size = Size(pillWidth, pillHeight),
+                                 cornerRadius = cornerRadius
+                             )
+                             // Body
+                             drawRoundRect(
+                                 color = Color.White,
+                                 topLeft = pillTopLeft,
+                                 size = Size(pillWidth, pillHeight),
+                                 cornerRadius = cornerRadius
+                             )
+                             // Border
+                             drawRoundRect(
+                                 color = blackColor,
+                                 topLeft = pillTopLeft,
+                                 size = Size(pillWidth, pillHeight),
+                                 cornerRadius = cornerRadius,
+                                 style = Stroke(width = 1.dp.toPx())
+                             )
+                             
+                             // Center text
+                             drawText(
+                                 textLayoutResult = kText,
+                                 topLeft = Offset(kPos.x - textWidth / 2, kPos.y - textHeight / 2)
+                             )
+                         }
+                     }
+                 }
+             }
 
-                    // 3.2 Main Circle
-                    drawCircle(color = color, radius = nodeRadius, center = pos)
-                    
-                    // 3.3 Border
-                    drawCircle(
-                        color = blackColor, 
-                        radius = nodeRadius, 
-                        center = pos, 
-                        style = Stroke(width = borderStrokeWidth)
-                    )
-                    
-                    // 3.4 Label (Visible only when animation is sufficient)
-                    if (progress.value > 0.8f) {
-                        val name = emotionNames[emotion] ?: emotion.name
-                        val textLayout = textMeasurer.measure(
-                            text = name,
-                            style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = blackColor)
-                        )
-                        drawText(
-                            textLayoutResult = textLayout,
-                            topLeft = Offset(pos.x - textLayout.size.width / 2, pos.y + nodeRadius + 8.dp.toPx())
-                        )
-                    }
-                }
-            }
-            
-            // 4. Center Node (Result)
-            // Center Scale Animation
-            val currentCenterRadius = centerRadius * androidx.compose.animation.core.EaseOutBack.transform(progress.value)
+             // --- Draw Emotion Nodes (Level 2 & 3) ---
+             orbitEmotions.forEach { emotion ->
+                 val pos = emotionPositions[emotion] ?: return@forEach
+                 val isPrimary = emotion in primaryEmotions
+                 
+                 val radiusDp = if (isPrimary) primaryNodeRadius else secondaryNodeRadius
+                 val radius = with(density) { radiusDp.toPx() } * animValue
+                 
+                 if (radius > 1f) {
+                     // Color logic: Primary gets real color, Level 3 gets White
+                     val nodeColor = if (isPrimary) getEmotionColor(emotion) else Color.White
+                     
+                     // Shadow (Common)
+                     drawCircle(
+                         color = blackColor, 
+                         radius = radius, 
+                         center = Offset(pos.x + shadowOffset, pos.y + shadowOffset)
+                     )
+                     
+                     // Body (Common Circle)
+                     drawCircle(
+                         color = nodeColor, 
+                         radius = radius, 
+                         center = pos
+                     )
+                     
+                     // Border (Common)
+                     drawCircle(
+                         color = blackColor, 
+                         radius = radius, 
+                         center = pos, 
+                         style = Stroke(width = borderStrokeWidth)
+                     )
+                     
+                     // Label
+                     val labelStyle = if (isPrimary) {
+                         TextStyle(fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = blackColor)
+                     } else {
+                         TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = blackColor)
+                     }
+                     
+                     val name = emotionNames[emotion] ?: emotion.name
+                     val textLayout = textMeasurer.measure(text = name, style = labelStyle)
+                     
+                     // Center Text inside the Node
+                     drawText(
+                         textLayoutResult = textLayout,
+                         topLeft = Offset(pos.x - textLayout.size.width / 2, pos.y - textLayout.size.height / 2)
+                     )
+                 }
+             }
+             
+            // --- Draw Center Node (Level 1) ---
+            val cr = with(density) { centerNodeRadius.toPx() } 
+            // Scale animation slightly elastic
+            val currentCenterRadius = cr * androidx.compose.animation.core.EaseOutBack.transform(animValue)
             
             val centerColor = getEmotionColor(result.primaryEmotion)
             
-            // 4.1 Hard Shadow
+            // Hard Shadow
             drawCircle(
                 color = blackColor,
                 radius = currentCenterRadius,
                 center = Offset(centerX + shadowOffset, centerY + shadowOffset)
             )
 
-            // 4.2 Main Circle
+            // Main Circle
             drawCircle(color = Color.White, radius = currentCenterRadius, center = Offset(centerX, centerY))
             drawCircle(color = centerColor.copy(alpha = 0.3f), radius = currentCenterRadius, center = Offset(centerX, centerY)) // Tint
             
-            // 4.3 Border
+            // Border
             drawCircle(
                 color = blackColor, 
                 radius = currentCenterRadius, 
                 center = Offset(centerX, centerY), 
-                style = Stroke(width = borderStrokeWidth * 1.5f) // 중심 노드는 더 굵게
+                style = Stroke(width = borderStrokeWidth * 1.5f)
             )
              
-            // 4.4 Label
+             // Label
              val resultText = textMeasurer.measure(
                  text = result.label,
                  style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = blackColor)
@@ -264,8 +459,9 @@ fun NetworkChart(
 @Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
 @Composable
 fun PreviewNetworkChart() {
-    val mockEntry = MockData.mockJournalEntries[0]
-    MockData.mockJournalEntries[0].emotionAnalysis?.let { 
+    // Shows Mock Entry 26 (Single Emotion: Anger)
+    val mockEntry = MockData.mockJournalEntries[24]
+    mockEntry.emotionAnalysis?.let {
         NetworkChart(analysis = it, modifier = Modifier.fillMaxSize()) 
     }
 }

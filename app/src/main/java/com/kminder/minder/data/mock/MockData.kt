@@ -152,12 +152,13 @@ object MockData {
             emotionAnalysis = createEmotion(
                 joy = 0.9f, surprise = 0.8f, trust = 0.7f,
                 keywords = listOf(
-                    com.kminder.domain.model.EmotionKeyword("깜짝 선물", com.kminder.domain.model.EmotionType.SURPRISE, 0.9f),
-                    com.kminder.domain.model.EmotionKeyword("친구의 기억", com.kminder.domain.model.EmotionType.TRUST, 0.8f),
-                    com.kminder.domain.model.EmotionKeyword("갖고 싶던 물건", com.kminder.domain.model.EmotionType.JOY, 0.9f)
-                )
+                com.kminder.domain.model.EmotionKeyword("행복", com.kminder.domain.model.EmotionType.JOY, 0.9f),
+                com.kminder.domain.model.EmotionKeyword("친구", com.kminder.domain.model.EmotionType.TRUST, 0.8f),
+                com.kminder.domain.model.EmotionKeyword("날씨", com.kminder.domain.model.EmotionType.JOY, 0.7f),
+                com.kminder.domain.model.EmotionKeyword("깜짝 선물", com.kminder.domain.model.EmotionType.SURPRISE, 0.6f) // New keyword for Level 3 verification
             )
-        ),
+        ) // Ends createEmotion
+    ),
 
         // 9. 층간 소음 (분노, 혐오)
         JournalEntry(
@@ -221,6 +222,41 @@ object MockData {
         JournalEntry(id=23, content="새로운 프로젝트 팀원이 되었다. 잘 해보고 싶다.", entryType=EntryType.FREE_WRITING, createdAt=LocalDateTime.now().minusDays(26), updatedAt=LocalDateTime.now().minusDays(26), 
             emotionAnalysis=createEmotion(anticipation=0.8f, trust=0.5f, keywords=listOf(com.kminder.domain.model.EmotionKeyword("새 출발", com.kminder.domain.model.EmotionType.ANTICIPATION, 0.8f)))),
         JournalEntry(id=24, content="버스에서 잠들어서 종점까지 갔다 왔다. 시간이 너무 아깝다.", entryType=EntryType.FREE_WRITING, createdAt=LocalDateTime.now().minusDays(27), updatedAt=LocalDateTime.now().minusDays(27), 
-            emotionAnalysis=createEmotion(sadness=0.5f, anger=0.4f, keywords=listOf(com.kminder.domain.model.EmotionKeyword("낭비된 시간", com.kminder.domain.model.EmotionType.SADNESS, 0.6f))))
+            emotionAnalysis=createEmotion(sadness=0.5f, anger=0.4f, keywords=listOf(com.kminder.domain.model.EmotionKeyword("낭비된 시간", com.kminder.domain.model.EmotionType.SADNESS, 0.6f)))),
+        
+        // 25. 프로젝트 성공 (기쁨, 신뢰, 성취감 - 실긍감정 예시)
+        JournalEntry(
+            id=25, 
+            content="드디어 프로젝트를 성공적으로 마쳤다! 팀원들과 함께 고생한 보람이 있다. 결과물도 너무 만족스럽고, 모두가 축하해줘서 정말 행복하다. 스스로가 자랑스럽다.", 
+            entryType=EntryType.FREE_WRITING, 
+            createdAt=LocalDateTime.now().minusDays(0).withHour(18).withMinute(0), 
+            updatedAt=LocalDateTime.now().minusDays(0).withHour(18).withMinute(0), 
+            emotionAnalysis=createEmotion(
+                joy=0.9f, trust=0.8f, anticipation=0.6f, 
+                keywords=listOf(
+                    com.kminder.domain.model.EmotionKeyword("프로젝트 성공", com.kminder.domain.model.EmotionType.JOY, 0.9f),
+                    com.kminder.domain.model.EmotionKeyword("팀워크", com.kminder.domain.model.EmotionType.TRUST, 0.8f),
+                    com.kminder.domain.model.EmotionKeyword("축하", com.kminder.domain.model.EmotionType.JOY, 0.7f),
+                    com.kminder.domain.model.EmotionKeyword("성취감", com.kminder.domain.model.EmotionType.ANTICIPATION, 0.8f)
+                )
+            )
+        ),
+        
+        // 26. 극심한 분노 (Single Emotion 예시: Anger 0.9 >> Disgust 0.2)
+        JournalEntry(
+            id=26,
+            content="정말 참을 수가 없다. 어떻게 나한테 이럴 수가 있지? 머리 끝까지 화가 난다. 용서할 수 없다.",
+            entryType=EntryType.FREE_WRITING,
+            createdAt=LocalDateTime.now().minusDays(0).withHour(20).withMinute(0),
+            updatedAt=LocalDateTime.now().minusDays(0).withHour(20).withMinute(0),
+            emotionAnalysis=createEmotion(
+                anger=0.9f, disgust=0.2f,
+                keywords=listOf(
+                    com.kminder.domain.model.EmotionKeyword("배신감", com.kminder.domain.model.EmotionType.ANGER, 0.95f),
+                    com.kminder.domain.model.EmotionKeyword("분노", com.kminder.domain.model.EmotionType.ANGER, 0.9f),
+                    com.kminder.domain.model.EmotionKeyword("용서 못함", com.kminder.domain.model.EmotionType.ANGER, 0.85f)
+                )
+            )
+        )
     )
 }
