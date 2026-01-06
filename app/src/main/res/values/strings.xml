@@ -283,4 +283,48 @@
     <string name="guide_intensity_title">감정의 강도</string>
     <string name="guide_intensity_desc">같은 기쁨이라도 강도에 따라 평온(약함) → 기쁨(중간) → 황홀(강함)로 나뉩니다.</string>
     
+    <!-- Emotion Arrays for Chart -->
+    <string-array name="basic_emotions">
+        <item>기쁨</item>
+        <item>신뢰</item>
+        <item>공포</item>
+        <item>놀람</item>
+        <item>슬픔</item>
+        <item>혐오</item>
+        <item>분노</item>
+        <item>기대</item>
+    </string-array>
+
+    <string-array name="primary_dyads">
+        <item>사랑</item>
+        <item>순응</item>
+        <item>경외</item>
+        <item>거부</item>
+        <item>후회</item>
+        <item>경멸</item>
+        <item>공격성</item>
+        <item>낙관</item>
+    </string-array>
+
+    <string-array name="secondary_dyads">
+        <item>숙명</item>
+        <item>죄책감</item>
+        <item>호기심</item>
+        <item>절망</item>
+        <item>불신</item>
+        <item>질투</item>
+        <item>냉소</item>
+        <item>자부심</item>
+    </string-array>
+
+    <string-array name="tertiary_dyads">
+        <item>불안</item>
+        <item>환희</item>
+        <item>감상</item>
+        <item>수치심</item>
+        <item>격분</item>
+        <item>비관</item>
+        <item>소름</item>
+        <item>우월감</item>
+    </string-array>
 </resources>

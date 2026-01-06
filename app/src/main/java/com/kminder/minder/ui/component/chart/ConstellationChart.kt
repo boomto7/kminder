@@ -3,7 +3,7 @@ package com.kminder.minder.ui.component.chart
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -89,38 +90,115 @@ fun ConstellationChart(
         }
     }
 
-    Box(modifier = modifier.background(Color.White).padding(16.dp)) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val centerX = size.width / 2
-            val centerY = size.height / 2
+    BoxWithConstraints(modifier = modifier.background(Color.White).padding(16.dp)) {
+        val context = LocalContext.current
+        val resources = context.resources
+        
+        // Load Localized Strings
+        val basicEmotionsArray = resources.getStringArray(com.kminder.minder.R.array.basic_emotions)
+        val primaryDyadsArray = resources.getStringArray(com.kminder.minder.R.array.primary_dyads)
+        val secondaryDyadsArray = resources.getStringArray(com.kminder.minder.R.array.secondary_dyads)
+        val tertiaryDyadsArray = resources.getStringArray(com.kminder.minder.R.array.tertiary_dyads)
+        
+        // Performance Optimization: Calculate Layout Once
+        val width = constraints.maxWidth.toFloat()
+        val height = constraints.maxHeight.toFloat()
+        
+        val layout = remember(width, height) {
+            val centerX = width / 2
+            val centerY = height / 2
             val center = Offset(centerX, centerY)
             
-            // Maximum radius for anchors (leaving space for labels)
-            val maxRadius = (minOf(size.width, size.height) / 2) * 0.75f // Reduce slightly to fit outer labels
+            val availableRadius = minOf(width, height) / 2
+            // Fix: Previous logic (0.75 * 1.55 = 1.16) exceeded bounds.
+            // We want the Tertiary Ring (max * 1.55) to fit within availableRadius (with label padding).
+            // Let's target tertRadius to be ~85-90% of availableRadius.
+            // maxRadius = (availableRadius * 0.85) / 1.55 ≈ 0.55 * availableRadius
+            val maxRadius = availableRadius * 0.55f 
+            
+            val strongRadius = maxRadius * 0.35f
+            val basicRadius = maxRadius * 0.65f
+            val weakRadius = maxRadius * 0.95f
+            
+            val radii = ChartRadii(strongRadius, basicRadius, weakRadius, maxRadius)
+            
+            val angleStep = (2 * Math.PI) / 8
+            
+            // Axes
+            val axes = List(8) { i ->
+                val angle = -Math.PI / 2 + (angleStep * i)
+                val c = cos(angle).toFloat()
+                val s = sin(angle).toFloat()
+                
+                AxisData(
+                    index = i,
+                    angle = angle,
+                    cos = c,
+                    sin = s,
+                    strongPos = Offset(centerX + strongRadius * c, centerY + strongRadius * s),
+                    basicPos = Offset(centerX + basicRadius * c, centerY + basicRadius * s),
+                    weakPos = Offset(centerX + weakRadius * c, centerY + weakRadius * s),
+                    labelPos = Offset(centerX + (basicRadius + 14.dp.value * density.density) * c, 
+                                      centerY + (basicRadius + 14.dp.value * density.density) * s)
+                )
+            }
+            
+            // Primary Dyads (Radius = Basic)
+            val primary = List(8) { i ->
+                val angleStart = -Math.PI / 2 + (angleStep * i)
+                val dAngle = angleStart + (angleStep / 2)
+                val dx = centerX + basicRadius * cos(dAngle).toFloat()
+                val dy = centerY + basicRadius * sin(dAngle).toFloat()
+                DyadData(i, dAngle, Offset(dx, dy))
+            }
+            
+            // Secondary (Radius = Max * 1.25)
+            val secRadius = maxRadius * 1.25f
+            val secondary = List(8) { i ->
+               val currentAngle = -Math.PI / 2 + (angleStep * i)
+               val sx = centerX + secRadius * cos(currentAngle).toFloat()
+               val sy = centerY + secRadius * sin(currentAngle).toFloat()
+               DyadData(i, currentAngle, Offset(sx, sy))
+            }
+            
+            // Tertiary (Radius = Max * 1.55)
+            val tertRadius = maxRadius * 1.55f
+            val tertiary = List(8) { i ->
+                val angleStart = -Math.PI / 2 + (angleStep * i)
+                val tAngle = angleStart + (angleStep / 2)
+                val tx = centerX + tertRadius * cos(tAngle).toFloat()
+                val ty = centerY + tertRadius * sin(tAngle).toFloat()
+                DyadData(i, tAngle, Offset(tx, ty))
+            }
+            
+            ChartLayout(center, radii, axes, primary, secondary, tertiary)
+        }
+
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val centerX = layout.center.x
+            val centerY = layout.center.y
+            val center = layout.center
+            val radii = layout.radii
             
             val intensityMap = analysis.toMap()
             
-            // Pre-calculate which Basic Anchors are highlighted (Connected to an active Dyad or are active themselves)
+            // Pre-calculate Highlighted Basic Indices
             val highlightedBasicIndices = mutableSetOf<Int>()
             for (i in 0 until 8) {
-                // Check Basic
+                // Basic
                 if ((intensityMap[axesEmotions[i]] ?: 0f) > 0f) highlightedBasicIndices.add(i)
-                
-                // Check Primary (i and i+1)
+                // Primary
                 val next = (i + 1) % 8
                 val s1 = intensityMap[axesEmotions[i]] ?: 0f
                 val s2 = intensityMap[axesEmotions[next]] ?: 0f
                 if ((s1 + s2) / 2 > 0f) { highlightedBasicIndices.add(i); highlightedBasicIndices.add(next) }
-                
-                // Check Secondary (i connects to i-1 and i+1)
-                // Angle i connects to prev(i-1) and next(i+1)
+                // Secondary
                 val prevIdx = (i + 7) % 8
                 val nextIdx = (i + 1) % 8
                 val ss1 = intensityMap[axesEmotions[prevIdx]] ?: 0f
                 val ss2 = intensityMap[axesEmotions[nextIdx]] ?: 0f
                 if ((ss1 + ss2) / 2 > 0f) { highlightedBasicIndices.add(prevIdx); highlightedBasicIndices.add(nextIdx) }
-                
-                // Check Tertiary (i connects to i-1 and i+2)
+                // Tertiary
                 val c1Idx = (i + 7) % 8
                 val c2Idx = (i + 2) % 8
                 val ts1 = intensityMap[axesEmotions[c1Idx]] ?: 0f
@@ -130,90 +208,66 @@ fun ConstellationChart(
             
             // 1. Draw Map Structure (Axes & 3-Level Dots)
             val angleStep = (2 * Math.PI) / 8
-            var currentAngle = -Math.PI / 2 // Start from Top
             
-            val anchorPositions = mutableMapOf<EmotionType, Offset>()
-            
-            // Radii for Intensity Levels
-            val strongRadius = maxRadius * 0.35f
-            val basicRadius = maxRadius * 0.65f
-            val weakRadius = maxRadius * 0.95f
+            // Helper: Highlighting Axis Nodes
+            fun drawAxisNodes(index: Int, color: Color) {
+                val axis = layout.axes[index]
+                drawCircle(color, 4.5.dp.toPx(), axis.strongPos)
+                drawCircle(color, 4.5.dp.toPx(), axis.basicPos)
+                drawCircle(color, 4.5.dp.toPx(), axis.weakPos)
+            }
             
             // Black Structure
             val structColor = Color.Black
             
             axesEmotions.forEachIndexed { index, emotion ->
-                val cosA = cos(currentAngle).toFloat()
-                val sinA = sin(currentAngle).toFloat()
-                
-                // Positions
-                val strongPos = Offset(centerX + strongRadius * cosA, centerY + strongRadius * sinA)
-                val basicPos = Offset(centerX + basicRadius * cosA, centerY + basicRadius * sinA)
-                val weakPos = Offset(centerX + weakRadius * cosA, centerY + weakRadius * sinA)
-                
-                // Store Outer (Weak) as the main anchor for connections
-                anchorPositions[emotion] = weakPos
+                val axis = layout.axes[index]
                 
                 // Draw Axis Line (Center to Outer)
-                // Draw Axis Line (Center to Outer) - Thinner
                 drawLine(
                     color = structColor,
                     start = center,
-                    end = weakPos,
+                    end = axis.weakPos,
                     strokeWidth = 0.5.dp.toPx()
                 )
                 
-                // Draw 3 Structural Dots - Smaller
-                // If data exists at this index, strictly speaking the dot is covered.
-                // However, user specifically asked to "not draw background dot" for "final emotion related".
-                // The "Weak" dot is the Anchor.
-                
-                drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = strongPos)
-                drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = basicPos)
+                // Draw 3 Structural Dots
+                drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = axis.strongPos)
+                drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = axis.basicPos)
                 if (index !in highlightedBasicIndices) {
-                     drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = weakPos)
+                     drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = axis.weakPos)
                 }
                 
-                // Draw Label (AT BASIC RING)
-                // Suppress if this emotion is active (will be drawn larger later)
+                // Draw Label
                 if ((intensityMap[emotion] ?: 0f) == 0f) {
                     val labelStyle = TextStyle(fontSize = 10.sp, color = Color.Black, fontWeight = FontWeight.Bold)
-                    val textLayout = textMeasurer.measure(emotion.name, labelStyle)
-                // Offset slightly from basic radius
-                val labelDist = basicRadius + 14.dp.toPx()
-                val lx = centerX + (labelDist * cosA)
-                val ly = centerY + (labelDist * sinA)
-                
+                    val labelText = basicEmotionsArray.getOrElse(index) { emotion.name }
+                    val textLayout = textMeasurer.measure(labelText, labelStyle)
+                    
                     drawText(
                         textLayoutResult = textLayout,
-                        topLeft = Offset(lx - textLayout.size.width/2, ly - textLayout.size.height/2)
+                        topLeft = Offset(axis.labelPos.x - textLayout.size.width/2, axis.labelPos.y - textLayout.size.height/2)
                     )
                 }
-                
-                currentAngle += angleStep
             }
             
             // val intensityMap = analysis.toMap() (Moved to top)
 
             // 1.5 Draw Primary Dyads (Structure & Connections)
-            val dyadNames = listOf(
-                "Love", "Submission", "Awe", "Disapproval",
-                "Remorse", "Contempt", "Aggressiveness", "Optimism"
-            )
+            // 1.5 Draw Primary Dyads (Structure & Connections)
+            // Use localized array
+            // 1.5 Draw Primary Dyads (Structure & Connections)
+            // Use localized array
+            val dyadNames = primaryDyadsArray.toList()
             
-            val dyadRadius = basicRadius 
+            val dyadRadius = radii.basic 
             
             for (i in 0 until 8) {
                 val currentIdx = i
                 val nextIdx = (i + 1) % 8
-                
-                // Mid Angle
-                val angleStart = -Math.PI / 2 + (angleStep * currentIdx)
-                val dAngle = angleStart + (angleStep / 2)
-                
-                val dx = centerX + dyadRadius * cos(dAngle).toFloat()
-                val dy = centerY + dyadRadius * sin(dAngle).toFloat()
-                val dyadPos = Offset(dx, dy)
+                val dyadData = layout.primaryDyads[i]
+                val dyadPos = dyadData.pos
+                val dAngle = dyadData.angle
                 
                 // Pre-calculate Score
                  val s1 = intensityMap[axesEmotions[currentIdx]] ?: 0f
@@ -222,63 +276,42 @@ fun ConstellationChart(
                  
                 // Draw Structure (Black) - Conditional
                 if (dScore == 0f) {
-                    drawCircle(
-                        color = structColor, 
-                        radius = 2.dp.toPx(), 
-                        center = dyadPos
-                    )
+                    drawCircle(color = structColor, radius = 2.dp.toPx(), center = dyadPos)
                     
-                    // Label
                     val labelStyle = TextStyle(fontSize = 9.sp, color = Color.Black)
                     val textLayout = textMeasurer.measure(dyadNames[i], labelStyle)
-                    drawText(
-                        textLayout,
-                        topLeft = Offset(dx - textLayout.size.width/2, dy + 6.dp.toPx())
-                    )
+                    drawText(textLayout, topLeft = Offset(dyadPos.x - textLayout.size.width/2, dyadPos.y + 6.dp.toPx()))
                 }
                 
                 // Connect to Adjacent Basic Dots (Structure)
-                // Use drawArc for "Curved/Elliptical" connection along the ring
-                // Start Angle: prevAngle (in degrees)
-                // Sweep: dAngle - prevAngle? No, basic is at prevAngle. dyad is at dAngle.
-                // We draw FROM Dyad TO Prev (or vice versa).
-                // drawArc takes startAngle (degrees) and sweepAngle (degrees).
-                // 0 degrees is 3 o'clock. 
-                // angles in code are radians, need to convert to degrees.
-                
-                val prevAngle = -Math.PI / 2 + (angleStep * currentIdx)
-                val nextAngle2 = -Math.PI / 2 + (angleStep * nextIdx)
-                
-                // DATA_VIS_REQUIREMENT: pPos and nPos are needed for Neighbor Highlight circles later
-                val pPos = Offset(centerX + basicRadius * cos(prevAngle).toFloat(), centerY + basicRadius * sin(prevAngle).toFloat()) 
-                val nPos = Offset(centerX + basicRadius * cos(nextAngle2).toFloat(), centerY + basicRadius * sin(nextAngle2).toFloat())
+                val prevAngle = layout.axes[currentIdx].angle
                 
                 // Convert to degrees
                 fun toDeg(rad: Double): Float = Math.toDegrees(rad).toFloat()
                 
+                // Fixed Sweep: angleStep / 2 (always clockwise)
+                val fixedSweep = toDeg((2 * Math.PI / 8) / 2)
+                
                 // Arc 1: Prev -> Dyad
-                // Start: prevAngle. End: dAngle.
-                // Sweep: dAngle - prevAngle.
                 drawArc(
                     color = structColor,
                     startAngle = toDeg(prevAngle),
-                    sweepAngle = toDeg(dAngle - prevAngle),
+                    sweepAngle = fixedSweep,
                     useCenter = false,
-                    topLeft = Offset(centerX - basicRadius, centerY - basicRadius),
-                    size = androidx.compose.ui.geometry.Size(basicRadius * 2, basicRadius * 2),
-                    style = Stroke(width = 0.5.dp.toPx()) // Thin 0.5dp
+                    topLeft = Offset(centerX - radii.basic, centerY - radii.basic),
+                    size = androidx.compose.ui.geometry.Size(radii.basic * 2, radii.basic * 2),
+                    style = Stroke(width = 0.5.dp.toPx())
                 )
                 
                 // Arc 2: Dyad -> Next
-                // Start: dAngle. End: nextAngle2.
                 drawArc(
                     color = structColor,
                     startAngle = toDeg(dAngle),
-                    sweepAngle = toDeg(nextAngle2 - dAngle),
+                    sweepAngle = fixedSweep,
                     useCenter = false,
-                    topLeft = Offset(centerX - basicRadius, centerY - basicRadius),
-                    size = androidx.compose.ui.geometry.Size(basicRadius * 2, basicRadius * 2),
-                    style = Stroke(width = 0.5.dp.toPx()) // Thin 0.5dp
+                    topLeft = Offset(centerX - radii.basic, centerY - radii.basic),
+                    size = androidx.compose.ui.geometry.Size(radii.basic * 2, radii.basic * 2),
+                    style = Stroke(width = 0.5.dp.toPx())
                 )
                 
                 // Data Vis (Primary)
@@ -288,45 +321,28 @@ fun ConstellationChart(
                      
                      // Highlight Dot
                      drawCircle(color = bColor.copy(alpha=0.9f), radius = dataDotRadius.toPx()*0.7f, center = dyadPos)
-                     // Highlight Lines - Removed by user request (Only Dots)
-                     // drawLine(color = bColor.copy(alpha=0.8f), start = dyadPos, end = pPos, strokeWidth = 2.dp.toPx())
-                     // drawLine(color = bColor.copy(alpha=0.8f), start = dyadPos, end = nPos, strokeWidth = 2.dp.toPx())
-                     // Highlight Neighbor Nodes (Larger)
-                     drawCircle(color = bColor.copy(alpha=0.6f), radius = 4.5.dp.toPx(), center = pPos)
-                     drawCircle(color = bColor.copy(alpha=0.6f), radius = 4.5.dp.toPx(), center = nPos)
+                     // Highlight Neighbors (Larger) -> Full Axis Color
+                     drawAxisNodes(currentIdx, bColor.copy(alpha=0.6f))
+                     drawAxisNodes(nextIdx, bColor.copy(alpha=0.6f))
                      
                      // Highlight Label (Emphasized)
                      val activeLabelStyle = TextStyle(fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
                      val activeTextLayout = textMeasurer.measure(dyadNames[i], activeLabelStyle)
-                     drawText(activeTextLayout, topLeft = Offset(dx - activeTextLayout.size.width/2, dy + 6.dp.toPx()))
+                     drawText(activeTextLayout, topLeft = Offset(dyadPos.x - activeTextLayout.size.width/2, dyadPos.y + 6.dp.toPx()))
                  }
             }
             
             // 1.8 Draw Secondary Dyads (Structure & Extended Connections)
-            // Sitting on the axis extension (visual behind), connected to neighbors.
-             val secDyadNames = listOf(
-                "Fatalism", // on Joy axis
-                "Guilt",    // on Trust axis
-                "Curiosity",// on Fear axis
-                "Despair",  // on Surprise axis
-                "Unbelief", // on Sadness axis
-                "Envy",     // on Disgust axis
-                "Cynicism", // on Anger axis
-                "Pride"     // on Anticipation axis
-            )
-            
-            val secRadius = maxRadius * 1.25f
+             val secDyadNames = secondaryDyadsArray.toList()
             
             for (i in 0 until 8) {
-                val currentAngle = -Math.PI / 2 + (angleStep * i)
-                val sx = centerX + secRadius * cos(currentAngle).toFloat()
-                val sy = centerY + secRadius * sin(currentAngle).toFloat()
-                val secPos = Offset(sx, sy)
+                val secData = layout.secondaryDyads[i]
+                val secPos = secData.pos
                 
                 val prevIdx = (i + 7) % 8
                 val nextIdx = (i + 1) % 8
-                val prevPos = anchorPositions[axesEmotions[prevIdx]]!!
-                val nextPos = anchorPositions[axesEmotions[nextIdx]]!!
+                val prevPos = layout.axes[prevIdx].weakPos
+                val nextPos = layout.axes[nextIdx].weakPos
                 
                 val s1 = intensityMap[axesEmotions[prevIdx]] ?: 0f
                 val s2 = intensityMap[axesEmotions[nextIdx]] ?: 0f
@@ -335,31 +351,21 @@ fun ConstellationChart(
                 // Draw Structure Dot/Label (Conditional)
                 if (secScore == 0f) {
                     drawCircle(color = structColor, radius = 2.dp.toPx(), center = secPos)
-                    
-                    // Label
                     val secLabelStyle = TextStyle(fontSize = 10.sp, color = Color.Black, fontWeight = FontWeight.Bold)
                     val textLayout = textMeasurer.measure(secDyadNames[i], secLabelStyle)
-                    drawText(textLayout, topLeft = Offset(sx - textLayout.size.width/2, sy + 8.dp.toPx()))
+                    drawText(textLayout, topLeft = Offset(secPos.x - textLayout.size.width/2, secPos.y + 8.dp.toPx()))
                 }
                 
                 // Connections (Always)
-                // Connect to Constituent Emotions (Curved)
                  fun drawCurvedLine(start: Offset, end: Offset, color: Color, width: Float) {
                     val path = Path().apply {
                         moveTo(start.x, start.y)
-                        // Simple Control Point: Midpoint pushed outward
                         val midX = (start.x + end.x) / 2
                         val midY = (start.y + end.y) / 2
-                        // Push out? Or just use midpoint? 
-                        // If we use simple Quad to midpoint, it's straight.
-                        // We need a control point that creates an "ellipse" segment.
-                        // Let's use the center to determine "outward".
                         val vecX = midX - centerX
                         val vecY = midY - centerY
-                        // Scale slightly (e.g., 1.1x from center)
                         val cpX = centerX + vecX * 1.1f
                         val cpY = centerY + vecY * 1.1f
-                        
                         quadraticTo(cpX, cpY, end.x, end.y)
                     }
                     drawPath(path, color, style = Stroke(width))
@@ -374,74 +380,42 @@ fun ConstellationChart(
                      val c1 = getEmotionColor(axesEmotions[prevIdx]); val c2 = getEmotionColor(axesEmotions[nextIdx])
                      val bColor = Color((c1.red+c2.red)/2f, (c1.green+c2.green)/2f, (c1.blue+c2.blue)/2f, 1f)
                      
-                     // Highlight Dot
                      drawCircle(color = bColor.copy(alpha=0.9f), radius = dataDotRadius.toPx()*0.7f, center = secPos)
-                     // Highlight Lines - Removed
-                     // drawLine(color = bColor.copy(alpha=0.8f), start = secPos, end = prevPos, strokeWidth = 2.dp.toPx())
-                     // drawLine(color = bColor.copy(alpha=0.8f), start = secPos, end = nextPos, strokeWidth = 2.dp.toPx())
-                     // Highlight Neighbor Nodes (Larger)
-                     drawCircle(color = bColor.copy(alpha=0.6f), radius = 4.5.dp.toPx(), center = prevPos)
-                     drawCircle(color = bColor.copy(alpha=0.6f), radius = 4.5.dp.toPx(), center = nextPos)
+                     drawAxisNodes(prevIdx, bColor.copy(alpha=0.6f))
+                     drawAxisNodes(nextIdx, bColor.copy(alpha=0.6f))
                      
-                     // Highlight Label (Emphasized)
                      val activeLabelStyle = TextStyle(fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
                      val activeTextLayout = textMeasurer.measure(secDyadNames[i], activeLabelStyle)
-                     drawText(activeTextLayout, topLeft = Offset(sx - activeTextLayout.size.width/2, sy + 8.dp.toPx()))
+                     drawText(activeTextLayout, topLeft = Offset(secPos.x - activeTextLayout.size.width/2, secPos.y + 8.dp.toPx()))
                 }
             }
             
-            // 1.9 Draw Tertiary Dyads (Far Outer Ring)
-            // Tertiary: 3 steps apart. Sits between axes (like Primary).
-            // Slot i (between i and i+1): Combines (i-1) and (i+2).
-            val tertDyadNames = listOf(
-                "Anxiety",       // 0: Anticipation(7) + Fear(2)
-                "Delight",       // 1: Joy(0) + Surprise(3)
-                "Sentimentality",// 2: Trust(1) + Sadness(4)
-                "Shame",         // 3: Fear(2) + Disgust(5)
-                "Outrage",       // 4: Surprise(3) + Anger(6)
-                "Pessimism",     // 5: Sadness(4) + Anticipation(7)
-                "Morbidity",     // 6: Disgust(5) + Joy(0)
-                "Dominance"      // 7: Anger(6) + Trust(1)
-            )
-            
-            val tertRadius = maxRadius * 1.55f
+            // 1.9 Draw Tertiary Dyads
+            val tertDyadNames = tertiaryDyadsArray.toList()
             
             for (i in 0 until 8) {
-                // Angle is mid-point between i and i+1
-                val angleStart = -Math.PI / 2 + (angleStep * i)
-                val tAngle = angleStart + (angleStep / 2)
-                
-                val tx = centerX + tertRadius * cos(tAngle).toFloat()
-                val ty = centerY + tertRadius * sin(tAngle).toFloat()
-                val tertPos = Offset(tx, ty)
+                val tertData = layout.tertiaryDyads[i]
+                val tertPos = tertData.pos
                 
                 val c1Idx = (i + 7) % 8 // i-1
                 val c2Idx = (i + 2) % 8 // i+2
                 
-                val pos1 = anchorPositions[axesEmotions[c1Idx]]!!
-                val pos2 = anchorPositions[axesEmotions[c2Idx]]!!
+                val pos1 = layout.axes[c1Idx].weakPos
+                val pos2 = layout.axes[c2Idx].weakPos
                 
                 val s1 = intensityMap[axesEmotions[c1Idx]] ?: 0f
                 val s2 = intensityMap[axesEmotions[c2Idx]] ?: 0f
                 val tScore = (s1 + s2) / 2
                 
-                // Draw Structure Dot (Conditional)
                 if (tScore == 0f) {
                     drawCircle(color = structColor, radius = 2.dp.toPx(), center = tertPos)
-                    
                     val tertLabelStyle = TextStyle(fontSize = 10.sp, color = Color.Black, fontWeight = FontWeight.Medium)
                     val textLayout = textMeasurer.measure(tertDyadNames[i], tertLabelStyle)
-                    drawText(textLayout, topLeft = Offset(tx - textLayout.size.width/2, ty + 8.dp.toPx()))
+                    drawText(textLayout, topLeft = Offset(tertPos.x - textLayout.size.width/2, tertPos.y + 8.dp.toPx()))
                 }
                 
-                // Connections (Always)
-                // Use same drawCurvedLine logic (duplicated for now or assuming helper function scope?)
-                // Helper defined inside 'Canvas' scope would be accessible, but I defined it inside Secondary Loop scope.
-                // I need to redefine or move it.
-                // I'll redefine inline for safety.
-                
                 val strokeW = 0.5.dp.toPx()
-                
+                // Use inline paths to avoid scope issues w/ helper
                 val path1 = Path().apply {
                     moveTo(tertPos.x, tertPos.y)
                     val midX = (tertPos.x + pos1.x) / 2
@@ -466,37 +440,30 @@ fun ConstellationChart(
                 }
                 drawPath(path2, structColor, style = Stroke(strokeW))
                 
-                // Data Vis (Tertiary)
                 if (tScore > 0f) {
                      val color1 = getEmotionColor(axesEmotions[c1Idx])
                      val color2 = getEmotionColor(axesEmotions[c2Idx])
                      val bColor = Color((color1.red+color2.red)/2f, (color1.green+color2.green)/2f, (color1.blue+color2.blue)/2f, 1f)
                      
-                     // Highlight Dot
                      drawCircle(color = bColor.copy(alpha=0.9f), radius = dataDotRadius.toPx()*0.7f, center = tertPos)
-                     // Highlight Lines - Removed
-                     // drawLine(color = bColor.copy(alpha=0.8f), start = tertPos, end = pos1, strokeWidth = 2.dp.toPx())
-                     // drawLine(color = bColor.copy(alpha=0.8f), start = tertPos, end = pos2, strokeWidth = 2.dp.toPx())
-                     // Highlight Neighbors (Larger)
-                     drawCircle(color = bColor.copy(alpha=0.6f), radius = 4.5.dp.toPx(), center = pos1)
-                     drawCircle(color = bColor.copy(alpha=0.6f), radius = 4.5.dp.toPx(), center = pos2)
+                     drawAxisNodes(c1Idx, bColor.copy(alpha=0.6f))
+                     drawAxisNodes(c2Idx, bColor.copy(alpha=0.6f))
                      
-                     // Highlight Label (Emphasized)
                      val activeLabelStyle = TextStyle(fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
                      val activeTextLayout = textMeasurer.measure(tertDyadNames[i], activeLabelStyle)
-                     drawText(activeTextLayout, topLeft = Offset(tx - activeTextLayout.size.width/2, ty + 8.dp.toPx()))
+                     drawText(activeTextLayout, topLeft = Offset(tertPos.x - activeTextLayout.size.width/2, tertPos.y + 8.dp.toPx()))
                 }
             }
             
             // 2. Draw Data Dots
-            var dAngle = -Math.PI / 2
-            axesEmotions.forEach { emotion ->
+            axesEmotions.forEachIndexed { index, emotion ->
                 val score = intensityMap[emotion] ?: 0f
-                val cosA = cos(dAngle).toFloat()
-                val sinA = sin(dAngle).toFloat()
+                val axis = layout.axes[index]
+                val cosA = axis.cos
+                val sinA = axis.sin
                 
                 if (score > 0f) {
-                    val targetRadius = if (score >= 0.6f) strongRadius else if (score >= 0.3f) basicRadius else weakRadius
+                    val targetRadius = if (score >= 0.6f) radii.strong else if (score >= 0.3f) radii.basic else radii.weak
                     val r = targetRadius * animValue
                     
                     val dx = centerX + r * cosA
@@ -505,22 +472,20 @@ fun ConstellationChart(
                     val color = getEmotionColor(emotion)
                     
                     drawCircle(color = color, radius = dataDotRadius.toPx(), center = dataPos)
-                    // Highlight Lines - Removed
-                    // drawLine(color = color.copy(alpha=0.8f), start = center, end = dataPos, strokeWidth = 2.dp.toPx())
                     
-                    // Highlight Anchor (Connected Node - Larger)
-                    val anchorPos = anchorPositions[emotion]!!
-                    drawCircle(color = color.copy(alpha=0.6f), radius = 5.dp.toPx(), center = anchorPos)
+                    drawAxisNodes(index, color.copy(alpha=0.6f))
                     
                     // Highlight Label (Emphasized)
                     val activeLabelStyle = TextStyle(fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                    val activeTextLayout = textMeasurer.measure(emotion.name, activeLabelStyle)
-                    val labelDist = basicRadius + 14.dp.toPx() 
+                    val labelText = basicEmotionsArray.getOrElse(index) { emotion.name }
+                    val activeTextLayout = textMeasurer.measure(labelText, activeLabelStyle)
+                    
+                    // Position label
+                    val labelDist = radii.basic + 14.dp.toPx() 
                     val lx = centerX + (labelDist * cosA)
                     val ly = centerY + (labelDist * sinA)
                     drawText(activeTextLayout, topLeft = Offset(lx - activeTextLayout.size.width/2, ly - activeTextLayout.size.height/2))
                 }
-                dAngle += angleStep
             }
         }
     }
@@ -534,3 +499,37 @@ fun PreviewConstellationChart() {
         ConstellationChart(analysis = it, modifier = Modifier.fillMaxSize())
     }
 }
+
+// Performance Optimization: Scaled Layout Cache
+private data class ChartLayout(
+    val center: Offset,
+    val radii: ChartRadii,
+    val axes: List<AxisData>,
+    val primaryDyads: List<DyadData>,
+    val secondaryDyads: List<DyadData>,
+    val tertiaryDyads: List<DyadData>
+)
+
+private data class ChartRadii(
+    val strong: Float,
+    val basic: Float,
+    val weak: Float,
+    val max: Float
+)
+
+private data class AxisData(
+    val index: Int,
+    val angle: Double,
+    val cos: Float,
+    val sin: Float,
+    val strongPos: Offset,
+    val basicPos: Offset,
+    val weakPos: Offset,
+    val labelPos: Offset
+)
+
+private data class DyadData(
+    val index: Int, // The starting index (i)
+    val angle: Double,
+    val pos: Offset
+)

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Minder</string>
+
+    <!-- Emotion Arrays for Chart -->
+    <string-array name="basic_emotions">
+        <item>Joy</item>
+        <item>Trust</item>
+        <item>Fear</item>
+        <item>Surprise</item>
+        <item>Sadness</item>
+        <item>Disgust</item>
+        <item>Anger</item>
+        <item>Anticipation</item>
+    </string-array>
+
+    <string-array name="primary_dyads">
+        <item>Love</item>
+        <item>Submission</item>
+        <item>Awe</item>
+        <item>Disapproval</item>
+        <item>Remorse</item>
+        <item>Contempt</item>
+        <item>Aggressiveness</item>
+        <item>Optimism</item>
+    </string-array>
+
+    <string-array name="secondary_dyads">
+        <item>Fatalism</item>
+        <item>Guilt</item>
+        <item>Curiosity</item>
+        <item>Despair</item>
+        <item>Unbelief</item>
+        <item>Envy</item>
+        <item>Cynicism</item>
+        <item>Pride</item>
+    </string-array>
+
+    <string-array name="tertiary_dyads">
+        <item>Anxiety</item>
+        <item>Delight</item>
+        <item>Sentimentality</item>
+        <item>Shame</item>
+        <item>Outrage</item>
+        <item>Pessimism</item>
+        <item>Morbidity</item>
+        <item>Dominance</item>
+    </string-array>
+</resources>
