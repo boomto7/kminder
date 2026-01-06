@@ -91,7 +91,7 @@
     <string name="emotion_detail_boredom">지루함</string>
     
     <!-- Anger Group -->
-    <string name="emotion_detail_rage">격분</string>
+    <string name="emotion_detail_rage">격노</string>
     <string name="emotion_detail_anger">분노</string>
     <string name="emotion_detail_annoyance">짜증</string>
     

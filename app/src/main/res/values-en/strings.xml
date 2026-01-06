@@ -1,7 +1,289 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Minder</string>
+    
+    <!-- Splash Screen -->
+    <string name="splash_slogan">Recording your emotions</string>
+    
+    <!-- Home Screen -->
+    <string name="home_title">Minder</string>
+    <string name="home_new_diary_desc">New Entry</string>
+    <string name="home_view_all">View All</string>
+    <string name="home_statistics">Stats</string>
+    <string name="home_recent_diaries">Recent Entries</string>
+    <string name="home_empty_title">No entries yet</string>
+    <string name="home_empty_desc">Tap + to write your first diary</string>
+    <string name="home_dominant_emotion_prefix">Dominant: %s</string>
+    <string name="home_today_mood_weather">Today\'s Mood Weather</string>
+    <string name="date_format_pattern_korean">MMM d, EEEE</string>
+    <string name="home_current_status">Current Status</string>
+    <string name="keyword_chip_format">#%1$s</string>
+    <string name="home_empty_state_message">No entries found.\nRecord your day today.</string>
+    <string name="home_list">List</string>
 
+    <string name="home_today_emotion">Today\'s Emotion</string>
+    
+    <!-- Common -->
+    <string name="common_back">Back</string>
+    <string name="common_loading">Loading...</string>
+    <string name="common_no_data">No Data</string>
+    <string name="common_tip_prefix">💡 Tip</string>
+
+    <string name="home_menu_list">List</string>
+    <string name="home_menu_stats">Stats</string>
+    <string name="home_menu_settings">Settings</string>
+    <string name="home_menu_add">Add</string>
+
+    
+    <!-- Write Screen -->
+    <string name="write_entry_title">Write Entry</string>
+    <string name="write_entry_placeholder">Write Screen (Coming Soon)</string>
+    
+    <!-- Entry Detail Screen -->
+    <string name="entry_detail_title">Entry Detail</string>
+    <string name="entry_detail_placeholder">Detail Screen (Coming Soon)\nEntry ID: %1$d</string>
+    
+    <!-- Statistics Screen -->
+    <string name="statistics_title">Emotion Stats</string>
+    <string name="statistics_placeholder">Statistics Screen (Coming Soon)</string>
+    
+    <!-- List Screen -->
+    <string name="date_format_pattern_list_item">MMM dd, yyyy HH:mm</string>
+    
+    <!-- Emotions -->
+    <string name="emotion_anger">Anger</string>
+    <string name="emotion_anticipation">Anticipation</string>
+    <string name="emotion_joy">Joy</string>
+    <string name="emotion_trust">Trust</string>
+    <string name="emotion_fear">Fear</string>
+    <string name="emotion_sadness">Sadness</string>
+    <string name="emotion_disgust">Disgust</string>
+    <string name="emotion_surprise">Surprise</string>
+    <string name="emotion_unknown">Unknown</string>
+    <!-- Detailed Emotions (Plutchik) -->
+    <!-- Joy Group -->
+    <string name="emotion_detail_ecstasy">Ecstasy</string>
+    <string name="emotion_detail_joy">Joy</string>
+    <string name="emotion_detail_serenity">Serenity</string>
+    
+    <!-- Trust Group -->
+    <string name="emotion_detail_admiration">Admiration</string>
+    <string name="emotion_detail_trust">Trust</string>
+    <string name="emotion_detail_acceptance">Acceptance</string>
+    
+    <!-- Fear Group -->
+    <string name="emotion_detail_terror">Terror</string>
+    <string name="emotion_detail_fear">Fear</string>
+    <string name="emotion_detail_apprehension">Apprehension</string>
+    
+    <!-- Surprise Group -->
+    <string name="emotion_detail_amazement">Amazement</string>
+    <string name="emotion_detail_surprise">Surprise</string>
+    <string name="emotion_detail_distraction">Distraction</string>
+    
+    <!-- Sadness Group -->
+    <string name="emotion_detail_grief">Grief</string>
+    <string name="emotion_detail_sadness">Sadness</string>
+    <string name="emotion_detail_pensiveness">Pensiveness</string>
+    
+    <!-- Disgust Group -->
+    <string name="emotion_detail_loathing">Loathing</string>
+    <string name="emotion_detail_disgust">Disgust</string>
+    <string name="emotion_detail_boredom">Boredom</string>
+    
+    <!-- Anger Group -->
+    <string name="emotion_detail_rage">Rage</string>
+    <string name="emotion_detail_anger">Anger</string>
+    <string name="emotion_detail_annoyance">Annoyance</string>
+    
+    <!-- Anticipation Group -->
+    <string name="emotion_detail_vigilance">Vigilance</string>
+    <string name="emotion_detail_anticipation">Anticipation</string>
+    <string name="emotion_detail_interest">Interest</string>
+
+    <!-- Single Emotions Descriptions -->
+    <!-- Joy Group -->
+    <string name="emotion_detail_ecstasy_desc">You are experiencing intense rapture and overwhelming happiness.</string>
+    <string name="emotion_detail_joy_desc">You feel happy, delighted, and naturally smiling.</string>
+    <string name="emotion_detail_serenity_desc">Your mind is calm and peaceful like a waveless sea.</string>
+
+    <!-- Trust Group -->
+    <string name="emotion_detail_admiration_desc">You are deeply moved and respectful of someone\'s excellence.</string>
+    <string name="emotion_detail_trust_desc">You rely on and believe in someone or a situation without doubt.</string>
+    <string name="emotion_detail_acceptance_desc">You have an open mind to accept and acknowledge things as they are.</string>
+
+    <!-- Fear Group -->
+    <string name="emotion_detail_terror_desc">You are frozen and panicked by overwhelming fear.</string>
+    <string name="emotion_detail_fear_desc">You feel threatened, anxious, and want to escape.</string>
+    <string name="emotion_detail_apprehension_desc">You are worried and uneasy that something bad might happen.</string>
+
+    <!-- Surprise Group -->
+    <string name="emotion_detail_amazement_desc">You are stunned by something completely unexpected.</string>
+    <string name="emotion_detail_surprise_desc">You are momentarily startled or taken aback by a sudden event.</string>
+    <string name="emotion_detail_distraction_desc">Your attention is scattered and it\'s hard to focus.</string>
+
+    <!-- Sadness Group -->
+    <string name="emotion_detail_grief_desc">You are in deep sorrow that feels heartbreaking.</string>
+    <string name="emotion_detail_sadness_desc">Your heart feels heavy, gloomy, and tearful.</string>
+    <string name="emotion_detail_pensiveness_desc">You are lost in thought, feeling a hint of melancholy and loneliness.</string>
+
+    <!-- Disgust Group -->
+    <string name="emotion_detail_loathing_desc">You feel an unbearably strong aversion.</string>
+    <string name="emotion_detail_disgust_desc">You find something unpleasant and repulsive.</string>
+    <string name="emotion_detail_boredom_desc">You feel dull and bored due to a lack of stimulation.</string>
+
+    <!-- Anger Group -->
+    <string name="emotion_detail_rage_desc">You feel furious anger ready to explode.</string>
+    <string name="emotion_detail_anger_desc">You are upset and offended by dissatisfaction or injustice.</string>
+    <string name="emotion_detail_annoyance_desc">You feel slightly bothered and irritated by a situation or person.</string>
+
+    <!-- Anticipation Group -->
+    <string name="emotion_detail_vigilance_desc">You are alert and on guard against danger or opportunity.</string>
+    <string name="emotion_detail_anticipation_desc">You are waiting with excitement for what is to come.</string>
+    <string name="emotion_detail_interest_desc">You are curious and paying attention to an object or situation.</string>
+
+    <!-- Complex Emotions (Dyads) -->
+    <!-- Primary -->
+    <string name="emotion_complex_love_title">Love</string>
+    <string name="emotion_complex_love_desc">Joy and Trust combine to form warm and deep affection.</string>
+    
+    <string name="emotion_complex_submission_title">Submission</string>
+    <string name="emotion_complex_submission_desc">Trust and Fear mix into acceptance or yielding to the inevitable.</string>
+    
+    <string name="emotion_complex_awe_title">Awe</string>
+    <string name="emotion_complex_awe_desc">Fear and Surprise combine into a feeling towards something overwhelming or mysterious.</string>
+    
+    <string name="emotion_complex_disapproval_title">Disapproval</string>
+    <string name="emotion_complex_disapproval_desc">Surprise and Sadness meet in dissatisfaction with an unexpected negative outcome.</string>
+    
+    <string name="emotion_complex_remorse_title">Remorse</string>
+    <string name="emotion_complex_remorse_desc">Sadness and Disgust mix to create deep regret over past actions or oneself.</string>
+    
+    <string name="emotion_complex_contempt_title">Contempt</string>
+    <string name="emotion_complex_contempt_desc">Disgust and Anger combine to look down on or strongly reject someone.</string>
+    
+    <string name="emotion_complex_aggressiveness_title">Aggressiveness</string>
+    <string name="emotion_complex_aggressiveness_desc">Anger and Anticipation meet to drive forward or challenge forcefully.</string>
+    
+    <string name="emotion_complex_optimism_title">Optimism</string>
+    <string name="emotion_complex_optimism_desc">Anticipation and Joy blend into positive hope that things will go well.</string>
+    
+    <!-- Secondary -->
+    <string name="emotion_complex_guilt_title">Guilt</string>
+    <string name="emotion_complex_guilt_desc">Discomfort where Joy is marred by Fear.</string>
+    
+    <string name="emotion_complex_curiosity_title">Curiosity</string>
+    <string name="emotion_complex_curiosity_desc">A desire to explore new things with Trust and Surprise.</string>
+    
+    <string name="emotion_complex_despair_title">Despair</string>
+    <string name="emotion_complex_despair_desc">Fear and Sadness meet, losing hope and falling into darkness.</string>
+    
+    <string name="emotion_complex_unbelief_title">Unbelief</string>
+    <string name="emotion_complex_unbelief_desc">Surprise and Disgust mix to refuse acceptance of a situation.</string>
+    
+    <string name="emotion_complex_envy_title">Envy</string>
+    <string name="emotion_complex_envy_desc">Sadness and Anger mix, suffering from lack compared to others\' happiness.</string>
+    
+    <string name="emotion_complex_cynicism_title">Cynicism</string>
+    <string name="emotion_complex_cynicism_desc">Disgust and Anticipation mix to predict negative outcomes and mock them.</string>
+    
+    <string name="emotion_complex_pride_title">Pride</string>
+    <string name="emotion_complex_pride_desc">Anger and Joy combine into strong confidence in one\'s achievements or worth.</string>
+    
+    <string name="emotion_complex_fatalism_title">Fatalism</string>
+    <string name="emotion_complex_fatalism_desc">Anticipation and Trust mix to accept the future as predetermined.</string>
+    
+    <!-- Tertiary -->
+    <string name="emotion_complex_delight_title">Delight</string>
+    <string name="emotion_complex_delight_desc">Joy and Surprise meet in great happiness from the unexpected.</string>
+    
+    <string name="emotion_complex_sentimentality_title">Sentimentality</string>
+    <string name="emotion_complex_sentimentality_desc">Trust and Sadness mix, immersing in past memories or connections.</string>
+    
+    <string name="emotion_complex_shame_title">Shame</string>
+    <string name="emotion_complex_shame_desc">Fear and Disgust meet in strong embarrassment about oneself.</string>
+    
+    <string name="emotion_complex_outrage_title">Outrage</string>
+    <string name="emotion_complex_outrage_desc">Surprise and Anger mix in strong reaction to something unexpected.</string>
+    
+    <string name="emotion_complex_pessimism_title">Pessimism</string>
+    <string name="emotion_complex_pessimism_desc">Sadness and Anticipation mix to expect negative results beforehand.</string>
+    
+    <string name="emotion_complex_morbidness_title">Morbidness</string>
+    <string name="emotion_complex_morbidness_desc">A complex psychology feeling strange joy from repulsive things.</string>
+    
+    <string name="emotion_complex_dominance_title">Dominance</string>
+    <string name="emotion_complex_dominance_desc">Anger and Trust meet to believe in oneself and control others.</string>
+    
+    <string name="emotion_complex_anxiety_title">Anxiety</string>
+    <string name="emotion_complex_anxiety_desc">Anticipation and Fear mix, nervous about the unknown future.</string>
+
+    <!-- Advice Messages -->
+    <string name="advice_joy">Record this good feeling to remember later.</string>
+    <string name="advice_sadness">How about taking a break with a warm cup of tea?</string>
+    <string name="advice_anger">Take 3 deep breaths and go for a walk.</string>
+    <string name="advice_trust">Say hello to your loved ones.</string>
+    <string name="advice_fear">Write down your worries and cross them out one by one.</string>
+    <string name="advice_anticipation">Why not make small plans for the future?</string>
+    <string name="advice_disgust">Step away from the situation and take time for yourself.</string>
+    <string name="advice_surprise">Try to accept the unexpected change with joy.</string>
+    
+    <string name="keyword_energy">Energy</string>
+    <string name="keyword_achievement">Achievement</string>
+    <string name="keyword_comfort">Comfort</string>
+    <string name="keyword_rest">Rest</string>
+    <string name="keyword_resolve">Resolve</string>
+    <string name="keyword_exercise">Exercise</string>
+    <string name="keyword_stability">Stability</string>
+    <string name="keyword_relationship">Relationship</string>
+    <string name="keyword_courage">Courage</string>
+    <string name="keyword_preparation">Preparation</string>
+    <string name="keyword_plan">Plan</string>
+    <string name="keyword_flutter">Flutter</string>
+    <string name="keyword_distance">Distance</string>
+    <string name="keyword_ventilation">Ventilation</string>
+    <string name="keyword_discovery">Discovery</string>
+    <string name="keyword_transition">Transition</string>
+
+    <!-- Complex Emotions (Opposite / Conflict) -->
+    <string name="emotion_complex_bittersweetness_title">Bittersweetness</string>
+    <string name="emotion_complex_bittersweetness_desc">Joy and Sadness mix, beautiful but leaving a sad lingering feeling.</string>
+
+    <string name="emotion_complex_ambivalence_title">Ambivalence</string>
+    <string name="emotion_complex_ambivalence_desc">Trust and Disgust coexist, a complex feeling of loving yet hating.</string>
+
+    <string name="emotion_complex_frozenness_title">Frozenness</string>
+    <string name="emotion_complex_frozenness_desc">Fear and Anger collide, stuck in tension unable to act.</string>
+
+    <string name="emotion_complex_confusion_title">Confusion</string>
+    <string name="emotion_complex_confusion_desc">Surprise and Anticipation mix, puzzled by unpredictable future.</string>
+
+
+    <!-- Analysis Formats -->
+    <string name="analysis_impossible">Unable to analyze</string>
+    <string name="analysis_insufficient_data">Insufficient data for analysis.</string>
+    <string name="analysis_try_journaling">Try writing a journal!</string>
+    <string name="analysis_single_desc_format">You are clearly experiencing %1$s.</string>
+    <string name="analysis_conflict_format">Conflict between %1$s and %2$s</string>
+    <string name="analysis_conflict_desc">Opposite emotions are clashing within you.</string>
+    <string name="analysis_harmony_desc_default">Two emotions are harmoniously mixed.</string>
+    <string name="analysis_complex_desc_default">A subtle combination of emotions.</string>
+    <string name="analysis_complicated_desc_default">Multiple emotions are mixed together.</string>
+    <string name="analysis_complex_label_default">Complex Emotion</string>
+    <string name="analysis_complicated_label_default">Complicated Emotion</string>
+
+    <!-- Emotion Guide -->
+    <string name="home_menu_guide">Emotion Guide</string>
+    <string name="guide_title">Emotion Analysis Guide</string>
+    <string name="guide_plutchik_title">Plutchik\'s Wheel of Emotions</string>
+    <string name="guide_plutchik_desc">A model proposed by Robert Plutchik. Colors unfolding like petals represent 8 basic emotions, and adjacent emotions mix to form complex emotions.</string>
+    <string name="guide_basic_emotions_title">8 Basic Emotions</string>
+    <string name="guide_basic_emotions_desc">Joy, Trust, Fear, Surprise, Sadness, Disgust, Anger, Anticipation. Opposite emotions have opposing properties.</string>
+    <string name="guide_complex_emotions_title">Complex Emotions (Dyads)</string>
+    <string name="guide_complex_emotions_desc">Emotions formed by combining two basic emotions.\nFor example, Joy + Trust = Love.</string>
+    <string name="guide_intensity_title">Intensity of Emotions</string>
+    <string name="guide_intensity_desc">The same Joy can be divided into Serenity (Weak) → Joy (Medium) → Ecstasy (Strong) depending on intensity.</string>
+    
     <!-- Emotion Arrays for Chart -->
     <string-array name="basic_emotions">
         <item>Joy</item>
@@ -43,7 +325,7 @@
         <item>Shame</item>
         <item>Outrage</item>
         <item>Pessimism</item>
-        <item>Morbidity</item>
+        <item>Morbidness</item>
         <item>Dominance</item>
     </string-array>
 </resources>

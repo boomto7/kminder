@@ -1,6 +1,5 @@
 package com.kminder.minder.ui.component.chart
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -9,9 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PointMode
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
@@ -23,49 +21,52 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.logic.PlutchikEmotionCalculator
+import com.kminder.domain.model.ComplexEmotionType
 import com.kminder.domain.model.EmotionType
 import com.kminder.minder.data.mock.MockData
+import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Constellation Chart (Prototype)
- * - Concept: 8-Direction Radial Coordinates
- * - Anchors: Fixed category dots at max radius.
- * - Data: Dots placed on axes based on intensity, connected to their anchors.
+ * Constellation Chart
+ * Implemented based on User's 5-Step Methodology (Revised):
+ * 1. Pre-calc Coords.
+ * 2. Background Glow (Final Emotion) - Enhanced Radius (3x).
+ * 3. Dots (Final=Large/Emphasis vs Origin=Std/Border).
+ *    - NEW: Draw ALL dots (including inactive ones) as small gray dots.
+ * 4. Lines (Trace Back: Single=Intensity, Primary=Mid, Sec/Tert=Outer).
+ *    - Inactive Structure Lines (Gray Web).
+ * 5. Labels (Highlight Final).
+ *    - NEW: Basic Category Labels positioned at "Basic Category Center" (interpreted as Basic/Mid Radius).
+ *
+ * Scale: Inner(Weak) -> Outer(Strong).
  */
 @Composable
 fun ConstellationChart(
-    analysis: EmotionAnalysis,
+    result: PlutchikEmotionCalculator.EmotionResult,
     modifier: Modifier = Modifier
 ) {
+    val analysis = result.source
+    
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
-
-    // Animation - Disabled explicitly by user request
-    // var animationPlayed by remember { mutableStateOf(false) }
-    // val animatable = remember { Animatable(0f) }
-    // LaunchedEffect...
     
     val animValue = 1f
 
     // Constants
-    val axisColor = Color.LightGray.copy(alpha = 0.5f)
-    val anchorColor = Color.Gray
-    val anchorRadius = 4.dp
-    val dataDotRadius = 6.dp
+    val dotRadiusStd = 4.5.dp
+    val dotRadiusFinal = 8.dp
+    val dotRadiusInactive = 2.dp // Size for inactive/structural dots
     
-    // 8 Basic Emotions Order (Plutchik Wheel Order for symmetry)
+    // 8 Basic Emotions Order
     val orderedEmotions = listOf(
         EmotionType.JOY, EmotionType.TRUST, EmotionType.FEAR, EmotionType.SURPRISE,
         EmotionType.SADNESS, EmotionType.DISGUST, EmotionType.ANGER, EmotionType.ANTICIPATION
     )
-    // Note: Enum names case might need matching. EmotionType is usually UPPERCASE.
-    // Let's check EmotionType definition if needed, but assuming standard UPPERCASE from previous contexts.
-    // Actually, looking at MockData, it uses EmotionType.JOY, EmotionType.TRUST etc.
 
-    // Fixing generic list based on standard EmotionType enum assumptions (usually upper case)
+    // Fixing generic list based on standard EmotionType enum assumptions
     val axesEmotions = listOf(
         EmotionType.JOY, 
         EmotionType.TRUST, 
@@ -94,13 +95,12 @@ fun ConstellationChart(
         val context = LocalContext.current
         val resources = context.resources
         
-        // Load Localized Strings
         val basicEmotionsArray = resources.getStringArray(com.kminder.minder.R.array.basic_emotions)
         val primaryDyadsArray = resources.getStringArray(com.kminder.minder.R.array.primary_dyads)
         val secondaryDyadsArray = resources.getStringArray(com.kminder.minder.R.array.secondary_dyads)
         val tertiaryDyadsArray = resources.getStringArray(com.kminder.minder.R.array.tertiary_dyads)
         
-        // Performance Optimization: Calculate Layout Once
+        // 1. Coordinate Calculation (Pre-calc)
         val width = constraints.maxWidth.toFloat()
         val height = constraints.maxHeight.toFloat()
         
@@ -110,21 +110,17 @@ fun ConstellationChart(
             val center = Offset(centerX, centerY)
             
             val availableRadius = minOf(width, height) / 2
-            // Fix: Previous logic (0.75 * 1.55 = 1.16) exceeded bounds.
-            // We want the Tertiary Ring (max * 1.55) to fit within availableRadius (with label padding).
-            // Let's target tertRadius to be ~85-90% of availableRadius.
-            // maxRadius = (availableRadius * 0.85) / 1.55 ≈ 0.55 * availableRadius
             val maxRadius = availableRadius * 0.55f 
             
-            val strongRadius = maxRadius * 0.35f
-            val basicRadius = maxRadius * 0.65f
-            val weakRadius = maxRadius * 0.95f
+            // Scale: Inner=Weak, Outer=Strong
+            val strongRadius = maxRadius * 0.95f // Outer
+            val basicRadius = maxRadius * 0.65f  // Mid
+            val weakRadius = maxRadius * 0.35f   // Inner
             
             val radii = ChartRadii(strongRadius, basicRadius, weakRadius, maxRadius)
             
             val angleStep = (2 * Math.PI) / 8
             
-            // Axes
             val axes = List(8) { i ->
                 val angle = -Math.PI / 2 + (angleStep * i)
                 val c = cos(angle).toFloat()
@@ -135,15 +131,15 @@ fun ConstellationChart(
                     angle = angle,
                     cos = c,
                     sin = s,
-                    strongPos = Offset(centerX + strongRadius * c, centerY + strongRadius * s),
-                    basicPos = Offset(centerX + basicRadius * c, centerY + basicRadius * s),
-                    weakPos = Offset(centerX + weakRadius * c, centerY + weakRadius * s),
-                    labelPos = Offset(centerX + (basicRadius + 14.dp.value * density.density) * c, 
-                                      centerY + (basicRadius + 14.dp.value * density.density) * s)
+                    strongPos = Offset(centerX + strongRadius * c, centerY + strongRadius * s), // Outer
+                    basicPos = Offset(centerX + basicRadius * c, centerY + basicRadius * s),   // Mid
+                    weakPos = Offset(centerX + weakRadius * c, centerY + weakRadius * s),      // Inner
+                    // 5-2. Revised Label Position: Center of Basic Category -> Basic Radius (Mid)
+                    // Note: This puts text in the middle of the web.
+                    labelPos = Offset(centerX + basicRadius * c, centerY + basicRadius * s)
                 )
             }
             
-            // Primary Dyads (Radius = Basic)
             val primary = List(8) { i ->
                 val angleStart = -Math.PI / 2 + (angleStep * i)
                 val dAngle = angleStart + (angleStep / 2)
@@ -152,7 +148,6 @@ fun ConstellationChart(
                 DyadData(i, dAngle, Offset(dx, dy))
             }
             
-            // Secondary (Radius = Max * 1.25)
             val secRadius = maxRadius * 1.25f
             val secondary = List(8) { i ->
                val currentAngle = -Math.PI / 2 + (angleStep * i)
@@ -161,7 +156,6 @@ fun ConstellationChart(
                DyadData(i, currentAngle, Offset(sx, sy))
             }
             
-            // Tertiary (Radius = Max * 1.55)
             val tertRadius = maxRadius * 1.55f
             val tertiary = List(8) { i ->
                 val angleStart = -Math.PI / 2 + (angleStep * i)
@@ -175,318 +169,340 @@ fun ConstellationChart(
         }
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val centerX = layout.center.x
-            val centerY = layout.center.y
             val center = layout.center
+            val centerX = center.x
+            val centerY = center.y
             val radii = layout.radii
             
             val intensityMap = analysis.toMap()
             
-            // Pre-calculate Highlighted Basic Indices
-            val highlightedBasicIndices = mutableSetOf<Int>()
-            for (i in 0 until 8) {
-                // Basic
-                if ((intensityMap[axesEmotions[i]] ?: 0f) > 0f) highlightedBasicIndices.add(i)
-                // Primary
-                val next = (i + 1) % 8
-                val s1 = intensityMap[axesEmotions[i]] ?: 0f
-                val s2 = intensityMap[axesEmotions[next]] ?: 0f
-                if ((s1 + s2) / 2 > 0f) { highlightedBasicIndices.add(i); highlightedBasicIndices.add(next) }
-                // Secondary
-                val prevIdx = (i + 7) % 8
-                val nextIdx = (i + 1) % 8
-                val ss1 = intensityMap[axesEmotions[prevIdx]] ?: 0f
-                val ss2 = intensityMap[axesEmotions[nextIdx]] ?: 0f
-                if ((ss1 + ss2) / 2 > 0f) { highlightedBasicIndices.add(prevIdx); highlightedBasicIndices.add(nextIdx) }
-                // Tertiary
-                val c1Idx = (i + 7) % 8
-                val c2Idx = (i + 2) % 8
-                val ts1 = intensityMap[axesEmotions[c1Idx]] ?: 0f
-                val ts2 = intensityMap[axesEmotions[c2Idx]] ?: 0f
-                if ((ts1 + ts2) / 2 > 0f) { highlightedBasicIndices.add(c1Idx); highlightedBasicIndices.add(c2Idx) }
+            // --- Analysis & State Determination ---
+            var finalDotPos: Offset? = null
+            var finalDotColor: Color = Color.Transparent
+            var finalLabel = ""
+            
+            val activeBasicIndices = mutableSetOf<Int>()
+            val activePrimaryIndex = mutableStateOf<Int?>(null)
+            val activeSecondaryIndex = mutableStateOf<Int?>(null)
+            val activeTertiaryIndex = mutableStateOf<Int?>(null)
+            
+            val pIdx = axesEmotions.indexOf(result.primaryEmotion)
+            val sIdx = if (result.secondaryEmotion != null) axesEmotions.indexOf(result.secondaryEmotion!!) else -1
+            
+            if (pIdx != -1) {
+                val pColor = getEmotionColor(result.primaryEmotion)
+                
+                when (result.category) {
+                    ComplexEmotionType.Category.SINGLE_EMOTION -> {
+                        activeBasicIndices.add(pIdx)
+                        val score = intensityMap[result.primaryEmotion] ?: 0f
+                        val r = if (score >= 0.6f) radii.strong else if (score >= 0.3f) radii.basic else radii.weak
+                        val axis = layout.axes[pIdx]
+                        finalDotPos = Offset(centerX + r * axis.cos, centerY + r * axis.sin)
+                        finalDotColor = pColor
+                        finalLabel = result.label
+                    }
+                    ComplexEmotionType.Category.PRIMARY_DYAD -> {
+                        if (sIdx != -1) {
+                            activeBasicIndices.add(pIdx); activeBasicIndices.add(sIdx)
+                            val sColor = getEmotionColor(result.secondaryEmotion!!)
+                            finalDotColor = Color((pColor.red+sColor.red)/2f, (pColor.green+sColor.green)/2f, (pColor.blue+sColor.blue)/2f, 1f)
+                            
+                            if ((pIdx + 1) % 8 == sIdx) activePrimaryIndex.value = pIdx
+                            else if ((sIdx + 1) % 8 == pIdx) activePrimaryIndex.value = sIdx
+                            
+                            activePrimaryIndex.value?.let { 
+                                finalDotPos = layout.primaryDyads[it].pos 
+                                finalLabel = result.label
+                            }
+                        }
+                    }
+                    ComplexEmotionType.Category.SECONDARY_DYAD -> {
+                         if (sIdx != -1) {
+                            activeBasicIndices.add(pIdx); activeBasicIndices.add(sIdx)
+                            val sColor = getEmotionColor(result.secondaryEmotion!!)
+                            finalDotColor = Color((pColor.red+sColor.red)/2f, (pColor.green+sColor.green)/2f, (pColor.blue+sColor.blue)/2f, 1f)
+                            
+                            for (k in 0 until 8) {
+                                val c1 = (k + 7) % 8
+                                val c2 = (k + 1) % 8
+                                if ((c1 == pIdx && c2 == sIdx) || (c1 == sIdx && c2 == pIdx)) activeSecondaryIndex.value = k
+                            }
+                            activeSecondaryIndex.value?.let { 
+                                finalDotPos = layout.secondaryDyads[it].pos
+                                finalLabel = result.label
+                            }
+                        }
+                    }
+                    ComplexEmotionType.Category.TERTIARY_DYAD -> {
+                         if (sIdx != -1) {
+                            activeBasicIndices.add(pIdx); activeBasicIndices.add(sIdx)
+                            val sColor = getEmotionColor(result.secondaryEmotion!!)
+                            finalDotColor = Color((pColor.red+sColor.red)/2f, (pColor.green+sColor.green)/2f, (pColor.blue+sColor.blue)/2f, 1f)
+                             
+                            for (k in 0 until 8) {
+                                val c1 = (k + 7) % 8
+                                val c2 = (k + 2) % 8
+                                if ((c1 == pIdx && c2 == sIdx) || (c1 == sIdx && c2 == pIdx)) activeTertiaryIndex.value = k
+                            }
+                            activeTertiaryIndex.value?.let { 
+                                finalDotPos = layout.tertiaryDyads[it].pos 
+                                finalLabel = result.label
+                            }
+                        }
+                    }
+                    ComplexEmotionType.Category.OPPOSITE -> { /* Handle if needed */ }
+                    else -> {}
+                }
             }
             
-            // 1. Draw Map Structure (Axes & 3-Level Dots)
-            val angleStep = (2 * Math.PI) / 8
-            
-            // Helper: Highlighting Axis Nodes
-            fun drawAxisNodes(index: Int, color: Color) {
-                val axis = layout.axes[index]
-                drawCircle(color, 4.5.dp.toPx(), axis.strongPos)
-                drawCircle(color, 4.5.dp.toPx(), axis.basicPos)
-                drawCircle(color, 4.5.dp.toPx(), axis.weakPos)
+            val glowRadius = 120.dp.toPx()
+            if (finalDotPos != null) {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(finalDotColor.copy(alpha = 0.4f), Color.Transparent),
+                        center = finalDotPos!!,
+                        radius = glowRadius
+                    ),
+                    radius = glowRadius,
+                    center = finalDotPos!!
+                )
             }
             
-            // Black Structure
-            val structColor = Color.Black
+            val inactiveStructColor = Color.Black.copy(alpha = 0.05f)
+            val inactiveDotColor = Color.Gray.copy(alpha = 0.2f)
             
+            // A. Draw Base Structure (Axes)
             axesEmotions.forEachIndexed { index, emotion ->
                 val axis = layout.axes[index]
+                drawLine(inactiveStructColor, center, axis.strongPos, 0.5.dp.toPx())
                 
-                // Draw Axis Line (Center to Outer)
-                drawLine(
-                    color = structColor,
-                    start = center,
-                    end = axis.weakPos,
-                    strokeWidth = 0.5.dp.toPx()
-                )
+                // Draw all 3 intensity reference dots
+                drawCircle(inactiveStructColor, 1.5.dp.toPx(), axis.strongPos)
+                drawCircle(inactiveStructColor, 1.5.dp.toPx(), axis.basicPos)
+                drawCircle(inactiveStructColor, 1.5.dp.toPx(), axis.weakPos)
                 
-                // Draw 3 Structural Dots
-                drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = axis.strongPos)
-                drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = axis.basicPos)
-                if (index !in highlightedBasicIndices) {
-                     drawCircle(color = structColor, radius = 1.5.dp.toPx(), center = axis.weakPos)
-                }
-                
-                // Draw Label
-                if ((intensityMap[emotion] ?: 0f) == 0f) {
-                    val labelStyle = TextStyle(fontSize = 10.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                // Label at Basic Pos (Center of Category)
+                if (finalLabel != basicEmotionsArray.getOrElse(index){""} && index !in activeBasicIndices) {
+                    val labelStyle = TextStyle(fontSize = 10.sp, color = Color.Black.copy(alpha=0.3f), fontWeight = FontWeight.Normal)
                     val labelText = basicEmotionsArray.getOrElse(index) { emotion.name }
                     val textLayout = textMeasurer.measure(labelText, labelStyle)
-                    
-                    drawText(
-                        textLayoutResult = textLayout,
-                        topLeft = Offset(axis.labelPos.x - textLayout.size.width/2, axis.labelPos.y - textLayout.size.height/2)
-                    )
+                    // Draw text exactly centered on labelPos (which is Basic Pos)
+                    drawText(textLayout, topLeft = Offset(axis.labelPos.x - textLayout.size.width/2, axis.labelPos.y - textLayout.size.height/2))
                 }
             }
             
-            // val intensityMap = analysis.toMap() (Moved to top)
+            // Draw Inactive Structure Lines AND DOTS (New Requirement)
+            for (i in 0 until 8) {
+                if (i != activePrimaryIndex.value) {
+                    val dyadData = layout.primaryDyads[i]
+                    val idx1 = i; val idx2 = (i + 1) % 8
+                    val pos1 = layout.axes[idx1].basicPos; val pos2 = layout.axes[idx2].basicPos
+                    val path = Path().apply {
+                         moveTo(pos1.x, pos1.y)
+                         quadraticTo((pos1.x+dyadData.pos.x)/2, (pos1.y+dyadData.pos.y)/2, dyadData.pos.x, dyadData.pos.y)
+                         moveTo(pos2.x, pos2.y)
+                         quadraticTo((pos2.x+dyadData.pos.x)/2, (pos2.y+dyadData.pos.y)/2, dyadData.pos.x, dyadData.pos.y)
+                    }
+                    drawPath(path, inactiveStructColor, style=Stroke(0.5.dp.toPx()))
+                    // Draw Inactive Dot
+                    drawCircle(inactiveDotColor, dotRadiusInactive.toPx(), dyadData.pos)
+                }
+            }
+            for (i in 0 until 8) {
+                if (i != activeSecondaryIndex.value) {
+                    val dyadData = layout.secondaryDyads[i]
+                    val idx1 = (i + 7) % 8; val idx2 = (i + 1) % 8
+                    val pos1 = layout.axes[idx1].strongPos; val pos2 = layout.axes[idx2].strongPos
+                    val path = Path().apply {
+                         moveTo(pos1.x, pos1.y)
+                         val cpX = centerX + ((dyadData.pos.x+pos1.x)/2 - centerX)*1.1f
+                         val cpY = centerY + ((dyadData.pos.y+pos1.y)/2 - centerY)*1.1f
+                         quadraticTo(cpX, cpY, dyadData.pos.x, dyadData.pos.y)
+                         moveTo(pos2.x, pos2.y)
+                         val cpX2 = centerX + ((dyadData.pos.x+pos2.x)/2 - centerX)*1.1f
+                         val cpY2 = centerY + ((dyadData.pos.y+pos2.y)/2 - centerY)*1.1f
+                         quadraticTo(cpX2, cpY2, dyadData.pos.x, dyadData.pos.y)
+                    }
+                    drawPath(path, inactiveStructColor, style=Stroke(0.5.dp.toPx()))
+                    // Draw Inactive Dot
+                    drawCircle(inactiveDotColor, dotRadiusInactive.toPx(), dyadData.pos)
+                }
+            }
+            for (i in 0 until 8) {
+                if (i != activeTertiaryIndex.value) {
+                    val dyadData = layout.tertiaryDyads[i]
+                    val idx1 = (i + 7) % 8; val idx2 = (i + 2) % 8
+                    val pos1 = layout.axes[idx1].strongPos; val pos2 = layout.axes[idx2].strongPos
+                    val path = Path().apply {
+                         moveTo(pos1.x, pos1.y)
+                         val cpX = centerX + ((dyadData.pos.x+pos1.x)/2 - centerX)*1.1f
+                         val cpY = centerY + ((dyadData.pos.y+pos1.y)/2 - centerY)*1.1f
+                         quadraticTo(cpX, cpY, dyadData.pos.x, dyadData.pos.y)
+                         moveTo(pos2.x, pos2.y)
+                         val cpX2 = centerX + ((dyadData.pos.x+pos2.x)/2 - centerX)*1.1f
+                         val cpY2 = centerY + ((dyadData.pos.y+pos2.y)/2 - centerY)*1.1f
+                         quadraticTo(cpX2, cpY2, dyadData.pos.x, dyadData.pos.y)
+                    }
+                    drawPath(path, inactiveStructColor, style=Stroke(0.5.dp.toPx()))
+                    // Draw Inactive Dot
+                    drawCircle(inactiveDotColor, dotRadiusInactive.toPx(), dyadData.pos)
+                }
+            }
 
-            // 1.5 Draw Primary Dyads (Structure & Connections)
-            // 1.5 Draw Primary Dyads (Structure & Connections)
-            // Use localized array
-            // 1.5 Draw Primary Dyads (Structure & Connections)
-            // Use localized array
-            val dyadNames = primaryDyadsArray.toList()
-            
-            val dyadRadius = radii.basic 
-            
-            for (i in 0 until 8) {
-                val currentIdx = i
-                val nextIdx = (i + 1) % 8
-                val dyadData = layout.primaryDyads[i]
-                val dyadPos = dyadData.pos
-                val dAngle = dyadData.angle
+            // B. Active Trace Lines
+            activeBasicIndices.forEach { idx ->
+                val axis = layout.axes[idx]
+                val color = getEmotionColor(axesEmotions[idx])
                 
-                // Pre-calculate Score
-                 val s1 = intensityMap[axesEmotions[currentIdx]] ?: 0f
-                 val s2 = intensityMap[axesEmotions[nextIdx]] ?: 0f
-                 val dScore = (s1 + s2) / 2
-                 
-                // Draw Structure (Black) - Conditional
-                if (dScore == 0f) {
-                    drawCircle(color = structColor, radius = 2.dp.toPx(), center = dyadPos)
-                    
-                    val labelStyle = TextStyle(fontSize = 9.sp, color = Color.Black)
-                    val textLayout = textMeasurer.measure(dyadNames[i], labelStyle)
-                    drawText(textLayout, topLeft = Offset(dyadPos.x - textLayout.size.width/2, dyadPos.y + 6.dp.toPx()))
+                if (result.category == ComplexEmotionType.Category.SINGLE_EMOTION) {
+                    if (finalDotPos != null) drawLine(color, center, finalDotPos!!, 2.dp.toPx())
+                } else if (result.category == ComplexEmotionType.Category.PRIMARY_DYAD) {
+                    drawLine(color.copy(alpha=0.6f), center, axis.basicPos, 1.5.dp.toPx())
+                } else {
+                    drawLine(color.copy(alpha=0.6f), center, axis.strongPos, 1.5.dp.toPx())
                 }
-                
-                // Connect to Adjacent Basic Dots (Structure)
-                val prevAngle = layout.axes[currentIdx].angle
-                
-                // Convert to degrees
-                fun toDeg(rad: Double): Float = Math.toDegrees(rad).toFloat()
-                
-                // Fixed Sweep: angleStep / 2 (always clockwise)
-                val fixedSweep = toDeg((2 * Math.PI / 8) / 2)
-                
-                // Arc 1: Prev -> Dyad
-                drawArc(
-                    color = structColor,
-                    startAngle = toDeg(prevAngle),
-                    sweepAngle = fixedSweep,
-                    useCenter = false,
-                    topLeft = Offset(centerX - radii.basic, centerY - radii.basic),
-                    size = androidx.compose.ui.geometry.Size(radii.basic * 2, radii.basic * 2),
-                    style = Stroke(width = 0.5.dp.toPx())
-                )
-                
-                // Arc 2: Dyad -> Next
-                drawArc(
-                    color = structColor,
-                    startAngle = toDeg(dAngle),
-                    sweepAngle = fixedSweep,
-                    useCenter = false,
-                    topLeft = Offset(centerX - radii.basic, centerY - radii.basic),
-                    size = androidx.compose.ui.geometry.Size(radii.basic * 2, radii.basic * 2),
-                    style = Stroke(width = 0.5.dp.toPx())
-                )
-                
-                // Data Vis (Primary)
-                 if (dScore > 0f) {
-                     val c1 = getEmotionColor(axesEmotions[currentIdx]); val c2 = getEmotionColor(axesEmotions[nextIdx])
-                     val bColor = Color((c1.red+c2.red)/2f, (c1.green+c2.green)/2f, (c1.blue+c2.blue)/2f, 1f)
-                     
-                     // Highlight Dot
-                     drawCircle(color = bColor.copy(alpha=0.9f), radius = dataDotRadius.toPx()*0.7f, center = dyadPos)
-                     // Highlight Neighbors (Larger) -> Full Axis Color
-                     drawAxisNodes(currentIdx, bColor.copy(alpha=0.6f))
-                     drawAxisNodes(nextIdx, bColor.copy(alpha=0.6f))
-                     
-                     // Highlight Label (Emphasized)
-                     val activeLabelStyle = TextStyle(fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                     val activeTextLayout = textMeasurer.measure(dyadNames[i], activeLabelStyle)
-                     drawText(activeTextLayout, topLeft = Offset(dyadPos.x - activeTextLayout.size.width/2, dyadPos.y + 6.dp.toPx()))
-                 }
             }
             
-            // 1.8 Draw Secondary Dyads (Structure & Extended Connections)
-             val secDyadNames = secondaryDyadsArray.toList()
-            
-            for (i in 0 until 8) {
-                val secData = layout.secondaryDyads[i]
-                val secPos = secData.pos
+            // C. Connect Basic -> Dyad (Trace)
+            // Note: Since we moved Basic Labels to BasicPos, they might be obscured by these lines if not careful.
+            val primaryIdx = activePrimaryIndex.value
+            if (primaryIdx != null) {
+                val dyadData = layout.primaryDyads[primaryIdx]
+                val idx1 = primaryIdx
+                val idx2 = (primaryIdx + 1) % 8
+                val color1 = getEmotionColor(axesEmotions[idx1])
+                val color2 = getEmotionColor(axesEmotions[idx2])
                 
-                val prevIdx = (i + 7) % 8
-                val nextIdx = (i + 1) % 8
-                val prevPos = layout.axes[prevIdx].weakPos
-                val nextPos = layout.axes[nextIdx].weakPos
-                
-                val s1 = intensityMap[axesEmotions[prevIdx]] ?: 0f
-                val s2 = intensityMap[axesEmotions[nextIdx]] ?: 0f
-                val secScore = (s1 + s2) / 2
-                
-                // Draw Structure Dot/Label (Conditional)
-                if (secScore == 0f) {
-                    drawCircle(color = structColor, radius = 2.dp.toPx(), center = secPos)
-                    val secLabelStyle = TextStyle(fontSize = 10.sp, color = Color.Black, fontWeight = FontWeight.Bold)
-                    val textLayout = textMeasurer.measure(secDyadNames[i], secLabelStyle)
-                    drawText(textLayout, topLeft = Offset(secPos.x - textLayout.size.width/2, secPos.y + 8.dp.toPx()))
+                val path1 = Path().apply {
+                     moveTo(layout.axes[idx1].basicPos.x, layout.axes[idx1].basicPos.y)
+                     val midX = (layout.axes[idx1].basicPos.x + dyadData.pos.x)/2
+                     val midY = (layout.axes[idx1].basicPos.y + dyadData.pos.y)/2
+                     quadraticTo(midX, midY, dyadData.pos.x, dyadData.pos.y) 
                 }
+                drawPath(path1, color1, style=Stroke(1.5.dp.toPx()))
                 
-                // Connections (Always)
-                 fun drawCurvedLine(start: Offset, end: Offset, color: Color, width: Float) {
+                 val path2 = Path().apply {
+                     moveTo(layout.axes[idx2].basicPos.x, layout.axes[idx2].basicPos.y)
+                     val midX = (layout.axes[idx2].basicPos.x + dyadData.pos.x)/2
+                     val midY = (layout.axes[idx2].basicPos.y + dyadData.pos.y)/2
+                     quadraticTo(midX, midY, dyadData.pos.x, dyadData.pos.y)
+                }
+                drawPath(path2, color2, style=Stroke(1.5.dp.toPx()))
+            }
+            
+            val secIdx = activeSecondaryIndex.value
+            if (secIdx != null) {
+                val dyadData = layout.secondaryDyads[secIdx]
+                val idx1 = (secIdx + 7) % 8
+                val idx2 = (secIdx + 1) % 8
+                val color1 = getEmotionColor(axesEmotions[idx1])
+                val color2 = getEmotionColor(axesEmotions[idx2])
+                
+                val pos1 = layout.axes[idx1].strongPos
+                val pos2 = layout.axes[idx2].strongPos
+                
+                fun drawCurve(start: Offset, end: Offset, color: Color) {
                     val path = Path().apply {
                         moveTo(start.x, start.y)
-                        val midX = (start.x + end.x) / 2
-                        val midY = (start.y + end.y) / 2
-                        val vecX = midX - centerX
-                        val vecY = midY - centerY
-                        val cpX = centerX + vecX * 1.1f
-                        val cpY = centerY + vecY * 1.1f
+                        val midX = (start.x + end.x)/2
+                        val midY = (start.y + end.y)/2
+                        val cpX = centerX + (midX - centerX) * 1.3f
+                        val cpY = centerY + (midY - centerY) * 1.3f
                         quadraticTo(cpX, cpY, end.x, end.y)
                     }
-                    drawPath(path, color, style = Stroke(width))
+                    drawPath(path, color, style=Stroke(1.5.dp.toPx()))
                 }
-                
-                val strokeW = 0.5.dp.toPx()
-                drawCurvedLine(secPos, prevPos, structColor, strokeW)
-                drawCurvedLine(secPos, nextPos, structColor, strokeW)
-                
-                // Data Vis (Secondary)
-                if (secScore > 0f) {
-                     val c1 = getEmotionColor(axesEmotions[prevIdx]); val c2 = getEmotionColor(axesEmotions[nextIdx])
-                     val bColor = Color((c1.red+c2.red)/2f, (c1.green+c2.green)/2f, (c1.blue+c2.blue)/2f, 1f)
-                     
-                     drawCircle(color = bColor.copy(alpha=0.9f), radius = dataDotRadius.toPx()*0.7f, center = secPos)
-                     drawAxisNodes(prevIdx, bColor.copy(alpha=0.6f))
-                     drawAxisNodes(nextIdx, bColor.copy(alpha=0.6f))
-                     
-                     val activeLabelStyle = TextStyle(fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                     val activeTextLayout = textMeasurer.measure(secDyadNames[i], activeLabelStyle)
-                     drawText(activeTextLayout, topLeft = Offset(secPos.x - activeTextLayout.size.width/2, secPos.y + 8.dp.toPx()))
-                }
+                drawCurve(pos1, dyadData.pos, color1)
+                drawCurve(pos2, dyadData.pos, color2)
             }
             
-            // 1.9 Draw Tertiary Dyads
-            val tertDyadNames = tertiaryDyadsArray.toList()
-            
-            for (i in 0 until 8) {
-                val tertData = layout.tertiaryDyads[i]
-                val tertPos = tertData.pos
-                
-                val c1Idx = (i + 7) % 8 // i-1
-                val c2Idx = (i + 2) % 8 // i+2
-                
-                val pos1 = layout.axes[c1Idx].weakPos
-                val pos2 = layout.axes[c2Idx].weakPos
-                
-                val s1 = intensityMap[axesEmotions[c1Idx]] ?: 0f
-                val s2 = intensityMap[axesEmotions[c2Idx]] ?: 0f
-                val tScore = (s1 + s2) / 2
-                
-                if (tScore == 0f) {
-                    drawCircle(color = structColor, radius = 2.dp.toPx(), center = tertPos)
-                    val tertLabelStyle = TextStyle(fontSize = 10.sp, color = Color.Black, fontWeight = FontWeight.Medium)
-                    val textLayout = textMeasurer.measure(tertDyadNames[i], tertLabelStyle)
-                    drawText(textLayout, topLeft = Offset(tertPos.x - textLayout.size.width/2, tertPos.y + 8.dp.toPx()))
+            val tertIdx = activeTertiaryIndex.value
+            if (tertIdx != null) {
+                 val dyadData = layout.tertiaryDyads[tertIdx]
+                 val idx1 = (tertIdx + 7) % 8
+                 val idx2 = (tertIdx + 2) % 8
+                 val color1 = getEmotionColor(axesEmotions[idx1])
+                 val color2 = getEmotionColor(axesEmotions[idx2])
+                 
+                 val pos1 = layout.axes[idx1].strongPos 
+                 val pos2 = layout.axes[idx2].strongPos 
+                 
+                 fun drawCurve(start: Offset, end: Offset, color: Color) {
+                    val path = Path().apply {
+                        moveTo(start.x, start.y)
+                        val midX = (start.x + end.x)/2
+                        val midY = (start.y + end.y)/2
+                        val cpX = centerX + (midX - centerX) * 1.3f
+                        val cpY = centerY + (midY - centerY) * 1.3f
+                        quadraticTo(cpX, cpY, end.x, end.y)
+                    }
+                    drawPath(path, color, style=Stroke(1.5.dp.toPx()))
                 }
+                drawCurve(pos1, dyadData.pos, color1)
+                drawCurve(pos2, dyadData.pos, color2)
+            }
+
+
+            // 3. Dots
+             activeBasicIndices.forEach { idx ->
+                 val isPrimaryMode = result.category == ComplexEmotionType.Category.PRIMARY_DYAD
+                 val pos = if (isPrimaryMode) layout.axes[idx].basicPos 
+                           else layout.axes[idx].strongPos 
+                 
+                 if (result.category != ComplexEmotionType.Category.SINGLE_EMOTION) {
+                      val color = getEmotionColor(axesEmotions[idx])
+                      drawCircle(color = Color.White, radius = dotRadiusStd.toPx(), center = pos)
+                      drawCircle(color = color, radius = dotRadiusStd.toPx(), center = pos, style = Stroke(width = 2.dp.toPx()))
+                 }
+                 
+                 // Reuse logic for Active Basic Label (to override inactive one)
+                 // Position is same (Basic Pos), just Style is different
+                 val labelText = basicEmotionsArray.getOrElse(idx) { "" }
+                 if (labelText.isNotEmpty()) {
+                    // Slight glow or bold
+                    val labelStyle = TextStyle(fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.SemiBold)
+                    val textLayout = textMeasurer.measure(labelText, labelStyle)
+                    drawText(textLayout, topLeft = Offset(layout.axes[idx].labelPos.x - textLayout.size.width/2, layout.axes[idx].labelPos.y - textLayout.size.height/2))
+                 }
+             }
+
+            // 3-1. Final Dot
+            if (finalDotPos != null) {
+                drawCircle(color = finalDotColor, radius = dotRadiusFinal.toPx(), center = finalDotPos!!)
+                drawCircle(color = Color.White, radius = 3.dp.toPx(), center = finalDotPos!!)
                 
-                val strokeW = 0.5.dp.toPx()
-                // Use inline paths to avoid scope issues w/ helper
-                val path1 = Path().apply {
-                    moveTo(tertPos.x, tertPos.y)
-                    val midX = (tertPos.x + pos1.x) / 2
-                    val midY = (tertPos.y + pos1.y) / 2
-                    val vecX = midX - centerX
-                    val vecY = midY - centerY
-                    val cpX = centerX + vecX * 1.1f
-                    val cpY = centerY + vecY * 1.1f
-                    quadraticTo(cpX, cpY, pos1.x, pos1.y)
-                }
-                drawPath(path1, structColor, style = Stroke(strokeW))
-                
-                val path2 = Path().apply {
-                    moveTo(tertPos.x, tertPos.y)
-                    val midX = (tertPos.x + pos2.x) / 2
-                    val midY = (tertPos.y + pos2.y) / 2
-                    val vecX = midX - centerX
-                    val vecY = midY - centerY
-                    val cpX = centerX + vecX * 1.1f
-                    val cpY = centerY + vecY * 1.1f
-                    quadraticTo(cpX, cpY, pos2.x, pos2.y)
-                }
-                drawPath(path2, structColor, style = Stroke(strokeW))
-                
-                if (tScore > 0f) {
-                     val color1 = getEmotionColor(axesEmotions[c1Idx])
-                     val color2 = getEmotionColor(axesEmotions[c2Idx])
-                     val bColor = Color((color1.red+color2.red)/2f, (color1.green+color2.green)/2f, (color1.blue+color2.blue)/2f, 1f)
-                     
-                     drawCircle(color = bColor.copy(alpha=0.9f), radius = dataDotRadius.toPx()*0.7f, center = tertPos)
-                     drawAxisNodes(c1Idx, bColor.copy(alpha=0.6f))
-                     drawAxisNodes(c2Idx, bColor.copy(alpha=0.6f))
-                     
-                     val activeLabelStyle = TextStyle(fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                     val activeTextLayout = textMeasurer.measure(tertDyadNames[i], activeLabelStyle)
-                     drawText(activeTextLayout, topLeft = Offset(tertPos.x - activeTextLayout.size.width/2, tertPos.y + 8.dp.toPx()))
-                }
+                val activeLabelStyle = TextStyle(fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
+                val activeTextLayout = textMeasurer.measure(finalLabel, activeLabelStyle)
+                // Draw Final Label with offset to avoid covering the dot
+                drawText(activeTextLayout, topLeft = Offset(finalDotPos!!.x - activeTextLayout.size.width/2, finalDotPos!!.y + 12.dp.toPx()))
             }
             
-            // 2. Draw Data Dots
-            axesEmotions.forEachIndexed { index, emotion ->
-                val score = intensityMap[emotion] ?: 0f
-                val axis = layout.axes[index]
-                val cosA = axis.cos
-                val sinA = axis.sin
-                
-                if (score > 0f) {
-                    val targetRadius = if (score >= 0.6f) radii.strong else if (score >= 0.3f) radii.basic else radii.weak
-                    val r = targetRadius * animValue
-                    
-                    val dx = centerX + r * cosA
-                    val dy = centerY + r * sinA
-                    val dataPos = Offset(dx, dy)
-                    val color = getEmotionColor(emotion)
-                    
-                    drawCircle(color = color, radius = dataDotRadius.toPx(), center = dataPos)
-                    
-                    drawAxisNodes(index, color.copy(alpha=0.6f))
-                    
-                    // Highlight Label (Emphasized)
-                    val activeLabelStyle = TextStyle(fontSize = 12.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
-                    val labelText = basicEmotionsArray.getOrElse(index) { emotion.name }
-                    val activeTextLayout = textMeasurer.measure(labelText, activeLabelStyle)
-                    
-                    // Position label
-                    val labelDist = radii.basic + 14.dp.toPx() 
-                    val lx = centerX + (labelDist * cosA)
-                    val ly = centerY + (labelDist * sinA)
-                    drawText(activeTextLayout, topLeft = Offset(lx - activeTextLayout.size.width/2, ly - activeTextLayout.size.height/2))
-                }
-            }
+             // Labels for Dyads (All drawn, faint)
+             primaryDyadsArray.forEachIndexed { i, label ->
+                 if (activePrimaryIndex.value != i) {
+                     val pos = layout.primaryDyads[i].pos
+                     val style = TextStyle(fontSize = 8.sp, color = Color.Black.copy(alpha=0.2f))
+                     val layout = textMeasurer.measure(label, style)
+                     drawText(layout, topLeft = Offset(pos.x - layout.size.width/2, pos.y + 4.dp.toPx()))
+                 }
+             }
+             secondaryDyadsArray.forEachIndexed { i, label ->
+                 if (activeSecondaryIndex.value != i) {
+                     val pos = layout.secondaryDyads[i].pos
+                     val style = TextStyle(fontSize = 8.sp, color = Color.Black.copy(alpha=0.2f))
+                     val layout = textMeasurer.measure(label, style)
+                     drawText(layout, topLeft = Offset(pos.x - layout.size.width/2, pos.y + 4.dp.toPx()))
+                 }
+             }
+             tertiaryDyadsArray.forEachIndexed { i, label ->
+                 if (activeTertiaryIndex.value != i) {
+                     val pos = layout.tertiaryDyads[i].pos
+                     val style = TextStyle(fontSize = 8.sp, color = Color.Black.copy(alpha=0.2f))
+                     val layout = textMeasurer.measure(label, style)
+                     drawText(layout, topLeft = Offset(pos.x - layout.size.width/2, pos.y + 4.dp.toPx()))
+                 }
+             }
         }
     }
 }
@@ -494,13 +510,16 @@ fun ConstellationChart(
 @Preview(showBackground = true)
 @Composable
 fun PreviewConstellationChart() {
-    val mockEntry = MockData.mockJournalEntries[6]
-    mockEntry.emotionAnalysis?.let {
-        ConstellationChart(analysis = it, modifier = Modifier.fillMaxSize())
+    val context = LocalContext.current
+    val stringProvider = remember { AndroidEmotionStringProvider(context) }
+    val mockEntry = MockData.mockJournalEntries[24]
+    mockEntry.emotionAnalysis?.let { analysis ->
+         val result = PlutchikEmotionCalculator.analyzeDominantEmotionCombination(analysis, stringProvider)
+         ConstellationChart(result = result, modifier = Modifier.fillMaxSize())
     }
 }
 
-// Performance Optimization: Scaled Layout Cache
+// Layout Classes
 private data class ChartLayout(
     val center: Offset,
     val radii: ChartRadii,
@@ -529,7 +548,7 @@ private data class AxisData(
 )
 
 private data class DyadData(
-    val index: Int, // The starting index (i)
+    val index: Int,
     val angle: Double,
     val pos: Offset
 )
