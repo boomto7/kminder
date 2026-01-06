@@ -15,7 +15,7 @@ object EmotionAnalysisPrompt {
 ### 분석 지침:
 1. **분석 대상 감정:** Plutchik의 8가지 원형 감정('anger', 'anticipation', 'joy', 'trust', 'fear', 'sadness', 'disgust', 'surprise')만을 분석합니다.
 2. **강도 점수:** 각 감정에 대해 0.0부터 1.0 사이의 소수점 값으로 강도를 부여하세요.
-3. **핵심 키워드 분석:** 감정의 원인이 되는 대상을 **'수식어+명사'** 형태의 구체적인 구절로 3~5개 추출하세요. 각 키워드에 대해 연관된 감정(8가지 중 하나)과 그 영향력 점수(0.0~1.0)를 함께 명시하세요.
+3. **핵심 키워드 분석:** 감정의 원인이 되는 대상을 **'수식어+명사'** 형태의 구체적인 구절로 **5~10개** 추출하세요 (텍스트의 길이에 따라 핵심적인 요소들을 최대한 풍성하게 추출합니다). 각 키워드에 대해 연관된 감정(8가지 중 하나)과 그 영향력 점수(0.0~1.0)를 함께 명시하세요.
 4. **출력 형식:** 반드시 다음 JSON 스키마를 준수합니다.
 
 ### 출력 형식 (JSON Schema):
@@ -54,7 +54,7 @@ You are an expert in quantitatively analyzing the emotional state of **English t
 ### Analysis Guidelines:
 1. **Target Emotions:** Analyze only Plutchik's 8 primary emotions ('anger', 'anticipation', 'joy', 'trust', 'fear', 'sadness', 'disgust', 'surprise').
 2. **Intensity Score:** Assign an intensity value between 0.0 and 1.0 for each emotion.
-3. **Keyword Analysis:** Extract 3-5 specific phrases (modifier + noun) that represent the cause of emotions. For each keyword, specify the associated emotion (one of the 8 types) and its impact score (0.0 to 1.0).
+3. **Keyword Analysis:** Extract **5-10 specific phrases** (modifier + noun) that represent the cause of emotions (extract as many key elements as possible depending on the length of the text). For each keyword, specify the associated emotion (one of the 8 types) and its impact score (0.0 to 1.0).
 4. **Output Format:** Strictly follow the JSON schema below.
 
 ### Output Format (JSON Schema):

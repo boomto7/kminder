@@ -286,46 +286,46 @@
     
     <!-- Emotion Arrays for Chart -->
     <string-array name="basic_emotions">
-        <item>Joy</item>
-        <item>Trust</item>
-        <item>Fear</item>
-        <item>Surprise</item>
-        <item>Sadness</item>
-        <item>Disgust</item>
-        <item>Anger</item>
-        <item>Anticipation</item>
+        <item>@string/emotion_joy</item>
+        <item>@string/emotion_trust</item>
+        <item>@string/emotion_fear</item>
+        <item>@string/emotion_surprise</item>
+        <item>@string/emotion_sadness</item>
+        <item>@string/emotion_disgust</item>
+        <item>@string/emotion_anger</item>
+        <item>@string/emotion_anticipation</item>
     </string-array>
 
     <string-array name="primary_dyads">
-        <item>Love</item>
-        <item>Submission</item>
-        <item>Awe</item>
-        <item>Disapproval</item>
-        <item>Remorse</item>
-        <item>Contempt</item>
-        <item>Aggressiveness</item>
-        <item>Optimism</item>
+        <item>@string/emotion_complex_love_title</item>
+        <item>@string/emotion_complex_submission_title</item>
+        <item>@string/emotion_complex_awe_title</item>
+        <item>@string/emotion_complex_disapproval_title</item>
+        <item>@string/emotion_complex_remorse_title</item>
+        <item>@string/emotion_complex_contempt_title</item>
+        <item>@string/emotion_complex_aggressiveness_title</item>
+        <item>@string/emotion_complex_optimism_title</item>
     </string-array>
 
     <string-array name="secondary_dyads">
-        <item>Fatalism</item>
-        <item>Guilt</item>
-        <item>Curiosity</item>
-        <item>Despair</item>
-        <item>Unbelief</item>
-        <item>Envy</item>
-        <item>Cynicism</item>
-        <item>Pride</item>
+        <item>@string/emotion_complex_fatalism_title</item>
+        <item>@string/emotion_complex_guilt_title</item>
+        <item>@string/emotion_complex_curiosity_title</item>
+        <item>@string/emotion_complex_despair_title</item>
+        <item>@string/emotion_complex_unbelief_title</item>
+        <item>@string/emotion_complex_envy_title</item>
+        <item>@string/emotion_complex_cynicism_title</item>
+        <item>@string/emotion_complex_pride_title</item>
     </string-array>
 
     <string-array name="tertiary_dyads">
-        <item>Anxiety</item>
-        <item>Delight</item>
-        <item>Sentimentality</item>
-        <item>Shame</item>
-        <item>Outrage</item>
-        <item>Pessimism</item>
-        <item>Morbidness</item>
-        <item>Dominance</item>
+        <item>@string/emotion_complex_anxiety_title</item>
+        <item>@string/emotion_complex_delight_title</item>
+        <item>@string/emotion_complex_sentimentality_title</item>
+        <item>@string/emotion_complex_shame_title</item>
+        <item>@string/emotion_complex_outrage_title</item>
+        <item>@string/emotion_complex_pessimism_title</item>
+        <item>@string/emotion_complex_morbidness_title</item>
+        <item>@string/emotion_complex_dominance_title</item>
     </string-array>
 </resources>

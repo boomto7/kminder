@@ -53,12 +53,21 @@ fun ConstellationChart(
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
     
-    val animValue = 1f
+    val animValue = 1f 
 
-    // Constants
-    val dotRadiusStd = 4.5.dp
-    val dotRadiusFinal = 8.dp
-    val dotRadiusInactive = 2.dp // Size for inactive/structural dots
+    // Design Constants (Neo-Brutalism)
+    val borderThickness = 2.dp
+    val shadowOffset = 4.dp
+    val webLineThickness = 1.dp
+    val activeLineThickness = 4.dp
+    val inactiveDotRadius = 4.dp
+    val activeDotRadius = 8.dp
+    val finalDotRadius = 16.dp
+
+    // Colors
+    val blackColor = Color.Black
+    val webColor = Color.LightGray.copy(alpha = 0.5f) // Keep web subtle but structure solid
+    val inactiveDotColor = Color.White
     
     // 8 Basic Emotions Order
     val orderedEmotions = listOf(
@@ -196,7 +205,9 @@ fun ConstellationChart(
                     ComplexEmotionType.Category.SINGLE_EMOTION -> {
                         activeBasicIndices.add(pIdx)
                         val score = intensityMap[result.primaryEmotion] ?: 0f
-                        val r = if (score >= 0.6f) radii.strong else if (score >= 0.3f) radii.basic else radii.weak
+//                        score >= 0.8f -> ComplexEmotionType.Intensity.STRONG
+//                        score <= 0.4f -> ComplexEmotionType.Intensity.WEAK
+                        val r = if (score >= 0.8f) radii.strong else if (score <= 0.4f) radii.weak else radii.basic
                         val axis = layout.axes[pIdx]
                         finalDotPos = Offset(centerX + r * axis.cos, centerY + r * axis.sin)
                         finalDotColor = pColor
@@ -251,12 +262,20 @@ fun ConstellationChart(
                             }
                         }
                     }
-                    ComplexEmotionType.Category.OPPOSITE -> { /* Handle if needed */ }
+                    ComplexEmotionType.Category.OPPOSITE -> {
+                        if (sIdx != -1) {
+                            activeBasicIndices.add(pIdx); activeBasicIndices.add(sIdx)
+                            val sColor = getEmotionColor(result.secondaryEmotion!!)
+                            finalDotColor = Color((pColor.red+sColor.red)/2f, (pColor.green+sColor.green)/2f, (pColor.blue+sColor.blue)/2f, 1f)
+                            finalDotPos = Offset(centerX, centerY)
+                            finalLabel = result.label
+                        }
+                    }
                     else -> {}
                 }
             }
             
-            val glowRadius = 120.dp.toPx()
+            val glowRadius = 240.dp.toPx()
             if (finalDotPos != null) {
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -269,18 +288,15 @@ fun ConstellationChart(
                 )
             }
             
-            val inactiveStructColor = Color.Black.copy(alpha = 0.05f)
-            val inactiveDotColor = Color.Gray.copy(alpha = 0.2f)
-            
             // A. Draw Base Structure (Axes)
             axesEmotions.forEachIndexed { index, emotion ->
                 val axis = layout.axes[index]
-                drawLine(inactiveStructColor, center, axis.strongPos, 0.5.dp.toPx())
+                drawLine(webColor, center, axis.strongPos, webLineThickness.toPx())
                 
                 // Draw all 3 intensity reference dots
-                drawCircle(inactiveStructColor, 1.5.dp.toPx(), axis.strongPos)
-                drawCircle(inactiveStructColor, 1.5.dp.toPx(), axis.basicPos)
-                drawCircle(inactiveStructColor, 1.5.dp.toPx(), axis.weakPos)
+                drawCircle(webColor, 2.dp.toPx(), axis.strongPos)
+                drawCircle(webColor, 2.dp.toPx(), axis.basicPos)
+                drawCircle(webColor, 2.dp.toPx(), axis.weakPos)
                 
                 // Label at Basic Pos (Center of Category)
                 if (finalLabel != basicEmotionsArray.getOrElse(index){""} && index !in activeBasicIndices) {
@@ -304,9 +320,9 @@ fun ConstellationChart(
                          moveTo(pos2.x, pos2.y)
                          quadraticTo((pos2.x+dyadData.pos.x)/2, (pos2.y+dyadData.pos.y)/2, dyadData.pos.x, dyadData.pos.y)
                     }
-                    drawPath(path, inactiveStructColor, style=Stroke(0.5.dp.toPx()))
-                    // Draw Inactive Dot
-                    drawCircle(inactiveDotColor, dotRadiusInactive.toPx(), dyadData.pos)
+                    drawPath(path, webColor, style=Stroke(webLineThickness.toPx()))
+                    // Draw Inactive Dot (Basic Style: Filled Gray)
+                    drawCircle(webColor, inactiveDotRadius.toPx(), dyadData.pos)
                 }
             }
             for (i in 0 until 8) {
@@ -324,9 +340,9 @@ fun ConstellationChart(
                          val cpY2 = centerY + ((dyadData.pos.y+pos2.y)/2 - centerY)*1.1f
                          quadraticTo(cpX2, cpY2, dyadData.pos.x, dyadData.pos.y)
                     }
-                    drawPath(path, inactiveStructColor, style=Stroke(0.5.dp.toPx()))
-                    // Draw Inactive Dot
-                    drawCircle(inactiveDotColor, dotRadiusInactive.toPx(), dyadData.pos)
+                    drawPath(path, webColor, style=Stroke(webLineThickness.toPx()))
+                    // Draw Inactive Dot (Basic Style: Filled Gray)
+                    drawCircle(webColor, inactiveDotRadius.toPx(), dyadData.pos)
                 }
             }
             for (i in 0 until 8) {
@@ -344,9 +360,9 @@ fun ConstellationChart(
                          val cpY2 = centerY + ((dyadData.pos.y+pos2.y)/2 - centerY)*1.1f
                          quadraticTo(cpX2, cpY2, dyadData.pos.x, dyadData.pos.y)
                     }
-                    drawPath(path, inactiveStructColor, style=Stroke(0.5.dp.toPx()))
-                    // Draw Inactive Dot
-                    drawCircle(inactiveDotColor, dotRadiusInactive.toPx(), dyadData.pos)
+                    drawPath(path, webColor, style=Stroke(webLineThickness.toPx()))
+                    // Draw Inactive Dot (Basic Style: Filled Gray)
+                    drawCircle(webColor, inactiveDotRadius.toPx(), dyadData.pos)
                 }
             }
 
@@ -356,11 +372,11 @@ fun ConstellationChart(
                 val color = getEmotionColor(axesEmotions[idx])
                 
                 if (result.category == ComplexEmotionType.Category.SINGLE_EMOTION) {
-                    if (finalDotPos != null) drawLine(color, center, finalDotPos!!, 2.dp.toPx())
+                    if (finalDotPos != null) drawLine(color, center, finalDotPos!!, activeLineThickness.toPx())
                 } else if (result.category == ComplexEmotionType.Category.PRIMARY_DYAD) {
-                    drawLine(color.copy(alpha=0.6f), center, axis.basicPos, 1.5.dp.toPx())
+                    drawLine(color.copy(alpha=0.6f), center, axis.basicPos, activeLineThickness.toPx() * 0.5f)
                 } else {
-                    drawLine(color.copy(alpha=0.6f), center, axis.strongPos, 1.5.dp.toPx())
+                    drawLine(color.copy(alpha=0.6f), center, axis.strongPos, activeLineThickness.toPx() * 0.5f)
                 }
             }
             
@@ -380,7 +396,7 @@ fun ConstellationChart(
                      val midY = (layout.axes[idx1].basicPos.y + dyadData.pos.y)/2
                      quadraticTo(midX, midY, dyadData.pos.x, dyadData.pos.y) 
                 }
-                drawPath(path1, color1, style=Stroke(1.5.dp.toPx()))
+                drawPath(path1, color1, style=Stroke(activeLineThickness.toPx() * 0.6f))
                 
                  val path2 = Path().apply {
                      moveTo(layout.axes[idx2].basicPos.x, layout.axes[idx2].basicPos.y)
@@ -388,7 +404,7 @@ fun ConstellationChart(
                      val midY = (layout.axes[idx2].basicPos.y + dyadData.pos.y)/2
                      quadraticTo(midX, midY, dyadData.pos.x, dyadData.pos.y)
                 }
-                drawPath(path2, color2, style=Stroke(1.5.dp.toPx()))
+                drawPath(path2, color2, style=Stroke(activeLineThickness.toPx() * 0.6f))
             }
             
             val secIdx = activeSecondaryIndex.value
@@ -411,7 +427,7 @@ fun ConstellationChart(
                         val cpY = centerY + (midY - centerY) * 1.3f
                         quadraticTo(cpX, cpY, end.x, end.y)
                     }
-                    drawPath(path, color, style=Stroke(1.5.dp.toPx()))
+                    drawPath(path, color, style=Stroke(activeLineThickness.toPx() * 0.6f))
                 }
                 drawCurve(pos1, dyadData.pos, color1)
                 drawCurve(pos2, dyadData.pos, color2)
@@ -437,7 +453,7 @@ fun ConstellationChart(
                         val cpY = centerY + (midY - centerY) * 1.3f
                         quadraticTo(cpX, cpY, end.x, end.y)
                     }
-                    drawPath(path, color, style=Stroke(1.5.dp.toPx()))
+                    drawPath(path, color, style=Stroke(activeLineThickness.toPx() * 0.6f))
                 }
                 drawCurve(pos1, dyadData.pos, color1)
                 drawCurve(pos2, dyadData.pos, color2)
@@ -452,32 +468,40 @@ fun ConstellationChart(
                  
                  if (result.category != ComplexEmotionType.Category.SINGLE_EMOTION) {
                       val color = getEmotionColor(axesEmotions[idx])
-                      drawCircle(color = Color.White, radius = dotRadiusStd.toPx(), center = pos)
-                      drawCircle(color = color, radius = dotRadiusStd.toPx(), center = pos, style = Stroke(width = 2.dp.toPx()))
+                      
+                      // Neo-Brutalism Dot: Shadow + Border + Color
+                      drawCircle(color = blackColor, radius = activeDotRadius.toPx(), center = Offset(pos.x + shadowOffset.toPx(), pos.y + shadowOffset.toPx())) // Shadow
+                      drawCircle(color = color, radius = activeDotRadius.toPx(), center = pos) // Body (Fill)
+                      drawCircle(color = blackColor, radius = activeDotRadius.toPx(), center = pos, style = Stroke(width = borderThickness.toPx())) // Border
                  }
-                 
-                 // Reuse logic for Active Basic Label (to override inactive one)
-                 // Position is same (Basic Pos), just Style is different
+
+                 // Reuse logic for Active Basic Label
                  val labelText = basicEmotionsArray.getOrElse(idx) { "" }
                  if (labelText.isNotEmpty()) {
-                    // Slight glow or bold
-                    val labelStyle = TextStyle(fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.SemiBold)
+                    val labelStyle = TextStyle(fontSize = 12.sp, color = blackColor, fontWeight = FontWeight.Bold)
                     val textLayout = textMeasurer.measure(labelText, labelStyle)
                     drawText(textLayout, topLeft = Offset(layout.axes[idx].labelPos.x - textLayout.size.width/2, layout.axes[idx].labelPos.y - textLayout.size.height/2))
                  }
              }
 
-            // 3-1. Final Dot
+            // 3-1. Final Dot (Neo-Brutalism: Large + Shadow + Border)
             if (finalDotPos != null) {
-                drawCircle(color = finalDotColor, radius = dotRadiusFinal.toPx(), center = finalDotPos!!)
-                drawCircle(color = Color.White, radius = 3.dp.toPx(), center = finalDotPos!!)
-                
-                val activeLabelStyle = TextStyle(fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.ExtraBold)
+                // Shadow
+                drawCircle(color = blackColor, radius = finalDotRadius.toPx(), center = Offset(finalDotPos!!.x + shadowOffset.toPx(), finalDotPos!!.y + shadowOffset.toPx()))
+                // Body
+                drawCircle(color = finalDotColor, radius = finalDotRadius.toPx(), center = finalDotPos!!)
+                // Eye (Center)
+                drawCircle(color = Color.White, radius = 4.dp.toPx(), center = finalDotPos!!)
+                // Border
+                drawCircle(color = blackColor, radius = finalDotRadius.toPx(), center = finalDotPos!!, style = Stroke(width = borderThickness.toPx()))
+
+                // Label
+                val activeLabelStyle = TextStyle(fontSize = 16.sp, color = blackColor, fontWeight = FontWeight.Black) // Extra Bold -> Black for Brutalism
                 val activeTextLayout = textMeasurer.measure(finalLabel, activeLabelStyle)
                 // Draw Final Label with offset to avoid covering the dot
-                drawText(activeTextLayout, topLeft = Offset(finalDotPos!!.x - activeTextLayout.size.width/2, finalDotPos!!.y + 12.dp.toPx()))
+                drawText(activeTextLayout, topLeft = Offset(finalDotPos!!.x - activeTextLayout.size.width/2, finalDotPos!!.y + 18.dp.toPx()))
             }
-            
+
              // Labels for Dyads (All drawn, faint)
              primaryDyadsArray.forEachIndexed { i, label ->
                  if (activePrimaryIndex.value != i) {
@@ -507,12 +531,12 @@ fun ConstellationChart(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFFe5e4c8)
 @Composable
 fun PreviewConstellationChart() {
     val context = LocalContext.current
     val stringProvider = remember { AndroidEmotionStringProvider(context) }
-    val mockEntry = MockData.mockJournalEntries[24]
+    val mockEntry = MockData.mockJournalEntries[27]
     mockEntry.emotionAnalysis?.let { analysis ->
          val result = PlutchikEmotionCalculator.analyzeDominantEmotionCombination(analysis, stringProvider)
          ConstellationChart(result = result, modifier = Modifier.fillMaxSize())

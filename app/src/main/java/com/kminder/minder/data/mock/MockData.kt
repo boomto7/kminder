@@ -257,6 +257,38 @@ object MockData {
                     com.kminder.domain.model.EmotionKeyword("용서 못함", com.kminder.domain.model.EmotionType.ANGER, 0.85f)
                 )
             )
+        ),
+
+        JournalEntry(
+            id=27,
+            content="정말 참을 수가 없다. 어떻게 나한테 이럴 수가 있지? 머리 끝까지 화가 난다. 용서할 수 없다.",
+            entryType=EntryType.FREE_WRITING,
+            createdAt=LocalDateTime.now().minusDays(0).withHour(20).withMinute(0),
+            updatedAt=LocalDateTime.now().minusDays(0).withHour(20).withMinute(0),
+            emotionAnalysis=createEmotion(
+                anger=0.3f, disgust=0.1f,
+                keywords=listOf(
+                    com.kminder.domain.model.EmotionKeyword("배신감", com.kminder.domain.model.EmotionType.ANGER, 0.95f),
+                    com.kminder.domain.model.EmotionKeyword("분노", com.kminder.domain.model.EmotionType.ANGER, 0.9f),
+                    com.kminder.domain.model.EmotionKeyword("용서 못함", com.kminder.domain.model.EmotionType.ANGER, 0.85f)
+                )
+            )
+        ),
+
+        JournalEntry(
+            id=28,
+            content="정말 참을 수가 없다. 어떻게 나한테 이럴 수가 있지? 머리 끝까지 화가 난다. 용서할 수 없다.",
+            entryType=EntryType.FREE_WRITING,
+            createdAt=LocalDateTime.now().minusDays(0).withHour(20).withMinute(0),
+            updatedAt=LocalDateTime.now().minusDays(0).withHour(20).withMinute(0),
+            emotionAnalysis=createEmotion(
+                anger=0.3f, fear = 0.3f,
+                keywords=listOf(
+                    com.kminder.domain.model.EmotionKeyword("배신감", com.kminder.domain.model.EmotionType.ANGER, 0.95f),
+                    com.kminder.domain.model.EmotionKeyword("분노", com.kminder.domain.model.EmotionType.ANGER, 0.9f),
+                    com.kminder.domain.model.EmotionKeyword("용서 못함", com.kminder.domain.model.EmotionType.ANGER, 0.85f)
+                )
+            )
         )
     )
 }
