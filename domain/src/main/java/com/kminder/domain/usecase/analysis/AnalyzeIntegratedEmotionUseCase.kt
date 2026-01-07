@@ -4,6 +4,7 @@ import com.kminder.domain.logic.PlutchikEmotionCalculator
 import com.kminder.domain.model.DetailedEmotionType
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionKeyword
+import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionType
 import com.kminder.domain.model.IntegratedAnalysis
 import com.kminder.domain.model.JournalEntry
@@ -32,14 +33,14 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
         }
 
         // sourceAnalyses 수집
-        val sourceAnalyses = entries.mapNotNull { it.emotionAnalysis }
+        val sourceAnalyses = entries.mapNotNull { it.emotionResult?.source }
 
         // 1. 감정 분포 계산 (평균)
         val totalEmotions = mutableMapOf<EmotionType, Float>()
         var entryCountWithEmotion = 0
 
         entries.forEach { entry ->
-            entry.emotionAnalysis?.toMap()?.let { emotions ->
+            entry.emotionResult?.source?.toMap()?.let { emotions ->
                 emotions.forEach { (type, intensity) ->
                     totalEmotions[type] = (totalEmotions[type] ?: 0f) + intensity
                 }
@@ -67,8 +68,7 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
         
         // 상위 2개 감정 조합 분석
         val emotionResult = PlutchikEmotionCalculator.analyzeDominantEmotionCombination(
-            averageEmotionAnalysis,
-            stringProvider
+            averageEmotionAnalysis
         )
         
         // 3. 키워드 및 조언 생성
@@ -76,11 +76,15 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
 
         val detailedPrimary = DetailedEmotionType.from(emotionResult.primaryEmotion, emotionResult.score)
 
+        // Label & Description 생성
+        val label = generateLabel(emotionResult)
+        val description = generateDescription(emotionResult, label)
+
         return IntegratedAnalysis(
             recentEmotions = averageEmotions,
-            complexEmotionString = emotionResult.label, // 계산된 복합 감정 이름 (예: "사랑", "낙관")
+            complexEmotionString = label,
             keywords = keywords,
-            summary = emotionResult.description, // 계산된 설명 사용
+            summary = description,
             suggestedAction = action,
             complexEmotionType = emotionResult.complexEmotionType,
             detailedEmotionType = detailedPrimary,
@@ -89,7 +93,7 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
     }
 
     private fun generateInsights(
-        result: PlutchikEmotionCalculator.EmotionResult,
+        result: EmotionResult,
         entries: List<JournalEntry>
     ): Triple<List<EmotionKeyword>, String, String> {
         val primary = result.primaryEmotion
@@ -120,7 +124,7 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
         // 2-2. AI 추출 키워드 통합
         // 최신 일기에서 추출된 EmotionKeyword들을 가져옵니다.
         val aiKeywords = entries.sortedByDescending { it.createdAt }
-            .flatMap { it.emotionAnalysis?.keywords ?: emptyList() }
+            .flatMap { it.emotionResult?.source?.keywords ?: emptyList() }
             .filter { it.word !in addedWords }
             // 점수가 높은 순, 그리고 최신 순으로 정렬되어 있음 (flatMap 순서 덕분)
             .distinctBy { it.word } // 단어 중복 제거
@@ -145,12 +149,45 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
         
         // 조언 생성
         val advice = stringProvider.getAdvice(primary)
-
+        val description = generateDescription(result, stringProvider.getEmotionName(primary)) // generateInsights 내부에서도 필요하다면 생성
         return Triple(
             keywords, // List<EmotionKeyword>
-            result.description, 
+            description, 
             advice
         )
+    }
+
+    private fun generateLabel(result: EmotionResult): String {
+        return result.complexEmotionType?.let { stringProvider.getComplexEmotionTitle(it) }?.takeIf { it.isNotEmpty() }
+            ?: run {
+                val primaryName = stringProvider.getEmotionName(result.primaryEmotion)
+                val secondaryName = result.secondaryEmotion?.let { stringProvider.getEmotionName(it) }
+
+                when (result.category) {
+                    com.kminder.domain.model.ComplexEmotionType.Category.SINGLE_EMOTION -> primaryName
+                    com.kminder.domain.model.ComplexEmotionType.Category.OPPOSITE -> 
+                        if (secondaryName != null) stringProvider.getConflictLabel(primaryName, secondaryName) else primaryName
+                    com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD -> 
+                        if (secondaryName != null) "$primaryName + $secondaryName" else primaryName
+                    com.kminder.domain.model.ComplexEmotionType.Category.SECONDARY_DYAD -> stringProvider.getComplexEmotionDefaultLabel()
+                    com.kminder.domain.model.ComplexEmotionType.Category.TERTIARY_DYAD -> stringProvider.getComplicatedEmotionDefaultLabel()
+                    else -> primaryName
+                }
+            }
+    }
+
+    private fun generateDescription(result: EmotionResult, label: String): String {
+        return result.complexEmotionType?.let { stringProvider.getComplexEmotionDescription(it) }?.takeIf { it.isNotEmpty() }
+            ?: run {
+                when (result.category) {
+                    com.kminder.domain.model.ComplexEmotionType.Category.SINGLE_EMOTION -> stringProvider.getSingleEmotionDescription(label)
+                    com.kminder.domain.model.ComplexEmotionType.Category.OPPOSITE -> stringProvider.getConflictDescription()
+                    com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD -> stringProvider.getHarmonyDescription()
+                    com.kminder.domain.model.ComplexEmotionType.Category.SECONDARY_DYAD -> stringProvider.getComplexEmotionDefaultDescription()
+                    com.kminder.domain.model.ComplexEmotionType.Category.TERTIARY_DYAD -> stringProvider.getComplicatedEmotionDefaultDescription()
+                    else -> stringProvider.getSingleEmotionDescription(label)
+                }
+            }
     }
 }
 

@@ -76,12 +76,12 @@ fun StatisticsScreen(
                         )
                     }
 
-                    NetworkChart(
-                        analysis = aggregatedAnalysis,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
+//                    NetworkChart(
+//                        result = aggregatedAnalysis,
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .weight(1f)
+//                    )
                 }
             }
         }

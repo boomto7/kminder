@@ -24,6 +24,6 @@ data class JournalWithAnalysis(
  */
 fun JournalWithAnalysis.toDomain(): JournalEntry {
     val entry = journal.toDomain()
-    val analysisDomain = analysis?.toDomain()
-    return entry.copy(emotionAnalysis = analysisDomain)
+    val resultDomain = analysis?.toDomain()
+    return entry.copy(emotionResult = resultDomain)
 }

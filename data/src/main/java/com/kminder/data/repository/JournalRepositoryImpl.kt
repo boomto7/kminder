@@ -39,9 +39,9 @@ class JournalRepositoryImpl @Inject constructor(
         return journalEntryDao.getById(entryId)?.toDomain()
     }
     
-    override suspend fun saveEmotionAnalysis(journalId: Long, analysis: EmotionAnalysis?, status: AnalysisStatus) {
-        if (analysis != null) {
-            journalEntryDao.insertAnalysis(analysis.toEntity(journalId))
+    override suspend fun saveEmotionAnalysis(journalId: Long, result: com.kminder.domain.model.EmotionResult?, status: AnalysisStatus) {
+        if (result != null) {
+            journalEntryDao.insertAnalysis(result.toEntity(journalId))
         }
         journalEntryDao.updateStatus(journalId, status.name)
     }
@@ -157,14 +157,14 @@ class JournalRepositoryImpl @Inject constructor(
         val count = entries.size.toFloat()
         
         return EmotionAnalysis(
-            anger = entries.sumOf { it.emotionAnalysis?.anger?.toDouble() ?: 0.0 }.toFloat() / count,
-            anticipation = entries.sumOf { it.emotionAnalysis?.anticipation?.toDouble() ?: 0.0 }.toFloat() / count,
-            joy = entries.sumOf { it.emotionAnalysis?.joy?.toDouble() ?: 0.0 }.toFloat() / count,
-            trust = entries.sumOf { it.emotionAnalysis?.trust?.toDouble() ?: 0.0 }.toFloat() / count,
-            fear = entries.sumOf { it.emotionAnalysis?.fear?.toDouble() ?: 0.0 }.toFloat() / count,
-            sadness = entries.sumOf { it.emotionAnalysis?.sadness?.toDouble() ?: 0.0 }.toFloat() / count,
-            disgust = entries.sumOf { it.emotionAnalysis?.disgust?.toDouble() ?: 0.0 }.toFloat() / count,
-            surprise = entries.sumOf { it.emotionAnalysis?.surprise?.toDouble() ?: 0.0 }.toFloat() / count
+            anger = entries.sumOf { it.emotionResult?.source?.anger?.toDouble() ?: 0.0 }.toFloat() / count,
+            anticipation = entries.sumOf { it.emotionResult?.source?.anticipation?.toDouble() ?: 0.0 }.toFloat() / count,
+            joy = entries.sumOf { it.emotionResult?.source?.joy?.toDouble() ?: 0.0 }.toFloat() / count,
+            trust = entries.sumOf { it.emotionResult?.source?.trust?.toDouble() ?: 0.0 }.toFloat() / count,
+            fear = entries.sumOf { it.emotionResult?.source?.fear?.toDouble() ?: 0.0 }.toFloat() / count,
+            sadness = entries.sumOf { it.emotionResult?.source?.sadness?.toDouble() ?: 0.0 }.toFloat() / count,
+            disgust = entries.sumOf { it.emotionResult?.source?.disgust?.toDouble() ?: 0.0 }.toFloat() / count,
+            surprise = entries.sumOf { it.emotionResult?.source?.surprise?.toDouble() ?: 0.0 }.toFloat() / count
         )
     }
 }

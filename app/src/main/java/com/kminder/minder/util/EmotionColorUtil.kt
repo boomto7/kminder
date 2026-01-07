@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import com.kminder.domain.model.ComplexEmotionType
+import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionType
 import com.kminder.minder.ui.theme.EmotionAnger
 import com.kminder.minder.ui.theme.EmotionAnticipation
@@ -130,6 +131,30 @@ object EmotionColorUtil {
             ComplexEmotionType.ANNOYANCE -> com.kminder.minder.R.string.emotion_detail_annoyance
             ComplexEmotionType.INTEREST -> com.kminder.minder.R.string.emotion_detail_interest
         }
+    }
+
+    /**
+     * 감정 결과(EmotionResult)에 기초하여 UI에 사용할 최종 색상을 결정합니다.
+     */
+    fun getEmotionResultColor(result: EmotionResult): Color {
+        val primaryColor = getEmotionColor(result.primaryEmotion)
+        val secondaryColor = result.secondaryEmotion?.let { getEmotionColor(it) }
+
+        return if (secondaryColor != null) {
+            // 복합 감정(Dyad, Opposite 등)의 경우 두 색상을 블렌딩하여 최종 감정 색상 표현
+            blendColors(primaryColor, secondaryColor)
+        } else {
+            // 단일 감정의 경우 강도(score)에 따라 색상 조정 (White와 블렌딩)
+            // 최소 가시성(0.3) 보장 + 점수에 따른 채도 변화
+            val intensity = 0.3f + (result.score * 0.7f)
+            blendColors(Color.White, primaryColor, intensity)
+        }
+    }
+
+    private fun isDyadCategory(category: ComplexEmotionType.Category): Boolean {
+        return category == ComplexEmotionType.Category.PRIMARY_DYAD ||
+               category == ComplexEmotionType.Category.SECONDARY_DYAD ||
+               category == ComplexEmotionType.Category.TERTIARY_DYAD
     }
 
     /**

@@ -194,7 +194,7 @@ fun SimpleNetworkChart(
 @Composable
 fun PreviewSimpleNetworkChart() {
     val mockEntry = MockData.mockJournalEntries[6]
-    mockEntry.emotionAnalysis?.let {
+    mockEntry.emotionResult?.source?.let {
         SimpleNetworkChart(analysis = it, modifier = Modifier.fillMaxSize())
     }
 }

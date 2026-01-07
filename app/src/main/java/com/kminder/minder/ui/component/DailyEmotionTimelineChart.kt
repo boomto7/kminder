@@ -26,18 +26,21 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kminder.domain.logic.PlutchikEmotionCalculator
-import com.kminder.domain.model.EmotionType
+import androidx.compose.ui.platform.LocalContext
 import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.EmotionResult
+import com.kminder.domain.model.EmotionType
+import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.theme.MinderTheme
 import com.kminder.minder.util.EmotionColorUtil
+import com.kminder.minder.util.EmotionUiUtil
 
 /**
  * 일일 감정 분포 및 추이 차트 (Russell's Circumplex Model 기반)
  */
 @Composable
 fun DailyEmotionDistributionChart(
-    hourlyData: Map<Int, PlutchikEmotionCalculator.EmotionResult>,
+    hourlyData: Map<Int, EmotionResult>,
     modifier: Modifier = Modifier
 ) {
     val progress = remember { Animatable(0f) }
@@ -55,6 +58,8 @@ fun DailyEmotionDistributionChart(
     val textMeasurer = rememberTextMeasurer()
     val axisLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
     val textColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val context = LocalContext.current
+    val stringProvider = remember { AndroidEmotionStringProvider(context) }
 
     Canvas(
         modifier = modifier
@@ -204,7 +209,7 @@ fun DailyEmotionDistributionChart(
                         )
                     )
                     
-                    val emoStr = point.result.label
+                    val emoStr = EmotionUiUtil.getLabel(point.result, stringProvider)
                     val emoResult = textMeasurer.measure(
                         text = emoStr,
                         style = TextStyle(fontSize = 11.sp, color = textColor, fontWeight = FontWeight.Medium)
@@ -225,7 +230,7 @@ fun DailyEmotionDistributionChart(
 private data class ChartPoint(
     val x: Float, 
     val y: Float, 
-    val result: PlutchikEmotionCalculator.EmotionResult,
+    val result: EmotionResult,
     val hour: Int,
     val radiusBase: Float,
     val color: Color
@@ -237,7 +242,7 @@ private data class EmotionProperties(
     val totalIntensity: Float
 )
 
-private fun getEmotionProperties(result: PlutchikEmotionCalculator.EmotionResult, hour: Int): EmotionProperties {
+private fun getEmotionProperties(result: EmotionResult, hour: Int): EmotionProperties {
     var (val1, aro1) = getBaseValues(result.primaryEmotion)
     
     if (result.secondaryEmotion != null) {
@@ -275,10 +280,10 @@ private fun getBaseValues(type: EmotionType): Pair<Float, Float> {
 @Composable
 fun PreviewDailyEmotionDistribChart() {
     val mockData = mapOf(
-        10 to PlutchikEmotionCalculator.EmotionResult("경멸", "설명", EmotionType.DISGUST, EmotionType.ANGER, 0.83f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis()),
-        14 to PlutchikEmotionCalculator.EmotionResult("낙관", "설명", EmotionType.JOY, EmotionType.ANTICIPATION, 0.5f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis()),
-        18 to PlutchikEmotionCalculator.EmotionResult("절망", "설명", EmotionType.SADNESS, EmotionType.FEAR, 0.6f, com.kminder.domain.model.ComplexEmotionType.Category.SECONDARY_DYAD, source = EmotionAnalysis()),
-        21 to PlutchikEmotionCalculator.EmotionResult("사랑", "설명", EmotionType.JOY, EmotionType.TRUST, 0.93f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis())
+        10 to EmotionResult(EmotionType.DISGUST, EmotionType.ANGER, 0.83f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis()),
+        14 to EmotionResult(EmotionType.JOY, EmotionType.ANTICIPATION, 0.5f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis()),
+        18 to EmotionResult(EmotionType.SADNESS, EmotionType.FEAR, 0.6f, com.kminder.domain.model.ComplexEmotionType.Category.SECONDARY_DYAD, source = EmotionAnalysis()),
+        21 to EmotionResult(EmotionType.JOY, EmotionType.TRUST, 0.93f, com.kminder.domain.model.ComplexEmotionType.Category.PRIMARY_DYAD, source = EmotionAnalysis())
     )
     
     MinderTheme {

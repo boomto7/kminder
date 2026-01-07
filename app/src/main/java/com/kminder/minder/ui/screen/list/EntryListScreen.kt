@@ -16,11 +16,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -35,11 +37,13 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
+import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.screen.home.OutlinedDivider
 import com.kminder.minder.ui.screen.home.OutlinedTimeText
 import com.kminder.minder.ui.theme.MinderBackground
 import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionImageUtil
+import com.kminder.minder.util.EmotionUiUtil
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -102,16 +106,36 @@ fun EntryListScreen(
             Box(modifier = Modifier.weight(1f)) {
                 if (uiState.isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color.Black)
+                        RetroLoadingIndicator()
                     }
                 } else {
                     @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
                     CompositionLocalProvider(
                         LocalOverscrollFactory provides null
                     ) {
+                        val pullState = rememberPullToRefreshState()
                         PullToRefreshBox(
+                            state = pullState,
                             isRefreshing = uiState.isRefreshing,
                             onRefresh = { viewModel.refresh() },
+                            indicator = {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopCenter)
+                                        .padding(top = 16.dp)
+                                ) {
+                                    RetroLoadingIndicator(
+                                        modifier = Modifier
+                                            .size(42.dp)
+                                            .graphicsLayer {
+                                                val fraction = pullState.distanceFraction
+                                                alpha = if (uiState.isRefreshing) 1f else fraction.coerceIn(0f, 1f)
+                                                scaleX = if (uiState.isRefreshing) 1f else fraction.coerceIn(0f, 1f)
+                                                scaleY = if (uiState.isRefreshing) 1f else fraction.coerceIn(0f, 1f)
+                                            }
+                                    )
+                                }
+                            },
                             modifier = Modifier.fillMaxSize()
                         ) {
                             if (uiState.entries.isEmpty()) {
@@ -146,14 +170,10 @@ fun EntryListScreen(
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(vertical = 16.dp),
+                                                    .padding(vertical = 24.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                CircularProgressIndicator(
-                                                    modifier = Modifier.size(24.dp),
-                                                    color = Color.Black,
-                                                    strokeWidth = 2.dp
-                                                )
+                                                RetroLoadingIndicator(modifier = Modifier.size(36.dp))
                                             }
                                         }
                                     }
@@ -218,9 +238,12 @@ fun JournalCard(
     entry: JournalEntry,
     onClick: () -> Unit
 ) {
-    // Determine Color based on Emotion
-    val dominantEmotion = entry.emotionAnalysis?.getDominantEmotion()
-    val cardColor = dominantEmotion?.let { EmotionColorUtil.getEmotionColor(it) } ?: Color.White
+    // Determine Color based on EmotionResult
+    val emotionResult = entry.emotionResult
+    val cardColor = emotionResult?.let { EmotionColorUtil.getEmotionResultColor(it) } ?: Color.White
+    
+    val context = LocalContext.current
+    val stringProvider = remember { AndroidEmotionStringProvider(context) }
 
     Box(
         modifier = Modifier
@@ -289,16 +312,10 @@ fun JournalCard(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Bottom: Emotion Info (if available)
-                if (entry.hasEmotionAnalysis() && dominantEmotion != null) {
+                if (entry.hasEmotionAnalysis() && emotionResult != null) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Emotion Icon
-                        // For now we don't have ComplexEmotionType here, so we map basic EmotionType to icon if possible.
-                        // Or we just skip icon for list if logic is complex.
-                        // Ideally we should update EmotionImageUtil to support basic EmotionType mapping or use default.
-                        // Let's use a simple colored dot or text for now.
-                        
                         // Emotion Name Badge
                         Surface(
                             color = Color.Black.copy(alpha = 0.1f),
@@ -311,12 +328,12 @@ fun JournalCard(
                                Box(
                                    modifier = Modifier
                                        .size(8.dp)
-                                       .background(EmotionColorUtil.getEmotionColor(dominantEmotion), CircleShape)
+                                       .background(EmotionColorUtil.getEmotionColor(emotionResult.primaryEmotion), CircleShape)
                                        .border(1.dp, Color.Black, CircleShape)
                                )
                                Spacer(modifier = Modifier.width(6.dp))
                                Text(
-                                   text = dominantEmotion.name, // TODO: Use localized name
+                                   text = EmotionUiUtil.getLabel(emotionResult, stringProvider),
                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                    color = Color.Black
                                )
@@ -394,8 +411,33 @@ fun RetroFAB(
             )
         }
     }
+}@Composable
+fun RetroLoadingIndicator(
+    modifier: Modifier = Modifier.size(48.dp)
+) {
+    Box(
+        modifier = modifier
+    ) {
+        // Shadow
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset(x = 3.dp, y = 3.dp)
+                .background(Color.Black, CircleShape)
+        )
+        // Main Circle
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White, CircleShape)
+                .border(2.dp, Color.Black, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.fillMaxSize(0.6f),
+                color = Color.Black,
+                strokeWidth = 3.dp
+            )
+        }
+    }
 }
-
-
-
-

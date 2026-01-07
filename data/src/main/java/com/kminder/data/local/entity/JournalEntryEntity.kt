@@ -52,6 +52,6 @@ fun JournalEntryEntity.toDomain(): JournalEntry {
         createdAt = LocalDateTime.parse(createdAt),
         updatedAt = LocalDateTime.parse(updatedAt),
         status = try { AnalysisStatus.valueOf(status) } catch(e: Exception) { AnalysisStatus.NONE },
-        emotionAnalysis = null
+        emotionResult = null
     )
 }

@@ -3,6 +3,8 @@ package com.kminder.domain.di
 import com.kminder.domain.repository.EmotionAnalysisRepository
 import com.kminder.domain.repository.JournalRepository
 import com.kminder.domain.repository.QuestionRepository
+import com.kminder.domain.provider.EmotionStringProvider
+import com.kminder.domain.usecase.analysis.AnalyzeIntegratedEmotionUseCase
 import com.kminder.domain.usecase.emotion.AnalyzeEmotionUseCase
 import com.kminder.domain.usecase.emotion.SaveAndAnalyzeJournalEntryUseCase
 import com.kminder.domain.usecase.journal.*
@@ -76,6 +78,12 @@ object UseCaseModule {
         journalRepository,
         emotionAnalysisRepository
     )
+
+    @Provides
+    @Singleton
+    fun provideAnalyzeIntegratedEmotionUseCase(
+        stringProvider: EmotionStringProvider
+    ): AnalyzeIntegratedEmotionUseCase = AnalyzeIntegratedEmotionUseCase(stringProvider)
     
     // Statistics UseCases
     

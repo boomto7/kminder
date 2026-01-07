@@ -16,7 +16,7 @@ class GetKeywordNetworkDataUseCase @Inject constructor(
         val entries = journalRepository.getEntriesByDateRange(startDate, endDate)
         
         // 2. 일기에서 감정 분석 결과가 있는 경우 키워드 추출 및 통합
-        return entries.mapNotNull { it.emotionAnalysis }
+        return entries.mapNotNull { it.emotionResult?.source }
             .flatMap { it.keywords }
             // 옵션: 점수가 높은 순으로 정렬하거나, 중복 키워드를 합칠 수도 있음
             // 여기서는 원본 데이터를 그대로 반환하고, View에서 그룹화하도록 함.

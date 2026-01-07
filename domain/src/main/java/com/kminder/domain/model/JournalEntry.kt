@@ -1,6 +1,7 @@
 package com.kminder.domain.model
 
 import java.time.LocalDateTime
+import com.kminder.domain.model.EmotionResult
 
 /**
  * 일기 항목 엔티티
@@ -20,13 +21,13 @@ data class JournalEntry(
     val question: String? = null,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val emotionAnalysis: EmotionAnalysis? = null,
+    val emotionResult: EmotionResult? = null,
     val status: AnalysisStatus = AnalysisStatus.NONE
 ) {
     /**
      * 감정 분석이 완료되었는지 확인합니다.
      */
-    fun hasEmotionAnalysis(): Boolean = emotionAnalysis != null
+    fun hasEmotionAnalysis(): Boolean = emotionResult != null
     
     /**
      * 문답 모드인지 확인합니다.

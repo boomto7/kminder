@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -21,11 +23,12 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kminder.domain.logic.PlutchikEmotionCalculator
 import com.kminder.domain.model.ComplexEmotionType
+import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionType
 import com.kminder.minder.data.mock.MockData
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
+import com.kminder.minder.util.EmotionUiUtil
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -45,7 +48,7 @@ import kotlin.math.sin
  */
 @Composable
 fun ConstellationChart(
-    result: PlutchikEmotionCalculator.EmotionResult,
+    result: EmotionResult,
     modifier: Modifier = Modifier
 ) {
     val analysis = result.source
@@ -103,6 +106,7 @@ fun ConstellationChart(
     BoxWithConstraints(modifier = modifier.background(Color.White).padding(16.dp)) {
         val context = LocalContext.current
         val resources = context.resources
+        val stringProvider = remember { AndroidEmotionStringProvider(context) }
         
         val basicEmotionsArray = resources.getStringArray(com.kminder.minder.R.array.basic_emotions)
         val primaryDyadsArray = resources.getStringArray(com.kminder.minder.R.array.primary_dyads)
@@ -211,7 +215,7 @@ fun ConstellationChart(
                         val axis = layout.axes[pIdx]
                         finalDotPos = Offset(centerX + r * axis.cos, centerY + r * axis.sin)
                         finalDotColor = pColor
-                        finalLabel = result.label
+                        finalLabel = EmotionUiUtil.getLabel(result, stringProvider)
                     }
                     ComplexEmotionType.Category.PRIMARY_DYAD -> {
                         if (sIdx != -1) {
@@ -224,7 +228,7 @@ fun ConstellationChart(
                             
                             activePrimaryIndex.value?.let { 
                                 finalDotPos = layout.primaryDyads[it].pos 
-                                finalLabel = result.label
+                                finalLabel = EmotionUiUtil.getLabel(result, stringProvider)
                             }
                         }
                     }
@@ -241,7 +245,7 @@ fun ConstellationChart(
                             }
                             activeSecondaryIndex.value?.let { 
                                 finalDotPos = layout.secondaryDyads[it].pos
-                                finalLabel = result.label
+                                finalLabel = EmotionUiUtil.getLabel(result, stringProvider)
                             }
                         }
                     }
@@ -258,7 +262,7 @@ fun ConstellationChart(
                             }
                             activeTertiaryIndex.value?.let { 
                                 finalDotPos = layout.tertiaryDyads[it].pos 
-                                finalLabel = result.label
+                                finalLabel = EmotionUiUtil.getLabel(result, stringProvider)
                             }
                         }
                     }
@@ -268,7 +272,7 @@ fun ConstellationChart(
                             val sColor = getEmotionColor(result.secondaryEmotion!!)
                             finalDotColor = Color((pColor.red+sColor.red)/2f, (pColor.green+sColor.green)/2f, (pColor.blue+sColor.blue)/2f, 1f)
                             finalDotPos = Offset(centerX, centerY)
-                            finalLabel = result.label
+                            finalLabel = EmotionUiUtil.getLabel(result, stringProvider)
                         }
                     }
                     else -> {}
@@ -534,12 +538,9 @@ fun ConstellationChart(
 @Preview(showBackground = true, backgroundColor = 0xFFe5e4c8)
 @Composable
 fun PreviewConstellationChart() {
-    val context = LocalContext.current
-    val stringProvider = remember { AndroidEmotionStringProvider(context) }
     val mockEntry = MockData.mockJournalEntries[27]
-    mockEntry.emotionAnalysis?.let { analysis ->
-         val result = PlutchikEmotionCalculator.analyzeDominantEmotionCombination(analysis, stringProvider)
-         ConstellationChart(result = result, modifier = Modifier.fillMaxSize())
+    mockEntry.emotionResult?.let { result ->
+        ConstellationChart(result = result, modifier = Modifier.fillMaxSize())
     }
 }
 
