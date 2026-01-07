@@ -23,6 +23,7 @@ import com.kminder.minder.R
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
 import com.kminder.minder.util.EmotionColorUtil
+import com.kminder.minder.ui.component.NeoShadowBox
 
 @Composable
 fun EmotionGuideScreen(
@@ -111,38 +112,23 @@ fun GuideSectionCard(
     content: String,
     contentBuilder: @Composable () -> Unit = {}
 ) {
-    Box(
-        modifier = Modifier.fillMaxWidth()
+    NeoShadowBox(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        // Shadow
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x = 4.dp, y = 4.dp)
-                .background(Color.Black, RoundedCornerShape(16.dp))
-        )
-        // Main
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White, RoundedCornerShape(16.dp))
-                .border(2.dp, Color.Black, RoundedCornerShape(16.dp))
-                .padding(20.dp)
-        ) {
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black.copy(alpha = 0.8f)
-                )
-                contentBuilder()
-            }
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Black.copy(alpha = 0.8f)
+            )
+            contentBuilder()
         }
     }
 }

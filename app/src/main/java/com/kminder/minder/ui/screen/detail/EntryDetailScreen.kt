@@ -34,6 +34,7 @@ import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
 import com.kminder.minder.data.mock.MockData
 import com.kminder.minder.ui.component.chart.NetworkChart
+import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.screen.home.OutlinedDivider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
@@ -51,6 +52,7 @@ import java.util.Locale
 fun EntryDetailScreen(
     entryId: Long,
     onNavigateBack: () -> Unit,
+    onNavigateToAnalysisDetail: (Long) -> Unit,
     viewModel: EntryDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -65,8 +67,8 @@ fun EntryDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text(text = "일기 삭제") },
-            text = { Text(text = "정말로 이 일기를 삭제하시겠습니까?") },
+            title = { Text(text = stringResource(R.string.entry_detail_delete_dialog_title)) },
+            text = { Text(text = stringResource(R.string.entry_detail_delete_dialog_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteEntry(entryId) {
@@ -74,12 +76,12 @@ fun EntryDetailScreen(
                         onNavigateBack()
                     }
                 }) {
-                    Text("삭제", color = Color.Red)
+                    Text(stringResource(R.string.common_delete), color = Color.Red)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("취소")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -141,7 +143,7 @@ fun EntryDetailScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "일기를 불러올 수 없습니다.")
+                            Text(text = stringResource(R.string.entry_detail_load_error))
                         }
                     }
 
@@ -152,7 +154,8 @@ fun EntryDetailScreen(
                         ) {
                             DetailContent(
                                 entry = state.entry,
-                                onRetryAnalysis = { viewModel.retryAnalysis(entryId) }
+                                onRetryAnalysis = { viewModel.retryAnalysis(entryId) },
+                                onNavigateToAnalysisDetail = { onNavigateToAnalysisDetail(entryId) }
                             )
                         }
                     }
@@ -165,7 +168,8 @@ fun EntryDetailScreen(
 @Composable
 fun DetailContent(
     entry: JournalEntry,
-    onRetryAnalysis: () -> Unit = {}
+    onRetryAnalysis: () -> Unit = {},
+    onNavigateToAnalysisDetail: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val emotionResult = entry.emotionResult
@@ -173,9 +177,6 @@ fun DetailContent(
 
     val context = LocalContext.current
     val stringProvider = remember { AndroidEmotionStringProvider(context) }
-
-    // [New] State for showing detailed radar chart popup
-    var selectedEmotionResult by remember { mutableStateOf<EmotionResult?>(null) }
 
     Column(
         modifier = Modifier
@@ -203,7 +204,7 @@ fun DetailContent(
 
         // 1. Journal Content
         Text(
-            text = "Journal Content",
+            text = stringResource(R.string.entry_detail_section_journal),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = Color.Black.copy(alpha = 0.8f)
         )
@@ -230,7 +231,7 @@ fun DetailContent(
         val result = entry.emotionResult
         if (entry.hasEmotionAnalysis() && result != null) {
             Text(
-                text = "Emotion Analysis",
+                text = stringResource(R.string.entry_detail_section_analysis),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color.Black.copy(alpha = 0.8f)
             )
@@ -241,29 +242,43 @@ fun DetailContent(
                     .fillMaxWidth()
                     .aspectRatio(1.6f) // Adjusted to 4:3 ratio to reduce vertical empty space
             ) {
-                // Shadow
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .offset(x = 4.dp, y = 4.dp)
-                        .background(Color.Black, RoundedCornerShape(16.dp))
-                )
-
-                // Content (Chart Container with Card Style)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .background(cardColor, RoundedCornerShape(16.dp))
-                        .border(2.dp, Color.Black, RoundedCornerShape(16.dp))
-                        .padding(16.dp)
+                NeoShadowBox(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = cardColor,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     NetworkChart(
                         result = result,
-                        onNodeClick = { nodeResult ->
-                            selectedEmotionResult = nodeResult
-                        },
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize().padding(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Detail Button with Shadow
+            NeoShadowBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                // Button Layer
+                Button(
+                    onClick = onNavigateToAnalysisDetail,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(8.dp),
+                    // border is handled by NeoShadowBox, but Button might need it for consistent press state?
+                    // Actually, if we make button transparent, we rely on NeoShadowBox border.
+                    // But standard Button has elevation/interactions.
+                    // Let's keep Button transparent and fill max size.
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues()
+                ) {
+                    Text(
+                        text = stringResource(R.string.entry_detail_view_detailed_analysis),
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -278,7 +293,7 @@ fun DetailContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "감정 분석 결과를 불러오지 못했습니다.",
+                        text = stringResource(R.string.entry_detail_analysis_failed),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Black.copy(alpha = 0.6f)
                     )
@@ -289,7 +304,7 @@ fun DetailContent(
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, Color.White)
                     ) {
-                        Text("분석 다시 시도", color = Color.White)
+                        Text(stringResource(R.string.entry_detail_analysis_retry), color = Color.White)
                     }
                 }
             } else if (status == com.kminder.domain.model.AnalysisStatus.PENDING) {
@@ -306,7 +321,7 @@ fun DetailContent(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "감정을 분석하고 있습니다...",
+                        text = stringResource(R.string.entry_detail_analysis_analyzing),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Black.copy(alpha = 0.5f)
                     )
@@ -315,59 +330,6 @@ fun DetailContent(
         }
 
         Spacer(modifier = Modifier.height(50.dp))
-    }
-
-    // Detail Pop-up (Radar Chart)
-    if (selectedEmotionResult != null) {
-        val result = selectedEmotionResult!!
-        androidx.compose.ui.window.Dialog(onDismissRequest = { selectedEmotionResult = null }) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(24.dp))
-                    .border(2.dp, Color.Black, RoundedCornerShape(24.dp))
-                    .padding(24.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Detail Analysis",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color.Black.copy(alpha = 0.6f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = EmotionUiUtil.getLabel(result, stringProvider),
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Radar Chart
-                    // Note: EmotionResult 모델 개선 단계에서 source 추가됨 (compile check required)
-                    // 현재 Mock 등에서 source가 올바르게 들어오는지 확인 필요.
-                    // 만약 source 필드가 아직 릴리즈되지 않은 라이브러리/모듈 문제라면 컴파일 에러가 날 수 있음.
-                    // 앞선 step에서 source 필드 추가 완료했으므로 안전함.
-                    com.kminder.minder.ui.component.chart.RadarChart(
-                        analysis = result.source,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = { selectedEmotionResult = null },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("닫기", color = Color.White)
-                    }
-                }
-            }
-        }
     }
 }
 

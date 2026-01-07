@@ -40,7 +40,9 @@ import com.kminder.minder.R
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.screen.home.OutlinedDivider
 import com.kminder.minder.ui.screen.home.OutlinedTimeText
+import com.kminder.minder.ui.screen.home.OutlinedTimeText
 import com.kminder.minder.ui.theme.MinderBackground
+import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionImageUtil
 import com.kminder.minder.util.EmotionUiUtil
@@ -245,29 +247,15 @@ fun JournalCard(
     val context = LocalContext.current
     val stringProvider = remember { AndroidEmotionStringProvider(context) }
 
-    Box(
+    NeoShadowBox(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min) // Adapts to content
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick),
+        containerColor = cardColor,
+        shape = RoundedCornerShape(16.dp)
     ) {
-        // Shadow Layer
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x = 4.dp, y = 4.dp)
-                .background(Color.Black, RoundedCornerShape(16.dp))
-        )
-
-        // Main Card Layer
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(cardColor, RoundedCornerShape(16.dp))
-                .border(2.dp, Color.Black, RoundedCornerShape(16.dp))
-                .padding(16.dp)
-        ) {
-            Column {
+        Column(modifier = Modifier.padding(16.dp)) {
                 // Top: Date header using Badge style
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -341,7 +329,6 @@ fun JournalCard(
                         }
                     }
                 }
-            }
         }
     }
 }
@@ -352,24 +339,14 @@ fun RetroIconButton(
     icon: ImageVector,
     contentDescription: String
 ) {
-    Box(
-        modifier = Modifier.size(50.dp).clickable(onClick = onClick)
+    NeoShadowBox(
+        modifier = Modifier
+            .size(50.dp)
+            .clickable(onClick = onClick),
+        shape = CircleShape,
+        offset = 3.dp
     ) {
-        // Shadow
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x = 3.dp, y = 3.dp)
-                .background(Color.Black, CircleShape)
-        )
-        // Main
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White, CircleShape)
-                .border(2.dp, Color.Black, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
@@ -385,24 +362,12 @@ fun RetroFAB(
     icon: ImageVector,
     contentDescription: String
 ) {
-    Box(
-        modifier = Modifier.size(64.dp).clickable(onClick = onClick)
+    NeoShadowBox(
+        modifier = Modifier.size(64.dp).clickable(onClick = onClick),
+        containerColor = MaterialTheme.colorScheme.primary,
+        shape = CircleShape
     ) {
-        // Shadow
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x = 4.dp, y = 4.dp)
-                .background(Color.Black, CircleShape)
-        )
-        // Main
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary, CircleShape)
-                .border(2.dp, Color.Black, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
@@ -411,28 +376,18 @@ fun RetroFAB(
             )
         }
     }
-}@Composable
+}
+
+@Composable
 fun RetroLoadingIndicator(
     modifier: Modifier = Modifier.size(48.dp)
 ) {
-    Box(
-        modifier = modifier
+    NeoShadowBox(
+        modifier = modifier,
+        shape = CircleShape,
+        offset = 3.dp
     ) {
-        // Shadow
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x = 3.dp, y = 3.dp)
-                .background(Color.Black, CircleShape)
-        )
-        // Main Circle
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White, CircleShape)
-                .border(2.dp, Color.Black, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             CircularProgressIndicator(
                 modifier = Modifier.fillMaxSize(0.6f),
                 color = Color.Black,

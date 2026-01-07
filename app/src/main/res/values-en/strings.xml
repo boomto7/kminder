@@ -42,6 +42,23 @@
     <!-- Entry Detail Screen -->
     <string name="entry_detail_title">Entry Detail</string>
     <string name="entry_detail_placeholder">Detail Screen (Coming Soon)\nEntry ID: %1$d</string>
+    <string name="entry_detail_section_journal">Journal Content</string>
+    <string name="entry_detail_section_analysis">Emotion Analysis</string>
+    <string name="entry_detail_view_detailed_analysis">View Detailed Analysis</string>
+    <string name="entry_detail_analysis_failed">Failed to load emotion analysis.</string>
+    <string name="entry_detail_analysis_retry">Retry Analysis</string>
+    <string name="entry_detail_analysis_analyzing">Analyzing emotions...</string>
+    <string name="entry_detail_load_error">Failed to load entry.</string>
+
+    <string name="entry_detail_delete_dialog_title">Delete Entry</string>
+    <string name="entry_detail_delete_dialog_message">Are you sure you want to delete this entry?</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_cancel">Cancel</string>
+
+    <!-- Analysis Detail Screen -->
+    <string name="analysis_detail_title">Analysis Detail</string>
+    <string name="analysis_detail_no_data">No analysis data available.</string>
+    <string name="analysis_detail_load_error">Failed to load data.</string>
     
     <!-- Statistics Screen -->
     <string name="statistics_title">Emotion Stats</string>

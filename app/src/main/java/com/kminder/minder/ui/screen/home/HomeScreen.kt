@@ -64,6 +64,7 @@ import com.kminder.minder.ui.theme.MinderBackground
 import com.kminder.minder.ui.theme.MinderTheme
 import com.kminder.minder.util.CustomDateUtil
 import com.kminder.minder.util.EmotionImageUtil
+import com.kminder.minder.ui.component.NeoShadowBox
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -142,42 +143,28 @@ fun HomeScreenContent(
                         .weight(0.7f)
                         .fillMaxHeight()
                 ) {
-                    // Shadow Layer
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(bottom = 6.dp, end = 6.dp) // Offset for card content
-                            .offset(x = 4.dp, y = 4.dp)
-                            .background(Color.Black, shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    )
+                    val cardShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                     
-                    // Main Content Layer
-                    Box(
+                    NeoShadowBox(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(bottom = 6.dp, end = 6.dp) // Margin for shadow visibility
-                            .background(
-                                color = moodColor, 
-                                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-                            )
-                            .border(
-                                width = 2.dp, 
-                                color = Color.Black, 
-                                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-                            )
-                            .padding(20.dp)
+                            .padding(bottom = 6.dp, end = 6.dp), // Margin for shadow visibility
+                        shape = cardShape,
+                        containerColor = moodColor
                     ) {
-                        if (uiState is HomeUiState.Success) {
-                            val analysis = uiState.analysis
-                            if (analysis != null) {
-                                EmotionAnalysisContent(analysis)
+                        Box(modifier = Modifier.padding(20.dp)) {
+                            if (uiState is HomeUiState.Success) {
+                                val analysis = uiState.analysis
+                                if (analysis != null) {
+                                    EmotionAnalysisContent(analysis)
+                                } else {
+                                    Text(stringResource(R.string.common_no_data), modifier = Modifier.align(Alignment.Center))
+                                }
+                            } else if (uiState is HomeUiState.Loading) {
+                                Text(stringResource(R.string.common_loading), modifier = Modifier.align(Alignment.Center))
                             } else {
                                 Text(stringResource(R.string.common_no_data), modifier = Modifier.align(Alignment.Center))
                             }
-                        } else if (uiState is HomeUiState.Loading) {
-                            Text(stringResource(R.string.common_loading), modifier = Modifier.align(Alignment.Center))
-                        } else {
-                            Text(stringResource(R.string.common_no_data), modifier = Modifier.align(Alignment.Center))
                         }
                     }
                 }
@@ -389,24 +376,16 @@ fun MenuButton(
     size: Dp = 50.dp
 ) {
     // Retro Button Style: Hard Shadow + Border
-    Box(
-        modifier = Modifier.size(size)
+    NeoShadowBox(
+        modifier = Modifier.size(size),
+        shape = CircleShape,
+        offset = 3.dp,
+        containerColor = containerColor
     ) {
-        // Shadow Layer
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x = 3.dp, y = 3.dp)
-                .background(Color.Black, CircleShape)
-        )
-        // Main Layer
         Surface(
             onClick = onClick,
             modifier = Modifier.fillMaxSize(),
-            shape = CircleShape,
-            color = containerColor,
-            border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black),
-            shadowElevation = 0.dp // Disable default soft shadow
+            color = Color.Transparent
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
@@ -428,38 +407,27 @@ fun EmotionAnalysisContent(analysis: IntegratedAnalysis) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         // 1. Emotion Image (Background Layer, Bottom End)
+        // 1. Emotion Image (Background Layer, Bottom End)
         if (emotionImageResId != 0) {
-            Box(
+            NeoShadowBox(
                 modifier = Modifier
                     .size(100.dp) // Larger size for background effect
                     .align(Alignment.BottomEnd) // Position at bottom right
                     .offset(x = 10.dp, y = 10.dp) // Slightly off-screen/clipped for dynamic look
-                    .alpha(0.8f) // Slightly transparent so text is legible
+                    .alpha(0.8f), // Slightly transparent so text is legible
+                shape = CircleShape,
+                offset = 2.dp,
+                containerColor = Color.White
             ) {
-                // Shadow (Optional for background prop)
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .offset(x = 2.dp, y = 2.dp)
-                        .background(Color.Black, CircleShape)
-                )
-                // Image
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    shape = CircleShape,
-                    color = Color.White,
-                    border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black)
-                ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(emotionImageResId)
-                            .crossfade(true)
-                            .build(),
-                        placeholder = painterResource(R.drawable.ic_launcher_foreground),
-                        contentDescription = null, // Decorative background
-                        modifier = Modifier.padding(10.dp)
-                    )
-                }
+                 AsyncImage(
+                     model = ImageRequest.Builder(LocalContext.current)
+                         .data(emotionImageResId)
+                         .crossfade(true)
+                         .build(),
+                     placeholder = painterResource(R.drawable.ic_launcher_foreground),
+                     contentDescription = null, // Decorative background
+                     modifier = Modifier.padding(10.dp)
+                 )
             }
         }
 
