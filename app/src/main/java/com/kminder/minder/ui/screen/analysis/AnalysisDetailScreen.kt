@@ -180,7 +180,7 @@ fun AnalysisDetailHeader(onNavigateBack: () -> Unit) {
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)
 @Composable
 fun PreviewAnalysisDetailScreen() {
-    val mockEntry = com.kminder.minder.data.mock.MockData.mockJournalEntries.first()
+    val mockEntry = com.kminder.minder.data.mock.MockData.mockJournalEntries[2]
     com.kminder.minder.ui.theme.MinderTheme {
         AnalysisDetailContent(
             uiState = AnalysisDetailUiState.Success(mockEntry),

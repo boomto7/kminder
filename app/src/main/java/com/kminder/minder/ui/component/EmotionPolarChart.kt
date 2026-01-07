@@ -64,19 +64,15 @@ fun EmotionPolarChart(
         Triple(emotions.anticipation, EmotionAnticipation, stringResource(R.string.emotion_anticipation))
     )
 
-    val progress = remember { Animatable(0f) }
-
-    LaunchedEffect(emotions) {
-        progress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = animationDurationMillis, easing = FastOutSlowInEasing)
-        )
-    }
-
-    val gapDp = 2.dp
-
+    val gapDp = 6.dp // Gap increased
+    
     val textMeasurer = rememberTextMeasurer()
-    val textColor = MaterialTheme.colorScheme.onPrimary
+    val textColor = androidx.compose.ui.graphics.Color.Black
+    val boldTextStyle = TextStyle(
+        fontSize = 11.sp, // Slightly larger font
+        fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+        color = textColor
+    )
     
     Canvas(
         modifier = modifier
@@ -87,66 +83,86 @@ fun EmotionPolarChart(
         val centerX = size.width / 2
         val centerY = size.height / 2
         val maxRadius = minOf(centerX, centerY)
+        val innerRadius = maxRadius * 0.2f // 20% inner hole (Donut style)
         
         val sliceCount = emotionList.size
-        val sliceAngle = 360f / sliceCount
-        val cornerRadius = 12.dp.toPx()
+        // 360 degrees divided by count, minus gap degrees
+        // Calculating gap in degrees based on inner circumference roughly
+        // Circumference at innerRadius = 2 * PI * innerRadius
+        // Gap width / Circumference * 360
+        val gapDegrees = (gapDp.toPx() / (2 * PI * innerRadius)) * 360f
+        val availableSweep = 360f / sliceCount
+        val sweepAngle = availableSweep - gapDegrees.toFloat().coerceAtLeast(1f)
+        val startAngleOffset = gapDegrees.toFloat() / 2f
+        
+        val cornerRadius = 8.dp.toPx() // Rounded corners
 
-        // Offscreen Layer 생성 (BlendMode.Clear 적용을 위해)
-        drawContext.canvas.saveLayer(
-            androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height),
-            androidx.compose.ui.graphics.Paint()
-        )
+        // Offscreen Layer (Optional, kept if needed for complex blending, but standard drawing is fine here)
+        // drawContext.canvas.saveLayer(...) // Removing for simpler solid drawing unless needed
 
-        // 1. 모든 슬라이스 (배경 + 데이터) 그리기
+        // 1. Draw Slices
         emotionList.forEachIndexed { index, (intensity, color, category) ->
-            val startAngle = -90f + (index * sliceAngle)
+            // Center angle for this slice
+            val centerAngle = -90f + (index * availableSweep) + (availableSweep / 2f)
+            val startAngle = centerAngle - (sweepAngle / 2f)
 
-            // 배경
+            // 0. Background Wedge
+            // Extend to maxRadius (full intensity)
+            val bgThickness = maxRadius - innerRadius
+            val bgCornerRadius = minOf(cornerRadius, bgThickness / 2f)
+            
             val bgPath = androidx.compose.ui.graphics.Path().apply {
-                addRoundedWedge(
+                addRoundedAnnularSector(
                     center = Offset(centerX, centerY),
-                    radius = maxRadius,
+                    innerRadius = innerRadius,
+                    outerRadius = maxRadius,
                     startAngle = startAngle,
-                    sweepAngle = sliceAngle,
-                    cornerRadius = cornerRadius
+                    sweepAngle = sweepAngle,
+                    cornerRadius = bgCornerRadius
                 )
             }
+            // Light gray or faint color of the emotion
+            // User requested Gray background ("기존의 회색을 유지").
             drawPath(path = bgPath, color = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.1f))
 
-            // 데이터
-            val animatedIntensity = intensity * progress.value
-            if (animatedIntensity > 0.01f) {
-                val dataRadius = maxRadius * animatedIntensity.coerceIn(0.1f, 1f)
-                val adjustedCornerRadius = minOf(cornerRadius, dataRadius / 2)
+            if (intensity > 0.01f) {
+                // Calculate outer radius based on intensity, strictly between inner and max
+                // Map intensity 0..1 to inner..max
+                val outerRadius = innerRadius + (maxRadius - innerRadius) * intensity.coerceIn(0.1f, 1f)
+                
+                // Adjust corner radius to not exceed thickness/2
+                val thickness = outerRadius - innerRadius
+                val adjustedCornerRadius = minOf(cornerRadius, thickness / 2f)
 
                 val dataPath = androidx.compose.ui.graphics.Path().apply {
-                    addRoundedWedge(
+                    addRoundedAnnularSector(
                         center = Offset(centerX, centerY),
-                        radius = dataRadius,
+                        innerRadius = innerRadius,
+                        outerRadius = outerRadius,
                         startAngle = startAngle,
-                        sweepAngle = sliceAngle,
+                        sweepAngle = sweepAngle,
                         cornerRadius = adjustedCornerRadius
                     )
                 }
-                drawPath(path = dataPath, color = color.copy(alpha = 0.8f))
+                
+                // 1. Fill (Solid Color)
+                drawPath(path = dataPath, color = color)
+                
+                // 2. Border (Bold Black Stroke)
+                drawPath(path = dataPath, color = androidx.compose.ui.graphics.Color.Black, style = Stroke(width = 2.dp.toPx()))
             }
 
-            // category
-            val textRadius = maxRadius * 0.7f
-            // 텍스트의 중심 각도 (시작점 + 절반 각도)
-            val angleDegrees = startAngle + sliceAngle / 2f
-            // Compose의 삼각함수는 라디안(Radian) 값을 받기 때문에 변환 필요
-            val angleRadians = angleDegrees * PI.toFloat() / 180f
-            // 극좌표계를 직교 좌표계(X, Y)로 변환
-            val textX = center.x + textRadius * cos(angleRadians)
-            val textY = center.y + textRadius * sin(angleRadians)
+            // Category Label Position
+            // Place label slightly outside the max radius or at a fixed functional radius
+            val labelRadius = maxRadius * 0.85f 
+            val angleRadians = Math.toRadians(centerAngle.toDouble())
+            
+            val textX = centerX + labelRadius * cos(angleRadians).toFloat()
+            val textY = centerY + labelRadius * sin(angleRadians).toFloat()
+            
             val textLayoutResult = textMeasurer.measure(
                 text = category,
-                style = androidx.compose.ui.text.TextStyle(
-                    fontSize = 8.sp,
-                    textAlign = TextAlign.Center
-                )
+                style = boldTextStyle
             )
 
             drawText(
@@ -156,203 +172,202 @@ fun EmotionPolarChart(
                     x = textX - textLayoutResult.size.width / 2f,
                     y = textY - textLayoutResult.size.height / 2f
                 ),
-                style = TextStyle(
-                    fontSize = 8.sp,
-                    color = textColor
-                )
-            )
-
-        }
-
-        // 2. 갭/간격 마스킹 (BlendMode.Clear)
-        // 슬라이스 경계마다 선을 그려서 지움 (Constant Gap 효과)
-        val gapPx = gapDp.toPx()
-        for (i in 0 until sliceCount) {
-            val angleDeg = -90f + (i * sliceAngle)
-            val angleRad = Math.toRadians(angleDeg.toDouble())
-            
-            // 중심에서 외부로 뻗는 선
-            // 넉넉하게 maxRadius보다 길게 그림
-            val lineEnd = Offset(
-                centerX + (maxRadius * 1.5f) * cos(angleRad).toFloat(),
-                centerY + (maxRadius * 1.5f) * sin(angleRad).toFloat()
-            )
-            
-            drawLine(
-                color = androidx.compose.ui.graphics.Color.Black, // 색상은 상관없음 (Clear)
-                start = Offset(centerX, centerY),
-                end = lineEnd,
-                strokeWidth = gapPx,
-                blendMode = androidx.compose.ui.graphics.BlendMode.Clear
+                style = boldTextStyle
             )
         }
-
-        drawContext.canvas.restore()
     }
 }
 
 /**
- * 모서리가 둥근 부채꼴(Wedge) 경로를 생성하는 확장 함수
+ * Adds a rounded annular sector (donut slice) to the path.
+ * 
+ * @param center The center of the circle.
+ * @param innerRadius The radius of the inner arc.
+ * @param outerRadius The radius of the outer arc.
+ * @param startAngle The starting angle in degrees.
+ * @param sweepAngle The sweep angle in degrees.
+ * @param cornerRadius The radius of the rounded corners.
  */
-fun androidx.compose.ui.graphics.Path.addRoundedWedge(
+fun androidx.compose.ui.graphics.Path.addRoundedAnnularSector(
     center: Offset,
-    radius: Float,
+    innerRadius: Float,
+    outerRadius: Float,
     startAngle: Float,
     sweepAngle: Float,
     cornerRadius: Float
 ) {
-    // 1. 중심에서 시작
-    moveTo(center.x, center.y)
-
-    // 각도를 라디안으로 변환
+    // Determine actual corners.
+    // We need 4 corners: InnerStart, OuterStart, OuterEnd, InnerEnd.
+    // But we use arcTo for the main edges.
+    
+    // Convert angles to radians
     val startRad = Math.toRadians(startAngle.toDouble())
     val endRad = Math.toRadians((startAngle + sweepAngle).toDouble())
-    val sweepRad = Math.toRadians(sweepAngle.toDouble())
-
-    // 2. 부채꼴의 꼭지점 계산 (직선으로 갔을 때)
-    // 하지만 둥근 모서리를 위해 안쪽으로 들어온 점들을 계산해야 함.
-    // 간단한 근사: 반지름을 CornerRadius만큼 줄인 호를 그리고, 양 끝에서 원을 그림?
-    // 더 나은 방법: 아크의 양 끝점에 원을 배치하여 연결.
     
-    // 단순화된 로직: 
-    // 중심 -> (radius - corner) 까지 직선
-    // 끝에서 corner radius 만큼의 라운드 처리 (베지어 혹은 아크)
-    // 외곽 호 그리기
-    // 다시 들어오는 라운드 처리
-    // 중점으로 복귀
+    // We use a simplified strategy utilizing `arcTo` and `quadraticBezierTo` or simple lines.
+    // Since calculating exact tangent points for rounded corners on a polar sector is complex,
+    // we will essentially trace the shape:
+    // 1. Inner End -> Inner Start (CCW)? No, usually paths are one direction. Let's go Clockwise (CW) or CCW.
+    // Compose arcTo sweeps CW if sweepAngle is positive.
     
-    // 외곽 아크를 그리기 위한 사각형
-    // cornerRadius 만큼 안쪽으로 들어간 반지름에서 아크를 그리고, 끝부분을 라운드 처리하는 방식은 복잡.
-    // "Rounded Polygon" 방식:
-    // 다행히 Compose Path에는 arcTo가 있음.
+    // Structure:
+    // 1. Move to Inner Start (adjusted for corner)
+    // 2. Line to Outer Start (adjusted)
+    // 3. Arc Outer (adjusted)
+    // 4. Line to Inner End (adjusted)
+    // 5. Arc Inner (adjusted) - wait, inner arc is reverse?
     
-    // 여기서는 visual hack을 사용:
-    // 1. 중심에서 시작
-    // 2. 왼쪽 변을 따라 나가되, 끝부분(R-r)까지만 감.
-    // 3. 외곽 왼쪽 모서리 둥글게 (arcTo)
-    // 4. 외곽 호 (arcTo) - 원래 반지름 R 유지
-    // 5. 외곽 오른쪽 모서리 둥글게 (arcTo)
-    // 6. 오른쪽 변을 따라 들어옴.
+    // Much easier to think in terms of 4 arcs (2 main, 2 corners) and 2 lines? 
+    // Or 4 rounded corners connected by lines/arcs.
     
-    // 좌표 계산
-    // 왼쪽 변 벡터: (cos(start), sin(start))
-    // 오른쪽 변 벡터: (cos(end), sin(end))
+    // Let's use a simpler approximation that looks good visually.
+    // Inner/Outer arcs are main.
+    // Side lines are radial.
     
-    // 왼쪽 선분 끝점 (라운드 시작 전)
-    val lineEndRadius = radius - cornerRadius
-    
-    // A: 왼쪽 직선 끝점
-    val p1X = center.x + lineEndRadius * cos(startRad).toFloat()
-    val p1Y = center.y + lineEndRadius * sin(startRad).toFloat()
-    
-    lineTo(p1X, p1Y)
-    
-    // B: 외곽 호를 그리기. 
-    // 모서리를 둥글게 하기 위해선 quadraticBezierTo 등을 쓰거나 arc를 잘 써야 함.
-    // 쉬운 방법: LineTo -> Arc(corner) -> Arc(main) -> Arc(corner) -> LineTo(Zero)
-    
-    // Corner Arc 1 (Left Outer)
-    // Control Point는 (R, startAngle) 지점
-    // Target Point는 외곽 호의 시작점.
-    // 그냥 cornerRadius 반지름의 원을 그리는 것으로 근사.
-    
-    // 완벽한 수학적 구현보다는 "부드러운 느낌"을 위해 
-    // arcToPoint 등을 활용하기보다, 
-    // arcTo(rect, start, sweep)을 사용하여 3개의 호를 연결.
-    
-    // 1. 왼쪽 코너 아크
-    // 이 아크의 중심은? (R-r) 위치에서 각도 방향으로? 
-    // 복잡하므로, 단순하게:
-    // 그냥 큰 호를 그리고 StrokeJoin.Round/StrokeCap.Round를 쓰는게 나을 수도 있지만 fill이 문제.
-    
-    // 직접 구현:
-    // 외곽 호의 시작 각도와 끝 각도를 cornerRadius에 해당하는 각도만큼 줄임.
-    // 호의 길이 L = r * theta -> theta = L / r
-    // theta_offset = cornerRadius / radius
-    val angleOffsetRad = (cornerRadius / radius).toDouble()
-    val angleOffsetDeg = Math.toDegrees(angleOffsetRad).toFloat()
-    
-    if (sweepAngle < 2 * angleOffsetDeg) {
-        // 너무 좁아서 라운드 처리가 힘들면 그냥 삼각형/직선 취급하거나 작은 아크
-        // Fallback to simple arc
-        arcTo(
-            rect = androidx.compose.ui.geometry.Rect(
-                center = center, radius = radius
-            ),
-            startAngleDegrees = startAngle,
-            sweepAngleDegrees = sweepAngle,
-            forceMoveTo = false
+    // Helper to get point
+    fun getPoint(radius: Float, angleDeg: Float): Offset {
+        val rad = Math.toRadians(angleDeg.toDouble())
+        return Offset(
+            center.x + radius * cos(rad).toFloat(),
+            center.y + radius * sin(rad).toFloat()
         )
-    } else {
-        // 왼쪽 코너: (R-r) 지점이 아니라, 그냥 외곽 호의 양 끝을 부드럽게.
-        // 이것을 path.arcTo로 하기엔 중심점 잡기가 애매함.
-        // 큐빅 베지어로 코너 처리.
-        
-        // P_outer_start: (R, startAngle)
-        // P_outer_end: (R, endAngle)
-        
-        // P_inner_start: (R-r, startAngle)
-        // P_inner_end: (R-r, endAngle)
-        
-        // Path:
-        // 1. Move Center
-        // 2. Line to P_inner_start
-        // 3. Quadratic to P_outer_start -> then to (R, start + offset) ??
-        // Better: simple arcTo logic is hard.
-        
-        // **Best Approximation**:
-        // Standard shape with `close()` and `CornerPathEffect`? Compose `Paint` supports `pathEffect`.
-        // But `drawPath` takes simple params.
-        
-        // Manual construction:
-        val r = radius
-        val cr = cornerRadius
-        
-        // Outer arc boundaries
-        val effectiveStartAngle = startAngle + angleOffsetDeg
-        val effectiveSweepAngle = sweepAngle - (2 * angleOffsetDeg)
-        
-        // Left Corner
-        // We want a curve from (R-cr, startAngle) to (R, startAngle + offset)
-        // Control point can be (R, startAngle)
-        val outerLeftTip = Offset(center.x + r * cos(startRad).toFloat(), center.y + r * sin(startRad).toFloat())
-        val arcStart = Offset(
-            center.x + r * cos(Math.toRadians((startAngle + angleOffsetDeg).toDouble())).toFloat(), 
-            center.y + r * sin(Math.toRadians((startAngle + angleOffsetDeg).toDouble())).toFloat()
-        )
-        
-        quadraticBezierTo(outerLeftTip.x, outerLeftTip.y, arcStart.x, arcStart.y)
-        
-        // Main Outer Arc
-        arcTo(
-            rect = androidx.compose.ui.geometry.Rect(center = center, radius = r),
-            startAngleDegrees = effectiveStartAngle,
-            sweepAngleDegrees = effectiveSweepAngle,
-            forceMoveTo = false
-        )
-        
-        // Right Corner
-        // Curve from (R, endAngle - offset) to (R-cr, endAngle)
-        // Control point (R, endAngle)
-        val arcEnd = Offset(
-            center.x + r * cos(Math.toRadians((startAngle + sweepAngle - angleOffsetDeg).toDouble())).toFloat(),
-            center.y + r * sin(Math.toRadians((startAngle + sweepAngle - angleOffsetDeg).toDouble())).toFloat()
-        )
-        val outerRightTip = Offset(
-            center.x + r * cos(endRad).toFloat(),
-            center.y + r * sin(endRad).toFloat()
-        )
-        val innerRight = Offset(
-            center.x + (r - cr) * cos(endRad).toFloat(),
-            center.y + (r - cr) * sin(endRad).toFloat()
-        )
-        
-        // We are already at arcEnd.
-        quadraticBezierTo(outerRightTip.x, outerRightTip.y, innerRight.x, innerRight.y)
     }
+
+    // angular adjustment for corners at given radius
+    // s = r * theta -> theta = s / r
+    fun angleShift(radius: Float) = Math.toDegrees((cornerRadius / radius).toDouble()).toFloat()
     
-    // 3. 중심으로 복귀
-    lineTo(center.x, center.y)
+    val outerAngleShift = angleShift(outerRadius)
+    val innerAngleShift = angleShift(innerRadius)
+    
+    // Ensure sweep angle is large enough to check fit
+    if (sweepAngle < maxOf(outerAngleShift, innerAngleShift) * 2) {
+        // Fallback to simple sector if too small
+        // Just draw simple block
+        val p1 = getPoint(innerRadius, startAngle)
+        val p2 = getPoint(outerRadius, startAngle)
+        val p3 = getPoint(outerRadius, startAngle + sweepAngle)
+        val p4 = getPoint(innerRadius, startAngle + sweepAngle)
+        moveTo(p1.x, p1.y)
+        lineTo(p2.x, p2.y)
+        arcTo(androidx.compose.ui.geometry.Rect(center, outerRadius), startAngle, sweepAngle, false)
+        lineTo(p4.x, p4.y)
+        arcTo(androidx.compose.ui.geometry.Rect(center, innerRadius), startAngle + sweepAngle, -sweepAngle, false)
+        close()
+        return
+    }
+
+    // 1. Inner Start Corner
+    // Start slightly after startAngle on Inner Radius
+    val innerStartAngle = startAngle + innerAngleShift
+    val innerStart = getPoint(innerRadius, innerStartAngle)
+    
+    // 2. Outer Start Corner
+    val outerStartAngle = startAngle + outerAngleShift
+    val outerStart = getPoint(outerRadius, outerStartAngle)
+    
+    // 3. Outer End Corner
+    val outerEndAngle = startAngle + sweepAngle - outerAngleShift
+    // val outerEnd = getPoint(outerRadius, outerEndAngle) // Not directly needed for arcTo
+    
+    // 4. Inner End Corner
+    val innerEndAngle = startAngle + sweepAngle - innerAngleShift
+    val innerEnd = getPoint(innerRadius, innerEndAngle)
+
+    // Start drawing
+    
+    // Move to Inner Start (after corner)
+    moveTo(innerStart.x, innerStart.y)
+    
+    // Line to Outer Start (before corner)?
+    // Actually, we want to draw the rounded corner first?
+    // Let's start at Inner Start Main Arc end point (closest to startAngle side)
+    // No, let's start at Inner-Start Corner, go radial out.
+    
+    // Start at Inner Start Point (on ring)
+    // Draw Corner: Curve from Inner Ring to Left Line
+    // Left Line: Radial line from Inner to Outer
+    // Outer Start Corner: Curve from Left Line to Outer Ring
+    // Outer Ring: Arc
+    // ...
+    
+    // Let's refine vertices for radial lines
+    // Left Line segment: from (Inner+Corner, Start) to (Outer-Corner, Start)
+    // But 'Start' angle is fixed.
+    
+    // Corner centers?
+    // Standard approach: Inset the shape by radius r.
+    // The "Skeleton" shape is the sector from inner+r to outer-r, angle start+ang to end-ang.
+    // Then stroke with width 2r? No.
+    
+    // Direct construction using quadTo for corners is robust enough for UI.
+    
+    // --- Inner Start CORNER ---
+    // Anchor: (innerRadius, startAngle)
+    // Start point of corner: (innerRadius, startAngle + shift) -> innerStart
+    // Control point: (innerRadius, startAngle) ? No, that's inside the hole.
+    // Tangent intersection is at (innerRadius, startAngle) and (innerRadius, startAngle).
+    // Actually intersection of Inner Arc tangent and Radial Line.
+    // Using (innerRadius, startAngle) as control point works for small arcs.
+    
+    // Wait, simpler:
+    // 1. Arc (Inner): from InnerEndAngle down to InnerStartAngle (Reverse direction)
+    arcTo(
+        rect = androidx.compose.ui.geometry.Rect(center, innerRadius),
+        startAngleDegrees = innerEndAngle,
+        sweepAngleDegrees = -(innerEndAngle - innerStartAngle), // Negative sweep
+        forceMoveTo = true // Start here
+    )
+    
+    // 2. Corner (Inner -> Start Line)
+    // From current (InnerStart) to a point on the Start Radial Line.
+    // Target on radial line: radius = innerRadius + cornerRadius
+    val startLineP1 = getPoint(innerRadius + cornerRadius, startAngle)
+    val innerCornerControl = getPoint(innerRadius, startAngle) // Not quite right but close
+    // Better control point for "Inner Start" corner: 
+    // It's the intersection of the tangent at InnerStart and the Radial Line.
+    // Tangent at InnerStart is roughly perpendicular to radius.
+    quadraticBezierTo(innerCornerControl.x, innerCornerControl.y, startLineP1.x, startLineP1.y)
+    
+    // 3. Line (Start Line)
+    // Go up to outer radius - cornerRadius
+    val startLineP2 = getPoint(outerRadius - cornerRadius, startAngle)
+    lineTo(startLineP2.x, startLineP2.y)
+    
+    // 4. Corner (Start Line -> Outer)
+    // Control point: (outerRadius, startAngle)
+    // Target: (outerRadius, startAngle + shift) -> outerStart
+    val outerCornerControl = getPoint(outerRadius, startAngle)
+    quadraticBezierTo(outerCornerControl.x, outerCornerControl.y, outerStart.x, outerStart.y)
+    
+    // 5. Arc (Outer)
+    arcTo(
+        rect = androidx.compose.ui.geometry.Rect(center, outerRadius),
+        startAngleDegrees = outerStartAngle,
+        sweepAngleDegrees = outerEndAngle - outerStartAngle,
+        forceMoveTo = false
+    )
+    
+    // 6. Corner (Outer -> End Line)
+    // Control: (outerRadius, endAngle)
+    // Target: (outerRadius - cornerRadius, endAngle)
+    val outerEndControl = getPoint(outerRadius, startAngle + sweepAngle)
+    val endLineP1 = getPoint(outerRadius - cornerRadius, startAngle + sweepAngle)
+    quadraticBezierTo(outerEndControl.x, outerEndControl.y, endLineP1.x, endLineP1.y)
+    
+    // 7. Line (End Line)
+    val endLineP2 = getPoint(innerRadius + cornerRadius, startAngle + sweepAngle)
+    lineTo(endLineP2.x, endLineP2.y)
+    
+    // 8. Corner (End Line -> Inner)
+    // Control: (innerRadius, endAngle)
+    // Target: innerEnd (where we started roughly)
+    val innerEndControl = getPoint(innerRadius, startAngle + sweepAngle)
+    // We need to connect to the start of the Inner Arc (which was the first MoveTo / ArcTo start)
+    // The very first point was `innerEnd` (actually the start of the reversed arc).
+    // So we just curve to that.
+    quadraticBezierTo(innerEndControl.x, innerEndControl.y, innerEnd.x, innerEnd.y)
+    
     close()
 }
 
