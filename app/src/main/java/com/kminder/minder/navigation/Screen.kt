@@ -40,4 +40,11 @@ sealed class Screen(val route: String) {
      * 감정 가이드 화면
      */
     data object EmotionGuide : Screen("emotion_guide")
+
+    /**
+     * 감정 분석 상세 화면
+     */
+    data object AnalysisDetail : Screen("analysis_detail/{entryId}") {
+        fun createRoute(entryId: Long) = "analysis_detail/$entryId"
+    }
 }

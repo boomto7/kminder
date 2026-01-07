@@ -13,6 +13,7 @@ import com.kminder.minder.ui.screen.list.EntryListScreen
 import com.kminder.minder.ui.screen.detail.EntryDetailScreen
 import com.kminder.minder.ui.screen.statistics.StatisticsScreen
 import com.kminder.minder.ui.screen.guide.EmotionGuideScreen
+import com.kminder.minder.ui.screen.analysis.AnalysisDetailScreen
 
 /**
  * 앱의 Navigation Graph
@@ -99,6 +100,25 @@ fun MinderNavGraph(
         ) { backStackEntry ->
             val entryId = backStackEntry.arguments?.getLong("entryId") ?: 0L
             EntryDetailScreen(
+                entryId = entryId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToAnalysisDetail = { id ->
+                    navController.navigate(Screen.AnalysisDetail.createRoute(id))
+                }
+            )
+        }
+        
+        // 감정 분석 상세 화면
+        composable(
+            route = Screen.AnalysisDetail.route,
+            arguments = listOf(
+                navArgument("entryId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val entryId = backStackEntry.arguments?.getLong("entryId") ?: 0L
+            AnalysisDetailScreen(
                 entryId = entryId,
                 onNavigateBack = {
                     navController.popBackStack()
