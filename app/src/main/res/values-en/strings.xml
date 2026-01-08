@@ -74,6 +74,7 @@
 
     <!-- Analysis Detail Screen -->
     <string name="analysis_detail_title">Analysis Detail</string>
+    <string name="analysis_report_card_title">Emotion Analysis Report</string>
     <string name="analysis_detail_no_data">No analysis data available.</string>
     <string name="analysis_detail_load_error">Failed to load data.</string>
     <string name="analysis_detail_chart_title_1">Word Cloud Analysis</string>

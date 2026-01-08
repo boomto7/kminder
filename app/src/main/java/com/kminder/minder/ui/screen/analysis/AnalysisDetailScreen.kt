@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,8 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.kminder.minder.R
-import com.kminder.minder.ui.component.EmotionPolarChart
 import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.component.chart.ConstellationChart
 import com.kminder.minder.ui.component.chart.NetworkChart
@@ -58,7 +59,7 @@ fun AnalysisDetailScreen(
     viewModel: AnalysisDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     // Load data
     LaunchedEffect(entryId) {
         viewModel.loadEntry(entryId)
@@ -92,20 +93,28 @@ fun AnalysisDetailContent(
             Box(modifier = Modifier.weight(1f)) {
                 when (val state = uiState) {
                     is AnalysisDetailUiState.Loading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             CircularProgressIndicator(color = Color.Black)
                         }
                     }
+
                     is AnalysisDetailUiState.Error -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(stringResource(R.string.analysis_detail_load_error))
                         }
                     }
+
                     is AnalysisDetailUiState.Success -> {
                         val entry = state.entry
                         val result = entry.emotionResult
 
-                        
+
                         if (result != null) {
                             val cardColor = EmotionColorUtil.getEmotionResultColor(result)
                             CompositionLocalProvider(
@@ -118,40 +127,137 @@ fun AnalysisDetailContent(
                                         .padding(16.dp),
                                     horizontalAlignment = Alignment.Start,
 
-                                ) {
+                                    ) {
                                     val context = LocalContext.current
-                                    val stringProvider = remember { AndroidEmotionStringProvider(context) }
+                                    val stringProvider =
+                                        remember { AndroidEmotionStringProvider(context) }
 
-                                    // Title (Emotion Label)
+                                    // 1. Emotion Report Card
                                     Text(
-                                        text = EmotionUiUtil.getLabel(result, stringProvider),
-                                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
+                                        text = stringResource(R.string.analysis_report_card_title),
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                                         color = Color.Black
-                                    )
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    // Detailed Description
-                                    Text(
-                                        text = EmotionUiUtil.getDescription(result, stringProvider),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.Black.copy(alpha = 0.7f),
-                                        modifier = Modifier.fillMaxWidth()
                                     )
 
                                     Spacer(modifier = Modifier.height(16.dp))
 
+                                    NeoShadowBox(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(24.dp),
+                                        containerColor = Color.White
+                                    ) {
+                                        Column(modifier = Modifier.padding(24.dp)) {
+                                            // Title (Emotion Label) with Image
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                val imageResId = EmotionUiUtil.getEmotionImageResId(
+                                                    context,
+                                                    result
+                                                )
+                                                if (imageResId != null) {
+                                                    AsyncImage(
+                                                        model = imageResId,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(40.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                }
+                                                Text(
+                                                    text = EmotionUiUtil.getLabel(
+                                                        result,
+                                                        stringProvider
+                                                    ),
+                                                    style = MaterialTheme.typography.headlineSmall.copy(
+                                                        fontWeight = FontWeight.Bold
+                                                    ),
+                                                    color = Color.Black
+                                                )
+                                            }
+
+                                            Spacer(modifier = Modifier.height(8.dp))
+
+                                            // Detailed Description
+                                            Text(
+                                                text = EmotionUiUtil.getDescription(
+                                                    result,
+                                                    stringProvider
+                                                ),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color.Black.copy(alpha = 0.7f),
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+
+                                            Spacer(modifier = Modifier.height(24.dp))
+
+                                            // Advice Section (De-emphasized inside card)
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(
+                                                        Color.Black.copy(alpha = 0.05f),
+                                                        RoundedCornerShape(12.dp)
+                                                    )
+                                                    .padding(16.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.common_tip_prefix),
+                                                    style = MaterialTheme.typography.titleSmall.copy(
+                                                        fontWeight = FontWeight.Bold
+                                                    ),
+                                                    color = Color.Black.copy(alpha = 0.7f)
+                                                )
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Text(
+                                                    text = EmotionUiUtil.getAdvice(
+                                                        result,
+                                                        stringProvider
+                                                    ),
+                                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                                        lineHeight = 20.sp
+                                                    ),
+                                                    color = Color.Black.copy(alpha = 0.8f)
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(32.dp))
+
+                                    // 2. Final Emotion Analysis (Network Chart) - Emphasized
                                     Text(
                                         text = stringResource(R.string.analysis_detail_chart_title_1),
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold), // Increased emphasis
+                                        color = Color.Black
+                                    )
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    NeoShadowBox(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .aspectRatio(1.5f),
+                                        shape = RoundedCornerShape(24.dp),
+                                        containerColor = cardColor
+                                    ) {
+                                        NetworkChart(
+                                            result = result,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(16.dp)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(32.dp))
+
+                                    // 3. Word Cloud Analysis (Constellation Chart)
+                                    Text(
+                                        text = stringResource(R.string.analysis_detail_chart_title_2),
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                                         color = Color.Black.copy(alpha = 0.8f)
                                     )
 
                                     Spacer(modifier = Modifier.height(16.dp))
-                                    
 
-                                    
-                                    // 2. Constellation Chart (Neo-Brutalism Wrapped)
                                     NeoShadowBox(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -163,64 +269,15 @@ fun AnalysisDetailContent(
                                             modifier = Modifier.fillMaxSize()
                                         )
                                     }
-                                    
-                                    Spacer(modifier = Modifier.height(24.dp))
-
-                                    // 1. Emotion Polar Chart (Neo-Brutalism Wrapped)
-                                    Text(
-                                        text = stringResource(R.string.analysis_detail_chart_title_2),
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = Color.Black.copy(alpha = 0.8f)
-                                    )
-
-                                    Spacer(modifier = Modifier.height(16.dp))
-
-                                    NeoShadowBox(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(1.8f),
-                                        shape = RoundedCornerShape(24.dp),
-                                        containerColor = cardColor
-                                    ) {
-
-                                        NetworkChart(
-                                            result = result,
-                                            modifier = Modifier.fillMaxSize().padding(16.dp)
-                                        )
-//                                        EmotionPolarChart(
-//                                            emotions = result.source,
-//                                            modifier = Modifier.fillMaxSize().padding(16.dp)
-//                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(24.dp))
-
-                                    // 3. Advice Card (Neo-Brutalism Wrapped)
-                                    NeoShadowBox(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(24.dp),
-                                        containerColor = Color.White
-                                    ) {
-                                        Column(modifier = Modifier.padding(24.dp)) {
-                                            Text(
-                                                text = stringResource(R.string.common_tip_prefix),
-                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                                color = Color.Black
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Text(
-                                                text = EmotionUiUtil.getAdvice(result, stringProvider),
-                                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 24.sp),
-                                                color = Color.Black
-                                            )
-                                        }
-                                    }
 
                                     Spacer(modifier = Modifier.height(32.dp))
                                 }
                             }
                         } else {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(stringResource(R.string.analysis_detail_no_data))
                             }
                         }
@@ -240,7 +297,7 @@ fun AnalysisDetailHeader(onNavigateBack: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-        // Only back button, so Start is fine, or SpaceBetween
+            // Only back button, so Start is fine, or SpaceBetween
         ) {
             RetroIconButton(
                 onClick = onNavigateBack,

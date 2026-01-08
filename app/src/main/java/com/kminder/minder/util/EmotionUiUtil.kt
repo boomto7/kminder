@@ -43,4 +43,11 @@ object EmotionUiUtil {
         return result.complexEmotionType?.let { stringProvider.getComplexEmotionAdvice(it) }?.takeIf { it.isNotEmpty() }
             ?: stringProvider.getAdvice(result.primaryEmotion)
     }
+
+    fun getEmotionImageResId(context: android.content.Context, result: EmotionResult): Int? {
+        val emotionName = result.complexEmotionType?.name?.lowercase() ?: result.primaryEmotion.name.lowercase()
+        val key = "img_emotion_$emotionName"
+        val resId = context.resources.getIdentifier(key, "drawable", context.packageName)
+        return if (resId != 0) resId else null
+    }
 }
