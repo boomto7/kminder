@@ -28,6 +28,7 @@ import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionType
 import com.kminder.minder.data.mock.MockData
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
+import com.kminder.minder.util.EmotionColorUtil.getEmotionColor
 import com.kminder.minder.util.EmotionUiUtil
 import kotlin.math.cos
 import kotlin.math.sin
@@ -89,19 +90,6 @@ fun ConstellationChart(
         EmotionType.ANGER, 
         EmotionType.ANTICIPATION
     )
-
-    fun getEmotionColor(emotion: EmotionType): Color {
-        return when (emotion) {
-            EmotionType.ANGER -> Color(0xFFE57373)
-            EmotionType.ANTICIPATION -> Color(0xFFFFB74D)
-            EmotionType.JOY -> Color(0xFFFFD54F) 
-            EmotionType.TRUST -> Color(0xFFAED581)
-            EmotionType.FEAR -> Color(0xFF4DB6AC)
-            EmotionType.SADNESS -> Color(0xFF64B5F6)
-            EmotionType.DISGUST -> Color(0xFF90A4AE)
-            EmotionType.SURPRISE -> Color(0xFFBA68C8)
-        }
-    }
 
     BoxWithConstraints(modifier = modifier.background(Color.White).padding(16.dp)) {
         val context = LocalContext.current

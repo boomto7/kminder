@@ -59,6 +59,8 @@
     <string name="analysis_detail_title">Analysis Detail</string>
     <string name="analysis_detail_no_data">No analysis data available.</string>
     <string name="analysis_detail_load_error">Failed to load data.</string>
+    <string name="analysis_detail_chart_title_1">Word Cloud Analysis</string>
+    <string name="analysis_detail_chart_title_2">Final Emotion Analysis</string>
     
     <!-- Statistics Screen -->
     <string name="statistics_title">Emotion Stats</string>

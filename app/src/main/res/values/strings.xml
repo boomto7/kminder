@@ -55,10 +55,12 @@
     <string name="common_cancel">취소</string>
 
     <!-- Analysis Detail Screen -->
-    <string name="analysis_detail_title">강정 분석 상세</string>
+    <string name="analysis_detail_title">감정 분석 상세</string>
     <string name="analysis_detail_no_data">감정 분석 정보가 없습니다.</string>
     <string name="analysis_detail_load_error">데이터를 불러올 수 없습니다.</string>
-    
+    <string name="analysis_detail_chart_title_1">워드 클라우드 분석</string>
+    <string name="analysis_detail_chart_title_2">최종 감정 분석</string>
+
     <!-- Statistics Screen -->
     <string name="statistics_title">감정 통계</string>
     <string name="statistics_placeholder">통계 화면 (구현 예정)</string>

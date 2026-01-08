@@ -2,12 +2,14 @@ package com.kminder.minder.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
@@ -44,7 +46,8 @@ fun NeoShadowBox(
         Box(
             modifier = Modifier
                 .background(containerColor, shape)
-                .border(borderWidth, borderColor, shape),
+                .border(borderWidth, borderColor, shape)
+                .clip(shape),
             content = content
         )
     }

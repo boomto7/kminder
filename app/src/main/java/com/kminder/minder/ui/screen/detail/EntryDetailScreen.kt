@@ -33,6 +33,7 @@ import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
 import com.kminder.minder.data.mock.MockData
+import com.kminder.minder.ui.component.EmotionPolarChart
 import com.kminder.minder.ui.component.chart.NetworkChart
 import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.screen.home.OutlinedDivider
@@ -240,17 +241,22 @@ fun DetailContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1.6f) // Adjusted to 4:3 ratio to reduce vertical empty space
+                    .aspectRatio(1f) // Adjusted to 4:3 ratio to reduce vertical empty space
             ) {
                 NeoShadowBox(
                     modifier = Modifier.fillMaxSize(),
-                    containerColor = cardColor,
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    NetworkChart(
-                        result = result,
+
+                    EmotionPolarChart(
+                        emotions = result.source,
                         modifier = Modifier.fillMaxSize().padding(16.dp)
                     )
+
+//                    NetworkChart(
+//                        result = result,
+//                        modifier = Modifier.fillMaxSize().padding(16.dp)
+//                    )
                 }
             }
 

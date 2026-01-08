@@ -226,5 +226,25 @@ object MockData {
             updatedAt = LocalDateTime.now(),
             emotionResult = null
         ))
+
+        // --- 7. 표현되지만 여려개의 카테고리 값을 가지고 있을경우.
+        add(JournalEntry(
+            id = currentId++,
+            content = "max emotions , max emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotions",
+            entryType = EntryType.FREE_WRITING,
+            createdAt = LocalDateTime.now().minusHours(currentId.toLong()),
+            updatedAt = LocalDateTime.now().minusHours(currentId.toLong()),
+            emotionResult = createResult(createEmotion().let { base ->
+                fun set(e: EmotionAnalysis, t: EmotionType, v: Float) = when(t) {
+                    EmotionType.JOY -> e.copy(joy = v); EmotionType.TRUST -> e.copy(trust = v)
+                    EmotionType.FEAR -> e.copy(fear = v); EmotionType.SURPRISE -> e.copy(surprise = v)
+                    EmotionType.SADNESS -> e.copy(sadness = v); EmotionType.DISGUST -> e.copy(disgust = v)
+                    EmotionType.ANGER -> e.copy(anger = v); EmotionType.ANTICIPATION -> e.copy(anticipation = v)
+                    else -> e
+                }
+                set(set(set(set(set(base, EmotionType.JOY, 0.7f), EmotionType.TRUST, 0.6f), EmotionType.FEAR, 0.5f), EmotionType.SURPRISE, 0.4f), EmotionType.DISGUST, 0.3f)
+            }.copy(keywords = generateKeywords(EmotionType.JOY, EmotionType.TRUST)))
+        ))
+
     }.toList()
 }
