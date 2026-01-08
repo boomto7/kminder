@@ -18,6 +18,24 @@
     <string name="date_format_pattern_korean">MMM d, EEEE</string>
     <string name="home_current_status">Current Status</string>
     <string name="keyword_chip_format">#%1$s</string>
+    
+    <!-- Action Keywords -->
+    <string name="keyword_energy">Energy</string>
+    <string name="keyword_achievement">Achievement</string>
+    <string name="keyword_flutter">Flutter</string>
+    <string name="keyword_comfort">Comfort</string>
+    <string name="keyword_rest">Rest</string>
+    <string name="keyword_resolve">Resolve</string>
+    <string name="keyword_exercise">Exercise</string>
+    <string name="keyword_relationship">Relationship</string>
+    <string name="keyword_stability">Stability</string>
+    <string name="keyword_courage">Courage</string>
+    <string name="keyword_preparation">Preparation</string>
+    <string name="keyword_distance">Distance</string>
+    <string name="keyword_plan">Plan</string>
+    <string name="keyword_ventilation">Ventilation</string>
+    <string name="keyword_transition">Transition</string>
+    <string name="keyword_discovery">Discovery</string>
     <string name="home_empty_state_message">No entries found.\nRecord your day today.</string>
     <string name="home_list">List</string>
 
@@ -33,7 +51,6 @@
     <string name="home_menu_stats">Stats</string>
     <string name="home_menu_settings">Settings</string>
     <string name="home_menu_add">Add</string>
-
     
     <!-- Write Screen -->
     <string name="write_entry_title">Write Entry</string>
@@ -120,163 +137,216 @@
     <string name="emotion_detail_anticipation">Anticipation</string>
     <string name="emotion_detail_interest">Interest</string>
 
-    <!-- Single Emotions Descriptions -->
-    <!-- Joy Group -->
-    <string name="emotion_detail_ecstasy_desc">You are experiencing intense rapture and overwhelming happiness.</string>
-    <string name="emotion_detail_joy_desc">You feel happy, delighted, and naturally smiling.</string>
-    <string name="emotion_detail_serenity_desc">Your mind is calm and peaceful like a waveless sea.</string>
-
-    <!-- Trust Group -->
-    <string name="emotion_detail_admiration_desc">You are deeply moved and respectful of someone\'s excellence.</string>
-    <string name="emotion_detail_trust_desc">You rely on and believe in someone or a situation without doubt.</string>
-    <string name="emotion_detail_acceptance_desc">You have an open mind to accept and acknowledge things as they are.</string>
-
-    <!-- Fear Group -->
-    <string name="emotion_detail_terror_desc">You are frozen and panicked by overwhelming fear.</string>
-    <string name="emotion_detail_fear_desc">You feel threatened, anxious, and want to escape.</string>
-    <string name="emotion_detail_apprehension_desc">You are worried and uneasy that something bad might happen.</string>
-
-    <!-- Surprise Group -->
-    <string name="emotion_detail_amazement_desc">You are stunned by something completely unexpected.</string>
-    <string name="emotion_detail_surprise_desc">You are momentarily startled or taken aback by a sudden event.</string>
-    <string name="emotion_detail_distraction_desc">Your attention is scattered and it\'s hard to focus.</string>
-
-    <!-- Sadness Group -->
-    <string name="emotion_detail_grief_desc">You are in deep sorrow that feels heartbreaking.</string>
-    <string name="emotion_detail_sadness_desc">Your heart feels heavy, gloomy, and tearful.</string>
-    <string name="emotion_detail_pensiveness_desc">You are lost in thought, feeling a hint of melancholy and loneliness.</string>
-
-    <!-- Disgust Group -->
-    <string name="emotion_detail_loathing_desc">You feel an unbearably strong aversion.</string>
-    <string name="emotion_detail_disgust_desc">You find something unpleasant and repulsive.</string>
-    <string name="emotion_detail_boredom_desc">You feel dull and bored due to a lack of stimulation.</string>
-
-    <!-- Anger Group -->
-    <string name="emotion_detail_rage_desc">You feel furious anger ready to explode.</string>
-    <string name="emotion_detail_anger_desc">You are upset and offended by dissatisfaction or injustice.</string>
-    <string name="emotion_detail_annoyance_desc">You feel slightly bothered and irritated by a situation or person.</string>
-
-    <!-- Anticipation Group -->
-    <string name="emotion_detail_vigilance_desc">You are alert and on guard against danger or opportunity.</string>
-    <string name="emotion_detail_anticipation_desc">You are waiting with excitement for what is to come.</string>
-    <string name="emotion_detail_interest_desc">You are curious and paying attention to an object or situation.</string>
-
-    <!-- Complex Emotions (Dyads) -->
-    <!-- Primary -->
+    <!-- Complex Emotion Titles -->
+    <!-- Primary Dyads -->
     <string name="emotion_complex_love_title">Love</string>
-    <string name="emotion_complex_love_desc">Joy and Trust combine to form warm and deep affection.</string>
-    
     <string name="emotion_complex_submission_title">Submission</string>
-    <string name="emotion_complex_submission_desc">Trust and Fear mix into acceptance or yielding to the inevitable.</string>
-    
     <string name="emotion_complex_awe_title">Awe</string>
-    <string name="emotion_complex_awe_desc">Fear and Surprise combine into a feeling towards something overwhelming or mysterious.</string>
-    
     <string name="emotion_complex_disapproval_title">Disapproval</string>
-    <string name="emotion_complex_disapproval_desc">Surprise and Sadness meet in dissatisfaction with an unexpected negative outcome.</string>
-    
     <string name="emotion_complex_remorse_title">Remorse</string>
-    <string name="emotion_complex_remorse_desc">Sadness and Disgust mix to create deep regret over past actions or oneself.</string>
-    
     <string name="emotion_complex_contempt_title">Contempt</string>
-    <string name="emotion_complex_contempt_desc">Disgust and Anger combine to look down on or strongly reject someone.</string>
-    
     <string name="emotion_complex_aggressiveness_title">Aggressiveness</string>
-    <string name="emotion_complex_aggressiveness_desc">Anger and Anticipation meet to drive forward or challenge forcefully.</string>
-    
     <string name="emotion_complex_optimism_title">Optimism</string>
-    <string name="emotion_complex_optimism_desc">Anticipation and Joy blend into positive hope that things will go well.</string>
-    
-    <!-- Secondary -->
+
+    <!-- Secondary Dyads -->
     <string name="emotion_complex_guilt_title">Guilt</string>
-    <string name="emotion_complex_guilt_desc">Discomfort where Joy is marred by Fear.</string>
-    
     <string name="emotion_complex_curiosity_title">Curiosity</string>
-    <string name="emotion_complex_curiosity_desc">A desire to explore new things with Trust and Surprise.</string>
-    
     <string name="emotion_complex_despair_title">Despair</string>
-    <string name="emotion_complex_despair_desc">Fear and Sadness meet, losing hope and falling into darkness.</string>
-    
     <string name="emotion_complex_unbelief_title">Unbelief</string>
-    <string name="emotion_complex_unbelief_desc">Surprise and Disgust mix to refuse acceptance of a situation.</string>
-    
     <string name="emotion_complex_envy_title">Envy</string>
-    <string name="emotion_complex_envy_desc">Sadness and Anger mix, suffering from lack compared to others\' happiness.</string>
-    
     <string name="emotion_complex_cynicism_title">Cynicism</string>
-    <string name="emotion_complex_cynicism_desc">Disgust and Anticipation mix to predict negative outcomes and mock them.</string>
-    
     <string name="emotion_complex_pride_title">Pride</string>
-    <string name="emotion_complex_pride_desc">Anger and Joy combine into strong confidence in one\'s achievements or worth.</string>
-    
     <string name="emotion_complex_fatalism_title">Fatalism</string>
-    <string name="emotion_complex_fatalism_desc">Anticipation and Trust mix to accept the future as predetermined.</string>
-    
-    <!-- Tertiary -->
+
+    <!-- Tertiary Dyads -->
     <string name="emotion_complex_delight_title">Delight</string>
-    <string name="emotion_complex_delight_desc">Joy and Surprise meet in great happiness from the unexpected.</string>
-    
     <string name="emotion_complex_sentimentality_title">Sentimentality</string>
-    <string name="emotion_complex_sentimentality_desc">Trust and Sadness mix, immersing in past memories or connections.</string>
-    
     <string name="emotion_complex_shame_title">Shame</string>
-    <string name="emotion_complex_shame_desc">Fear and Disgust meet in strong embarrassment about oneself.</string>
-    
     <string name="emotion_complex_outrage_title">Outrage</string>
-    <string name="emotion_complex_outrage_desc">Surprise and Anger mix in strong reaction to something unexpected.</string>
-    
     <string name="emotion_complex_pessimism_title">Pessimism</string>
-    <string name="emotion_complex_pessimism_desc">Sadness and Anticipation mix to expect negative results beforehand.</string>
-    
     <string name="emotion_complex_morbidness_title">Morbidness</string>
-    <string name="emotion_complex_morbidness_desc">A complex psychology feeling strange joy from repulsive things.</string>
-    
     <string name="emotion_complex_dominance_title">Dominance</string>
-    <string name="emotion_complex_dominance_desc">Anger and Trust meet to believe in oneself and control others.</string>
-    
     <string name="emotion_complex_anxiety_title">Anxiety</string>
-    <string name="emotion_complex_anxiety_desc">Anticipation and Fear mix, nervous about the unknown future.</string>
 
-    <!-- Advice Messages -->
-    <string name="advice_joy">Record this good feeling to remember later.</string>
-    <string name="advice_sadness">How about taking a break with a warm cup of tea?</string>
-    <string name="advice_anger">Take 3 deep breaths and go for a walk.</string>
-    <string name="advice_trust">Say hello to your loved ones.</string>
-    <string name="advice_fear">Write down your worries and cross them out one by one.</string>
-    <string name="advice_anticipation">Why not make small plans for the future?</string>
-    <string name="advice_disgust">Step away from the situation and take time for yourself.</string>
-    <string name="advice_surprise">Try to accept the unexpected change with joy.</string>
-    
-    <string name="keyword_energy">Energy</string>
-    <string name="keyword_achievement">Achievement</string>
-    <string name="keyword_comfort">Comfort</string>
-    <string name="keyword_rest">Rest</string>
-    <string name="keyword_resolve">Resolve</string>
-    <string name="keyword_exercise">Exercise</string>
-    <string name="keyword_stability">Stability</string>
-    <string name="keyword_relationship">Relationship</string>
-    <string name="keyword_courage">Courage</string>
-    <string name="keyword_preparation">Preparation</string>
-    <string name="keyword_plan">Plan</string>
-    <string name="keyword_flutter">Flutter</string>
-    <string name="keyword_distance">Distance</string>
-    <string name="keyword_ventilation">Ventilation</string>
-    <string name="keyword_discovery">Discovery</string>
-    <string name="keyword_transition">Transition</string>
-
-    <!-- Complex Emotions (Opposite / Conflict) -->
+    <!-- Opposite Emotions -->
     <string name="emotion_complex_bittersweetness_title">Bittersweetness</string>
-    <string name="emotion_complex_bittersweetness_desc">Joy and Sadness mix, beautiful but leaving a sad lingering feeling.</string>
-
     <string name="emotion_complex_ambivalence_title">Ambivalence</string>
-    <string name="emotion_complex_ambivalence_desc">Trust and Disgust coexist, a complex feeling of loving yet hating.</string>
-
     <string name="emotion_complex_frozenness_title">Frozenness</string>
-    <string name="emotion_complex_frozenness_desc">Fear and Anger collide, stuck in tension unable to act.</string>
-
     <string name="emotion_complex_confusion_title">Confusion</string>
-    <string name="emotion_complex_confusion_desc">Surprise and Anticipation mix, puzzled by unpredictable future.</string>
 
+    <!-- Rich Emotion Data (Descriptions &amp; Advice) - English -->
+    <!-- 1. Single Emotions (Intensity: Strong, Medium, Weak) -->
+    
+    <!-- JOY Group -->
+    <string name="emotion_desc_ecstasy">You see the world as beautiful and feel overwhelming rapture. You are overflowing with energy and positivity.</string>
+    <string name="emotion_advice_ecstasy">Right now, enjoy this intense happiness to the fullest. Recording this moment in a diary or through creative work will yield great results.</string>
+    
+    <string name="emotion_desc_joy">Your heart feels light and happy, bringing a natural smile to your face. You find joy in the little things.</string>
+    <string name="emotion_advice_joy">Your bright energy strengthens those around you. Keep this feeling alive with a light walk or your favorite music.</string>
+    
+    <string name="emotion_desc_serenity">Your mind is calm and peaceful, like a waveless sea. You are resting without any particular worries.</string>
+    <string name="emotion_advice_serenity">This serenity strengthens your inner self. Enjoy this quiet time fully with a warm cup of tea or meditation.</string>
+
+    <!-- TRUST Group -->
+    <string name="emotion_desc_admiration">You are deeply moved by someone\'s excellence or character and feel sincere respect.</string>
+    <string name="emotion_advice_admiration">Try to emulate their strengths. Positive stimulation will be a catalyst for your personal growth.</string>
+    
+    <string name="emotion_desc_trust">You believe in and rely on someone or a situation without doubt. Your heart is open and at ease.</string>
+    <string name="emotion_advice_trust">Trust is the strongest root of a relationship. Strengthen your bonds by expressing gratitude and faith to your loved ones.</string>
+    
+    <string name="emotion_desc_acceptance">It is a mature mindset to accept and acknowledge situations or results as they are.</string>
+    <string name="emotion_advice_acceptance">Acceptance is the beginning of change. Instead of resisting, go with the flow, and you might see a new path.</string>
+
+    <!-- FEAR Group -->
+    <string name="emotion_desc_terror">You are frozen and repulsed by overwhelming fear. You are in a state of extreme panic.</string>
+    <string name="emotion_advice_terror">Prioritize your safety right now. Stop everything for a moment, take deep breaths, and calm yourself. Remember, you are not alone.</string>
+    
+    <string name="emotion_desc_fear">You feel threatened, anxious, and have an urge to escape. You are wary that something might go wrong.</string>
+    <string name="emotion_advice_fear">Fear is just a signal of danger. Write down your worries one by one to see if they are real problems.</string>
+    
+    <string name="emotion_desc_apprehension">You are on edge, feeling a foreboding sense that something bad might happen.</string>
+    <string name="emotion_advice_apprehension">Vague worries can cloud your mind. Instead of thinking \'what if\', focus on small things you can do \'right now\'.</string>
+
+    <!-- SURPRISE Group -->
+    <string name="emotion_desc_amazement">You are stunned, mouth agape, by something completely unexpected and massive.</string>
+    <string name="emotion_advice_amazement">This shocking experience can open new perspectives. Calm your excitement and reflect on what this situation means.</string>
+    
+    <string name="emotion_desc_surprise">You are momentarily startled or taken aback by a sudden event.</string>
+    <string name="emotion_advice_surprise">Surprise refreshes your attention. Try to accept this change as a positive opportunity or a new discovery.</string>
+    
+    <string name="emotion_desc_distraction">Your attention is scattered, making it hard to focus, and your mind feels adrift.</string>
+    <string name="emotion_advice_distraction">Stop what you are doing and take a breather. After a short rest, restart step by step to regain your focus.</string>
+
+    <!-- SADNESS Group -->
+    <string name="emotion_desc_grief">You feel a heartbreaking pain and deep sorrow from a sense of loss.</string>
+    <string name="emotion_advice_grief">Don\'t suppress your sadness; let yourself grieve and cry. Letting emotions out is the first step to healing.</string>
+    
+    <string name="emotion_desc_sadness">Your heart feels heavy and depressed, lacking energy, as if everything has sunk.</string>
+    <string name="emotion_advice_sadness">Don\'t push yourself today; comfort yourself. Resting in a warm bed or a quiet space is recommended.</string>
+    
+    <string name="emotion_desc_pensiveness">You are lost in deep thought, feeling a hint of melancholy and loneliness. It\'s calm but solitary.</string>
+    <string name="emotion_advice_pensiveness">This solitude is a good time for introspection. Organize your complex thoughts or write a diary to converse with yourself.</string>
+
+    <!-- DISGUST Group -->
+    <string name="emotion_desc_loathing">You feel an unbearably strong aversion and want to reject the object completely.</string>
+    <string name="emotion_advice_loathing">Strong repulsion can be a defense mechanism to protect your values. Distance yourself from the source and find peace of mind.</string>
+    
+    <string name="emotion_desc_disgust">You find something unpleasant and repulsive, wanting to stay away. It is offensive or sickening.</string>
+    <string name="emotion_advice_disgust">Step away from the unpleasant situation and get some fresh air. Your favorite scent or a clean space will help refresh your mood.</string>
+    
+    <string name="emotion_desc_boredom">You feel dull, lethargic, and bored due to a lack of stimulation.</string>
+    <string name="emotion_advice_boredom">Boredom can be the start of creativity. Try something unfamiliar or look for a new hobby.</string>
+
+    <!-- ANGER Group -->
+    <string name="emotion_desc_rage">You feel furious anger rising to the top of your head, hard to control.</string>
+    <string name="emotion_advice_rage">Expressing anger now leads to regret. Leave the situation, count numbers, or breathe deeply to cool down the heat.</string>
+    
+    <string name="emotion_desc_anger">You are upset and offended by dissatisfaction or injustice. You might feel aggressive.</string>
+    <string name="emotion_advice_anger">Channel this anger energy constructively. Intense exercise or cleaning is effective for relieving stress.</string>
+    
+    <string name="emotion_desc_annoyance">You feel slightly bothered and irritated by a situation or person.</string>
+    <string name="emotion_advice_annoyance">You might be sensitive to small things. Close your eyes for meditation or have a favorite snack to lighten your mood.</string>
+
+    <!-- ANTICIPATION Group -->
+    <string name="emotion_desc_vigilance">You are alert and keeping a close watch on your surroundings against danger or opportunity.</string>
+    <string name="emotion_advice_vigilance">Preparation is good, but excessive tension brings fatigue. It\'s okay to relax your shoulders and lower your guard a bit.</string>
+    
+    <string name="emotion_desc_anticipation">You are waiting with excitement for what is to come, expecting positive results.</string>
+    <string name="emotion_advice_anticipation">Excitement is the vitality of life. Imagine the future in detail and make plans to double your joy.</string>
+    
+    <string name="emotion_desc_interest">You are curious about an object or situation, paying attention and wanting to know more.</string>
+    <string name="emotion_advice_interest">Follow your curiosity. New learning or experiences will enrich your life.</string>
+
+
+    <!-- 2. Complex Emotions (Dyads) -->
+    
+    <!-- Primary Dyads -->
+    <string name="emotion_desc_love">Joy and Trust combine to form warm and deep affection. The world feels lovely.</string>
+    <string name="emotion_advice_love">Love grows as you express it. Convey your heart with warm words or a small gift to your loved ones.</string>
+    
+    <string name="emotion_desc_submission">Trust and Fear mix into acceptance of unavoidable situations or yielding to authority.</string>
+    <string name="emotion_advice_submission">Sometimes, going with the flow is wisdom. But listen to your inner voice so you don\'t lose yourself.</string>
+    
+    <string name="emotion_desc_awe">Fear and Surprise combine into a feeling of wonder towards something overwhelming or mysterious.</string>
+    <string name="emotion_advice_awe">Enjoy the humility felt before greatness like nature or art. This inspiration will broaden your horizon.</string>
+    
+    <string name="emotion_desc_disapproval">Surprise and Sadness meet in disappointment and rejection of an unexpected negative outcome.</string>
+    <string name="emotion_advice_disapproval">Disappointment is as big as the expectation. Instead of blaming, adjust your expectations and manage your mind.</string>
+    
+    <string name="emotion_desc_remorse">Sadness and Disgust mix to create deep regret and self-reproach over past actions or oneself.</string>
+    <string name="emotion_advice_remorse">Don\'t be too hard on yourself. Mistakes are opportunities for growth. Reflect and move towards a better tomorrow.</string>
+    
+    <string name="emotion_desc_contempt">Disgust and Anger combine to look down on someone or strongly reject and ignore them.</string>
+    <string name="emotion_advice_contempt">Contempt is a poison to relationships. Try to put yourself in their shoes once more and find room in your heart.</string>
+    
+    <string name="emotion_desc_aggressiveness">Anger and Anticipation meet to drive forward forcefully or challenge to overcome.</string>
+    <string name="emotion_advice_aggressiveness">Use this strong energy for constructive goals. Use it as a driving force to break through your limits, not to attack others.</string>
+    
+    <string name="emotion_desc_optimism">Anticipation and Joy blend into positive hope and conviction that the future will go well.</string>
+    <string name="emotion_advice_optimism">Your positive attitude makes anything possible. Don\'t lose hope and move forward vigorously. Good results await.</string>
+
+    <!-- Secondary Dyads -->
+    <string name="emotion_desc_guilt">Discomfort where Joy is marred by Fear, wondering if it\'s okay to feel this way.</string>
+    <string name="emotion_advice_guilt">Don\'t postpone happiness due to excessive responsibility. You deserve to be happy. Forgive yourself.</string>
+    
+    <string name="emotion_desc_curiosity">A desire to explore new things with Trust and Surprise, wanting to know more.</string>
+    <string name="emotion_advice_curiosity">The world is full of wonders. Don\'t fear questions and explore endlessly. New discoveries await you.</string>
+    
+    <string name="emotion_desc_despair">Fear and Sadness meet, losing hope and feeling trapped in deep darkness.</string>
+    <string name="emotion_advice_despair">Dawn comes after the darkest night. It\'s hard now, but the light of hope will surely come. Don\'t give up.</string>
+    
+    <string name="emotion_desc_unbelief">Surprise and Disgust mix in strong denial, unable to believe the situation at hand.</string>
+    <string name="emotion_advice_unbelief">It takes time to accept shocking facts. Don\'t force understanding; comfort your shocked heart first.</string>
+    
+    <string name="emotion_desc_envy">Sadness and Anger mix, suffering from lack compared to others\' happiness and feeling jealous.</string>
+    <string name="emotion_advice_envy">Comparison is the thief of joy. Focus on your own precious values and strengths rather than others\' brilliance.</string>
+    
+    <string name="emotion_desc_cynicism">Disgust and Anticipation mix strangely to predict negative outcomes and mock the world.</string>
+    <string name="emotion_advice_cynicism">Cynicism can be a shield against getting hurt. Try opening your heart a little to see the warm side of the world.</string>
+    
+    <string name="emotion_desc_pride">Anger (energy for self-assertion) and Joy combine into strong confidence in one\'s achievements.</string>
+    <string name="emotion_advice_pride">Your achievements are rightfully proud. It will shine even more if you keep humility so pride doesn\'t become arrogance.</string>
+    
+    <string name="emotion_desc_fatalism">Anticipation and Trust (acceptance) mix to accept the future as determined fate.</string>
+    <string name="emotion_advice_fatalism">Accept fate but don\'t give up on what you can pioneer. Your will can change the flow of destiny.</string>
+
+    <!-- Tertiary Dyads -->
+    <string name="emotion_desc_delight">Joy and Surprise meet in great happiness, eyes wide open from the unexpected pleasure.</string>
+    <string name="emotion_advice_delight">Enjoy this surprise gift of joy to the fullest. Life is full of such unexpected pleasures.</string>
+    
+    <string name="emotion_desc_sentimentality">Trust and Sadness mix, immersing in past connections or memories with a wistful mood.</string>
+    <string name="emotion_advice_sentimentality">Memories are beautiful, but we live in the present. Use the warmth of the past to live today more fully.</string>
+    
+    <string name="emotion_desc_shame">Fear and Disgust meet in deep embarrassment about oneself, wanting to hide.</string>
+    <string name="emotion_advice_shame">No one is perfect. Love even your imperfect self. You are precious enough just as you are.</string>
+    
+    <string name="emotion_desc_outrage">Surprise and Anger mix in a strong reaction to something unreasonable or an insult.</string>
+    <string name="emotion_advice_outrage">Anger at injustice is a righteous reaction. But try to find a rational solution without being swept away by emotion.</string>
+    
+    <string name="emotion_desc_pessimism">Sadness and Anticipation mix to expect negative results and grieve before anything happens.</string>
+    <string name="emotion_advice_pessimism">Negative imagination spirals. Consciously imagine positive outcomes. What you think can come true.</string>
+    
+    <string name="emotion_desc_morbidness">A complex psychology feeling strange joy or interest from repulsive objects.</string>
+    <string name="emotion_advice_morbidness">You don\'t need to deny your unique interests. But look into whether it\'s healthy curiosity or an expression of inner stress.</string>
+    
+    <string name="emotion_desc_dominance">Anger and Trust meet to overconfidence in one\'s power and trying to control others.</string>
+    <string name="emotion_advice_dominance">True leadership comes from consideration, not control. Learn to listen to others and move forward together.</string>
+    
+    <string name="emotion_desc_anxiety">Anticipation and Fear mix, nervous and unstable about the unknown future.</string>
+    <string name="emotion_advice_anxiety">Anxiety is proof you want to do better. It\'s okay not to be perfect. Just take it one step at a time.</string>
+
+    <!-- Opposite Emotions -->
+    <string name="emotion_desc_bittersweetness">Joy and Sadness mix, beautiful but leaving a sad lingering feeling.</string>
+    <string name="emotion_advice_bittersweetness">Every moment has two sides. Savor the depth of this moment where joy and sadness coexist.</string>
+    
+    <string name="emotion_desc_ambivalence">Trust and Disgust coexist, a complex feeling of loving yet hating simultaneously.</string>
+    <string name="emotion_advice_ambivalence">Ambivalence is natural. Don\'t force a choice; acknowledge your confused heart as it is.</string>
+    
+    <string name="emotion_desc_frozenness">Fear and Anger collide, stuck in tension unable to fight or flee.</string>
+    <string name="emotion_advice_frozenness">It feels immobile now, but an opening will appear soon. Relax your tension and observe the situation slowly.</string>
+    
+    <string name="emotion_desc_confusion">Surprise and Anticipation mix, puzzled by a completely unpredictable future.</string>
+    <string name="emotion_advice_confusion">Confusion is a process of finding order. Don\'t rush; believe that everything will become clear with time.</string>
 
     <!-- Analysis Formats -->
     <string name="analysis_impossible">Unable to analyze</string>

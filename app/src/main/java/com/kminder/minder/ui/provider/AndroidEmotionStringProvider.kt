@@ -6,8 +6,12 @@ import com.kminder.domain.model.DetailedEmotionType
 import com.kminder.domain.model.EmotionType
 import com.kminder.domain.provider.EmotionStringProvider
 import com.kminder.minder.R
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class AndroidEmotionStringProvider(private val context: Context) : EmotionStringProvider {
+class AndroidEmotionStringProvider @Inject constructor(
+    @ApplicationContext private val context: Context
+) : EmotionStringProvider {
 
     override fun getEmotionName(type: EmotionType): String {
         val resId = when (type) {
@@ -58,151 +62,39 @@ class AndroidEmotionStringProvider(private val context: Context) : EmotionString
     }
 
     override fun getComplexEmotionTitle(type: ComplexEmotionType): String {
-        val resId = when (type) {
-            // Single - JOY Group
-            ComplexEmotionType.ECSTASY -> R.string.emotion_detail_ecstasy
-            ComplexEmotionType.JOY -> R.string.emotion_detail_joy
-            ComplexEmotionType.SERENITY -> R.string.emotion_detail_serenity
-            // Single - TRUST Group
-            ComplexEmotionType.ADMIRATION -> R.string.emotion_detail_admiration
-            ComplexEmotionType.TRUST -> R.string.emotion_detail_trust
-            ComplexEmotionType.ACCEPTANCE -> R.string.emotion_detail_acceptance
-            // Single - FEAR Group
-            ComplexEmotionType.TERROR -> R.string.emotion_detail_terror
-            ComplexEmotionType.FEAR -> R.string.emotion_detail_fear
-            ComplexEmotionType.APPREHENSION -> R.string.emotion_detail_apprehension
-            // Single - SURPRISE Group
-            ComplexEmotionType.AMAZEMENT -> R.string.emotion_detail_amazement
-            ComplexEmotionType.SURPRISE -> R.string.emotion_detail_surprise
-            ComplexEmotionType.DISTRACTION -> R.string.emotion_detail_distraction
-            // Single - SADNESS Group
-            ComplexEmotionType.GRIEF -> R.string.emotion_detail_grief
-            ComplexEmotionType.SADNESS -> R.string.emotion_detail_sadness
-            ComplexEmotionType.PENSIVENESS -> R.string.emotion_detail_pensiveness
-            // Single - DISGUST Group
-            ComplexEmotionType.LOATHING -> R.string.emotion_detail_loathing
-            ComplexEmotionType.DISGUST -> R.string.emotion_detail_disgust
-            ComplexEmotionType.BOREDOM -> R.string.emotion_detail_boredom
-            // Single - ANGER Group
-            ComplexEmotionType.RAGE -> R.string.emotion_detail_rage
-            ComplexEmotionType.ANGER -> R.string.emotion_detail_anger
-            ComplexEmotionType.ANNOYANCE -> R.string.emotion_detail_annoyance
-            // Single - ANTICIPATION Group
-            ComplexEmotionType.VIGILANCE -> R.string.emotion_detail_vigilance
-            ComplexEmotionType.ANTICIPATION -> R.string.emotion_detail_anticipation
-            ComplexEmotionType.INTEREST -> R.string.emotion_detail_interest
-
-            // Primary Dyads
-            ComplexEmotionType.LOVE -> R.string.emotion_complex_love_title
-            ComplexEmotionType.SUBMISSION -> R.string.emotion_complex_submission_title
-            ComplexEmotionType.AWE -> R.string.emotion_complex_awe_title
-            ComplexEmotionType.DISAPPROVAL -> R.string.emotion_complex_disapproval_title
-            ComplexEmotionType.REMORSE -> R.string.emotion_complex_remorse_title
-            ComplexEmotionType.CONTEMPT -> R.string.emotion_complex_contempt_title
-            ComplexEmotionType.AGGRESSIVENESS -> R.string.emotion_complex_aggressiveness_title
-            ComplexEmotionType.OPTIMISM -> R.string.emotion_complex_optimism_title
-            
-            // Secondary Dyads
-            ComplexEmotionType.GUILT -> R.string.emotion_complex_guilt_title
-            ComplexEmotionType.CURIOSITY -> R.string.emotion_complex_curiosity_title
-            ComplexEmotionType.DESPAIR -> R.string.emotion_complex_despair_title
-            ComplexEmotionType.UNBELIEF -> R.string.emotion_complex_unbelief_title
-            ComplexEmotionType.ENVY -> R.string.emotion_complex_envy_title
-            ComplexEmotionType.CYNICISM -> R.string.emotion_complex_cynicism_title
-            ComplexEmotionType.PRIDE -> R.string.emotion_complex_pride_title
-            ComplexEmotionType.FATALISM -> R.string.emotion_complex_fatalism_title
-            
-            // Tertiary Dyads
-            ComplexEmotionType.DELIGHT -> R.string.emotion_complex_delight_title
-            ComplexEmotionType.SENTIMENTALITY -> R.string.emotion_complex_sentimentality_title
-            ComplexEmotionType.SHAME -> R.string.emotion_complex_shame_title
-            ComplexEmotionType.OUTRAGE -> R.string.emotion_complex_outrage_title
-            ComplexEmotionType.PESSIMISM -> R.string.emotion_complex_pessimism_title
-            ComplexEmotionType.MORBIDNESS -> R.string.emotion_complex_morbidness_title
-            ComplexEmotionType.DOMINANCE -> R.string.emotion_complex_dominance_title
-            ComplexEmotionType.ANXIETY -> R.string.emotion_complex_anxiety_title
-            
-            // Opposite
-            ComplexEmotionType.BITTERSWEETNESS -> R.string.emotion_complex_bittersweetness_title
-            ComplexEmotionType.AMBIVALENCE -> R.string.emotion_complex_ambivalence_title
-            ComplexEmotionType.FROZENNESS -> R.string.emotion_complex_frozenness_title
-            ComplexEmotionType.CONFUSION -> R.string.emotion_complex_confusion_title
+        // Dynamic lookup: emotion_detail_[name] for Single, emotion_complex_[name]_title for others
+        val key = if (type.category == ComplexEmotionType.Category.SINGLE_EMOTION) {
+            "emotion_detail_${type.name.lowercase()}"
+        } else {
+            "emotion_complex_${type.name.lowercase()}_title"
         }
-        return context.getString(resId)
+        
+        val resId = context.resources.getIdentifier(key, "string", context.packageName)
+        if (resId != 0) {
+            return context.getString(resId)
+        }
+        // Fallback to capitalized enum name if resource missing
+        return type.name.lowercase().replaceFirstChar { it.uppercase() }
     }
 
     override fun getComplexEmotionDescription(type: ComplexEmotionType): String {
-        val resId = when (type) {
-            // Single - JOY Group
-            ComplexEmotionType.ECSTASY -> R.string.emotion_detail_ecstasy_desc
-            ComplexEmotionType.JOY -> R.string.emotion_detail_joy_desc
-            ComplexEmotionType.SERENITY -> R.string.emotion_detail_serenity_desc
-            // Single - TRUST Group
-            ComplexEmotionType.ADMIRATION -> R.string.emotion_detail_admiration_desc
-            ComplexEmotionType.TRUST -> R.string.emotion_detail_trust_desc
-            ComplexEmotionType.ACCEPTANCE -> R.string.emotion_detail_acceptance_desc
-            // Single - FEAR Group
-            ComplexEmotionType.TERROR -> R.string.emotion_detail_terror_desc
-            ComplexEmotionType.FEAR -> R.string.emotion_detail_fear_desc
-            ComplexEmotionType.APPREHENSION -> R.string.emotion_detail_apprehension_desc
-            // Single - SURPRISE Group
-            ComplexEmotionType.AMAZEMENT -> R.string.emotion_detail_amazement_desc
-            ComplexEmotionType.SURPRISE -> R.string.emotion_detail_surprise_desc
-            ComplexEmotionType.DISTRACTION -> R.string.emotion_detail_distraction_desc
-            // Single - SADNESS Group
-            ComplexEmotionType.GRIEF -> R.string.emotion_detail_grief_desc
-            ComplexEmotionType.SADNESS -> R.string.emotion_detail_sadness_desc
-            ComplexEmotionType.PENSIVENESS -> R.string.emotion_detail_pensiveness_desc
-            // Single - DISGUST Group
-            ComplexEmotionType.LOATHING -> R.string.emotion_detail_loathing_desc
-            ComplexEmotionType.DISGUST -> R.string.emotion_detail_disgust_desc
-            ComplexEmotionType.BOREDOM -> R.string.emotion_detail_boredom_desc
-            // Single - ANGER Group
-            ComplexEmotionType.RAGE -> R.string.emotion_detail_rage_desc
-            ComplexEmotionType.ANGER -> R.string.emotion_detail_anger_desc
-            ComplexEmotionType.ANNOYANCE -> R.string.emotion_detail_annoyance_desc
-            // Single - ANTICIPATION Group
-            ComplexEmotionType.VIGILANCE -> R.string.emotion_detail_vigilance_desc
-            ComplexEmotionType.ANTICIPATION -> R.string.emotion_detail_anticipation_desc
-            ComplexEmotionType.INTEREST -> R.string.emotion_detail_interest_desc
-
-            // Primary Dyads
-            ComplexEmotionType.LOVE -> R.string.emotion_complex_love_desc
-            ComplexEmotionType.SUBMISSION -> R.string.emotion_complex_submission_desc
-            ComplexEmotionType.AWE -> R.string.emotion_complex_awe_desc
-            ComplexEmotionType.DISAPPROVAL -> R.string.emotion_complex_disapproval_desc
-            ComplexEmotionType.REMORSE -> R.string.emotion_complex_remorse_desc
-            ComplexEmotionType.CONTEMPT -> R.string.emotion_complex_contempt_desc
-            ComplexEmotionType.AGGRESSIVENESS -> R.string.emotion_complex_aggressiveness_desc
-            ComplexEmotionType.OPTIMISM -> R.string.emotion_complex_optimism_desc
-            
-            // Secondary Dyads
-            ComplexEmotionType.GUILT -> R.string.emotion_complex_guilt_desc
-            ComplexEmotionType.CURIOSITY -> R.string.emotion_complex_curiosity_desc
-            ComplexEmotionType.DESPAIR -> R.string.emotion_complex_despair_desc
-            ComplexEmotionType.UNBELIEF -> R.string.emotion_complex_unbelief_desc
-            ComplexEmotionType.ENVY -> R.string.emotion_complex_envy_desc
-            ComplexEmotionType.CYNICISM -> R.string.emotion_complex_cynicism_desc
-            ComplexEmotionType.PRIDE -> R.string.emotion_complex_pride_desc
-            ComplexEmotionType.FATALISM -> R.string.emotion_complex_fatalism_desc
-            
-            // Tertiary Dyads
-            ComplexEmotionType.DELIGHT -> R.string.emotion_complex_delight_desc
-            ComplexEmotionType.SENTIMENTALITY -> R.string.emotion_complex_sentimentality_desc
-            ComplexEmotionType.SHAME -> R.string.emotion_complex_shame_desc
-            ComplexEmotionType.OUTRAGE -> R.string.emotion_complex_outrage_desc
-            ComplexEmotionType.PESSIMISM -> R.string.emotion_complex_pessimism_desc
-            ComplexEmotionType.MORBIDNESS -> R.string.emotion_complex_morbidness_desc
-            ComplexEmotionType.DOMINANCE -> R.string.emotion_complex_dominance_desc
-            ComplexEmotionType.ANXIETY -> R.string.emotion_complex_anxiety_desc
-            
-            // Opposite
-            ComplexEmotionType.BITTERSWEETNESS -> R.string.emotion_complex_bittersweetness_desc
-            ComplexEmotionType.AMBIVALENCE -> R.string.emotion_complex_ambivalence_desc
-            ComplexEmotionType.FROZENNESS -> R.string.emotion_complex_frozenness_desc
-            ComplexEmotionType.CONFUSION -> R.string.emotion_complex_confusion_desc
+        // Dynamic lookup: emotion_desc_[name]
+        val key = "emotion_desc_${type.name.lowercase()}"
+        val resId = context.resources.getIdentifier(key, "string", context.packageName)
+        if (resId != 0) {
+            return context.getString(resId)
         }
-        return context.getString(resId)
+        return "" 
+    }
+
+    override fun getComplexEmotionAdvice(type: ComplexEmotionType): String {
+        val key = "emotion_advice_${type.name.lowercase()}"
+        val resId = context.resources.getIdentifier(key, "string", context.packageName)
+        if (resId != 0) {
+            return context.getString(resId)
+        }
+        // Fallback: Use primary emotion's advice (Legacy behavior)
+        return getAdvice(type.composition.first)
     }
 
     override fun getConflictLabel(emotionName1: String, emotionName2: String): String {
@@ -234,17 +126,12 @@ class AndroidEmotionStringProvider(private val context: Context) : EmotionString
     }
 
     override fun getAdvice(primaryEmotion: EmotionType): String {
-        val resId = when (primaryEmotion) {
-            EmotionType.JOY -> R.string.advice_joy
-            EmotionType.SADNESS -> R.string.advice_sadness
-            EmotionType.ANGER -> R.string.advice_anger
-            EmotionType.TRUST -> R.string.advice_trust
-            EmotionType.FEAR -> R.string.advice_fear
-            EmotionType.ANTICIPATION -> R.string.advice_anticipation
-            EmotionType.DISGUST -> R.string.advice_disgust
-            EmotionType.SURPRISE -> R.string.advice_surprise
+        val key = "emotion_advice_${primaryEmotion.name.lowercase()}"
+        val resId = context.resources.getIdentifier(key, "string", context.packageName)
+        if (resId != 0) {
+            return context.getString(resId)
         }
-        return context.getString(resId)
+        return ""
     }
 
     override fun getActionKeywords(primaryEmotion: EmotionType): List<String> {

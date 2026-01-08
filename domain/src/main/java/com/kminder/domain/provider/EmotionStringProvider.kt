@@ -18,6 +18,7 @@ interface EmotionStringProvider {
     // Complex Emotion
     fun getComplexEmotionTitle(type: ComplexEmotionType): String
     fun getComplexEmotionDescription(type: ComplexEmotionType): String
+    fun getComplexEmotionAdvice(type: ComplexEmotionType): String
 
     // Advice
     fun getAdvice(primaryEmotion: EmotionType): String

@@ -38,4 +38,9 @@ object EmotionUiUtil {
                 }
             }
     }
+
+    fun getAdvice(result: EmotionResult, stringProvider: EmotionStringProvider): String {
+        return result.complexEmotionType?.let { stringProvider.getComplexEmotionAdvice(it) }?.takeIf { it.isNotEmpty() }
+            ?: stringProvider.getAdvice(result.primaryEmotion)
+    }
 }

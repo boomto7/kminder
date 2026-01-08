@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.minder.R
 import com.kminder.minder.ui.component.EmotionPolarChart
@@ -128,6 +129,16 @@ fun AnalysisDetailContent(
                                         color = Color.Black
                                     )
 
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    // Detailed Description
+                                    Text(
+                                        text = EmotionUiUtil.getDescription(result, stringProvider),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Black.copy(alpha = 0.7f),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+
                                     Spacer(modifier = Modifier.height(16.dp))
 
                                     Text(
@@ -180,6 +191,29 @@ fun AnalysisDetailContent(
 //                                            emotions = result.source,
 //                                            modifier = Modifier.fillMaxSize().padding(16.dp)
 //                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(24.dp))
+
+                                    // 3. Advice Card (Neo-Brutalism Wrapped)
+                                    NeoShadowBox(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(24.dp),
+                                        containerColor = Color.White
+                                    ) {
+                                        Column(modifier = Modifier.padding(24.dp)) {
+                                            Text(
+                                                text = stringResource(R.string.common_tip_prefix),
+                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                                color = Color.Black
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                text = EmotionUiUtil.getAdvice(result, stringProvider),
+                                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 24.sp),
+                                                color = Color.Black
+                                            )
+                                        }
                                     }
 
                                     Spacer(modifier = Modifier.height(32.dp))

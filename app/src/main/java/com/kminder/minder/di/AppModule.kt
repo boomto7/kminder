@@ -1,7 +1,7 @@
 package com.kminder.minder.di
 
 import com.kminder.domain.provider.EmotionStringProvider
-import com.kminder.minder.provider.AppEmotionStringProvider
+import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,6 +15,6 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindEmotionStringProvider(
-        impl: AppEmotionStringProvider
+        impl: AndroidEmotionStringProvider
     ): EmotionStringProvider
 }
