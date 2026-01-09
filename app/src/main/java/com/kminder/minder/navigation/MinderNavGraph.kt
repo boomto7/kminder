@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.kminder.minder.ui.screen.splash.SplashScreenV2
-import com.kminder.minder.ui.screen.home.HomeScreen
+import com.kminder.minder.ui.screen.home.HomeFeedScreen
 import com.kminder.minder.ui.screen.write.WriteEntryScreen
 import com.kminder.minder.ui.screen.list.EntryListScreen
 import com.kminder.minder.ui.screen.detail.EntryDetailScreen
@@ -41,7 +41,7 @@ fun MinderNavGraph(
         
         // 홈 화면
         composable(Screen.Home.route) {
-            HomeScreen(
+            HomeFeedScreen(
                 onNavigateToWrite = {
                     navController.navigate(Screen.WriteEntry.route)
                 },
@@ -51,8 +51,8 @@ fun MinderNavGraph(
                 onNavigateToStatistics = {
                     navController.navigate(Screen.Statistics.route)
                 },
-                onNavigateToGuide = {
-                    navController.navigate(Screen.EmotionGuide.route)
+                onNavigateToDetail = { entryId ->
+                    navController.navigate(Screen.EntryDetail.createRoute(entryId))
                 }
             )
         }

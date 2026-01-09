@@ -222,15 +222,15 @@ object MockData {
             id = currentId++,
             content = "아직 감정 분석이 완료되지 않은 일기 내용입니다. 분석 중 UI가 어떻게 보이는지 테스트하기 위한 용도입니다.",
             entryType = EntryType.FREE_WRITING,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now(),
+            createdAt = LocalDateTime.now().minusHours(currentId.toLong()),
+            updatedAt = LocalDateTime.now().minusHours(currentId.toLong()),
             emotionResult = null
         ))
 
         // --- 7. 표현되지만 여려개의 카테고리 값을 가지고 있을경우.
         add(JournalEntry(
             id = currentId++,
-            content = "max emotions , max emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotions",
+            content = "max emotions , max emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsemotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsemotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotionsmax emotions",
             entryType = EntryType.FREE_WRITING,
             createdAt = LocalDateTime.now().minusHours(currentId.toLong()),
             updatedAt = LocalDateTime.now().minusHours(currentId.toLong()),

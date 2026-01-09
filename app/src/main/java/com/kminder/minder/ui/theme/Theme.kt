@@ -25,7 +25,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = MinderLavender,
+    primary = EmotionJoy,
     secondary = MinderSkyBlue,
     tertiary = MinderPeach,
     background = MinderBackground,

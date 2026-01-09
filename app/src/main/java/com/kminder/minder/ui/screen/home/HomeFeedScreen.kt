@@ -1,0 +1,524 @@
+package com.kminder.minder.ui.screen.home
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollConfiguration
+import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kminder.domain.model.EntryType
+import com.kminder.domain.model.JournalEntry
+import com.kminder.minder.ui.component.NeoShadowBox
+import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
+import com.kminder.minder.ui.screen.list.RetroIconButton
+import com.kminder.minder.ui.theme.MinderBackground
+import com.kminder.minder.ui.theme.MinderTheme
+import com.kminder.minder.util.EmotionColorUtil
+import com.kminder.minder.util.EmotionUiUtil
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+
+@Composable
+fun HomeFeedScreen(
+    onNavigateToWrite: () -> Unit,
+    onNavigateToList: () -> Unit,
+    onNavigateToStatistics: () -> Unit,
+    onNavigateToDetail: (Long) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    
+    val uiState by viewModel.uiState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+
+    val listState = rememberLazyListState()
+    // Show FAB when scrolled past the first item
+    val showFab by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
+    val isLastPage by viewModel.isLastPage.collectAsState()
+    val groupingOption by viewModel.groupingOption.collectAsState()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            HomeDrawerContent(
+                onNavigateToList = onNavigateToList,
+                onNavigateToStatistics = onNavigateToStatistics
+            )
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                HomeFeedTopBar(
+                    onMenuClick = { scope.launch { drawerState.open() } },
+                    selectedOption = groupingOption,
+                    onOptionSelected = viewModel::setGroupingOption
+                )
+            },
+            floatingActionButton = {
+                if (showFab) {
+                    RetroFAB(
+                        onClick = {
+                            scope.launch {
+                                listState.animateScrollToItem(0)
+                            }
+                        },
+                        icon = Icons.Default.ArrowUpward,
+                        contentDescription = "Scroll to Top"
+                    )
+                }
+            },
+            containerColor = MinderBackground
+        ) { paddingValues ->
+    HomeFeedContent(
+        modifier = Modifier.padding(paddingValues),
+        uiState = uiState,
+        onEntryClick = onNavigateToDetail,
+        onWriteClick = { /* TODO: Navigate to Write */ },
+        isRefreshing = isRefreshing,
+        isLoadingMore = isLoadingMore,
+        isLastPage = isLastPage,
+        onRefresh = viewModel::refresh,
+        onLoadMore = viewModel::loadMore,
+        listState = listState
+    )
+        }
+    }
+}
+
+@Composable
+fun HomeFeedTopBar(
+    onMenuClick: () -> Unit,
+    selectedOption: FeedGroupingOption,
+    onOptionSelected: (FeedGroupingOption) -> Unit
+) {
+    Column(modifier = Modifier.statusBarsPadding()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left: Menu Button
+            RetroIconButton(
+                onClick = onMenuClick,
+                icon = Icons.Default.Menu,
+                contentDescription = "Menu"
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Center: App Title
+            Text(
+                text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.app_name),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black
+            )
+        }
+        
+        // Grouping Selector
+        FeedGroupingSelector(
+            selectedOption = selectedOption,
+            onOptionSelected = onOptionSelected
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Divider
+        OutlinedDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(4.dp),
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+
+@Composable
+fun WriteEntryPrompt(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(Color.White)
+            .border(1.dp, Color.Black, RoundedCornerShape(24.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = "오늘의 기분은 어때요?", // TODO: Resource string
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeFeedContent(
+    modifier: Modifier = Modifier,
+    uiState: HomeUiState,
+    onEntryClick: (Long) -> Unit,
+    onWriteClick: () -> Unit,
+    isRefreshing: Boolean,
+    isLoadingMore: Boolean,
+    isLastPage: Boolean,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+    listState: LazyListState
+) {
+    val pullState = rememberPullToRefreshState()
+    
+    PullToRefreshBox(
+        state = pullState,
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier.fillMaxSize(),
+        indicator = {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp)
+            ) {
+                RetroLoadingIndicator(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .graphicsLayer {
+                            val fraction = pullState.distanceFraction
+                            alpha = if (isRefreshing) 1f else fraction.coerceIn(0f, 1f)
+                            scaleX = if (isRefreshing) 1f else fraction.coerceIn(0f, 1f)
+                            scaleY = if (isRefreshing) 1f else fraction.coerceIn(0f, 1f)
+                        }
+                )
+            }
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            when (uiState) {
+                is HomeUiState.Loading -> {
+                    // Only show big loader if NOT refreshing (to avoid double indicators)
+                    if (!isRefreshing) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            RetroLoadingIndicator()
+                        }
+                    }
+                }
+                is HomeUiState.Empty -> {
+                    Text(
+                        text = "아직 작성된 일기가 없어요.\n첫 번째 일기를 작성해보세요!", // TODO: Resource
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray
+                    )
+                }
+                is HomeUiState.Success -> {
+                    TimelineFeed(
+                        groupedEntries = uiState.groupedFeed,
+                        onEntryClick = onEntryClick,
+                        onWriteClick = onWriteClick,
+                        listState = listState,
+                        onLoadMore = onLoadMore,
+                        isLoadingMore = isLoadingMore,
+                        isLastPage = isLastPage
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TimelineFeed(
+    groupedEntries: Map<String, List<com.kminder.domain.model.JournalEntry>>,
+    onEntryClick: (Long) -> Unit,
+    onWriteClick: () -> Unit,
+    listState: LazyListState,
+    onLoadMore: () -> Unit,
+    isLoadingMore: Boolean,
+    isLastPage: Boolean
+) {
+    // Disable Overscroll Effect (Glow)
+    CompositionLocalProvider(
+        LocalOverscrollFactory provides null
+    ) {
+        // Observe list state to trigger load more
+        val shouldLoadMore by remember {
+            derivedStateOf {
+                val layoutInfo = listState.layoutInfo
+                val totalItems = layoutInfo.totalItemsCount
+                val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                // Trigger when we are near the end (e.g., last 3 items)
+                // distinctUntilChanged handling is implicit in derivedStateOf for the boolean result
+                totalItems > 0 && lastVisibleItemIndex >= totalItems - 3 && !isLoadingMore && !isLastPage
+            }
+        }
+
+        LaunchedEffect(shouldLoadMore) {
+            if (shouldLoadMore) {
+                onLoadMore()
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState,
+            contentPadding = PaddingValues(bottom = 80.dp) // Bottom padding for FAB or aesthetics
+        ) {
+            item {
+                WriteEntryPrompt(onClick = onWriteClick)
+            }
+
+            groupedEntries.forEach { (header, entries) ->
+                stickyHeader(key = header) {
+                    FeedSectionHeader(title = header, onViewAllClick = { /* TODO */ })
+                }
+
+                items(
+                    count = entries.size,
+                    key = { index -> entries[index].id },
+                    contentType = { _ -> "FeedEntry" }
+                ) { index ->
+                    FeedEntryItem(
+                        entry = entries[index],
+                        onClick = { onEntryClick(entries[index].id) }
+                    )
+                }
+            }
+
+            // Load More Indicator
+            // Only show when actually loading
+            if (isLoadingMore) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        RetroLoadingIndicator(modifier = Modifier.size(36.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FeedSectionHeader(
+    title: String,
+    onViewAllClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MinderBackground) // Opaque background for sticky header
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = Color.Black
+        )
+        
+        Text(
+            text = "모아보기", // TODO: Resource
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.Gray,
+            modifier = Modifier.clickable { onViewAllClick() }
+        )
+    }
+}
+
+@Composable
+fun FeedEntryItem(
+    entry: JournalEntry,
+    onClick: () -> Unit
+) {
+    val emotionResult = remember { entry.emotionResult }
+    // Thread-style simple card
+    val cardColor = remember(entry.emotionResult) {
+        entry.emotionResult?.let { EmotionColorUtil.getEmotionResultColor(it) } ?: Color.White
+    }
+
+    val context = LocalContext.current
+    val stringProvider = remember { AndroidEmotionStringProvider(context) }
+
+    NeoShadowBox(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min) // Adapts to content
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(onClick = onClick),
+        containerColor = cardColor,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)) {
+// Simple simplified view
+            Column {
+                if (entry.hasEmotionAnalysis() && emotionResult != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Emotion Name Badge
+                        Surface(
+                            color = Color.Black.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(EmotionColorUtil.getEmotionColor(emotionResult.primaryEmotion), CircleShape)
+                                        .border(1.dp, Color.Black, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = EmotionUiUtil.getLabel(emotionResult, stringProvider),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                Text(
+                    text = entry.content,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = entry.createdAt.format(DateTimeFormatter.ofPattern("a hh:mm")),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HomeDrawerContent(
+    onNavigateToList: () -> Unit,
+    onNavigateToStatistics: () -> Unit
+) {
+    ModalDrawerSheet(
+        drawerContainerColor = MinderBackground,
+        drawerContentColor = Color.Black
+    ) {
+        Spacer(Modifier.height(32.dp))
+        NavigationDrawerItem(
+            label = { Text("목록") }, // TODO: Resource
+            selected = false,
+            onClick = onNavigateToList,
+            icon = { Icon(Icons.Default.List, null) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
+            label = { Text("통계") }, // TODO: Resource
+            selected = false,
+            onClick = onNavigateToStatistics,
+            icon = { Icon(Icons.Default.ShowChart, null) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeFeedScreenPreview() {
+    val now = LocalDateTime.now()
+    val mockEntries = listOf(
+        JournalEntry(
+            id = 1,
+            content = "오늘은 기분이 정말 좋다. 맛있는 점심을 먹었다.",
+            entryType = EntryType.FREE_WRITING,
+            createdAt = now.minusHours(2),
+            updatedAt = now.minusHours(2)
+        ),
+        JournalEntry(
+            id = 2,
+            content = "조금 피곤하지만 보람찬 하루였다. 프로젝트가 잘 진행되고 있다.",
+            entryType = EntryType.FREE_WRITING,
+            createdAt = now.minusHours(5),
+            updatedAt = now.minusHours(5)
+        ),
+        JournalEntry(
+            id = 3,
+            content = "어제는 비가 와서 우울했다.",
+            entryType = EntryType.FREE_WRITING,
+            createdAt = now.minusDays(1),
+            updatedAt = now.minusDays(1)
+        )
+    )
+    
+    val grouped = mapOf(
+        "오늘" to mockEntries.take(2),
+        "어제" to mockEntries.takeLast(1)
+    )
+
+    MinderTheme {
+        Scaffold(
+            topBar = {
+                HomeFeedTopBar(onMenuClick = {}, selectedOption = FeedGroupingOption.WEEKLY, onOptionSelected = {})
+            },
+            containerColor = MinderBackground
+        ) { paddingValues ->
+            HomeFeedContent(
+                modifier = Modifier.padding(paddingValues),
+                uiState = HomeUiState.Success(groupedFeed = grouped),
+                onEntryClick = {},
+                onWriteClick = {},
+                isRefreshing = false,
+                isLoadingMore = false,
+                isLastPage = false,
+                onRefresh = {},
+                onLoadMore = {},
+                listState = rememberLazyListState()
+            )
+        }
+    }
+}

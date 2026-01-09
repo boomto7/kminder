@@ -20,13 +20,13 @@ val OutfitFamily = FontFamily(
     Font(R.font.outfit_extrabold, FontWeight.ExtraBold)
 )
 
-// Noto Sans KR (Korean / Body Text)
+// Noto Sans KR (Korean / Body Text) -> Switched to Pretendard due to NotoSans corruption
 val NotoSansKRFamily = FontFamily(
-    Font(R.font.notosanskr_light, FontWeight.Light),
-    Font(R.font.notosanskr_regular, FontWeight.Normal),
-    Font(R.font.notosanskr_medium, FontWeight.Medium),
-    Font(R.font.notosanskr_bold, FontWeight.Bold),
-    Font(R.font.notosanskr_black, FontWeight.ExtraBold) // Using Black as ExtraBold
+    Font(R.font.pretendard_light, FontWeight.Light),
+    Font(R.font.pretendard_regular, FontWeight.Normal),
+    Font(R.font.pretendard_medium, FontWeight.Medium),
+    Font(R.font.pretendard_bold, FontWeight.Bold),
+    Font(R.font.pretendard_bold, FontWeight.ExtraBold) // Fallback to Bold for ExtraBold
 )
 
 // Main Typography
