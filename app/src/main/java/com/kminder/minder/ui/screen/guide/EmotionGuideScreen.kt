@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -93,7 +94,7 @@ fun GuideHeader(onNavigateBack: () -> Unit) {
     ) {
         RetroIconButton(
             onClick = onNavigateBack,
-            icon = Icons.Default.ArrowBack,
+            icon = Icons.AutoMirrored.Filled.ArrowBack, // Fixed deprecation
             contentDescription = stringResource(R.string.common_back)
         )
         Text(

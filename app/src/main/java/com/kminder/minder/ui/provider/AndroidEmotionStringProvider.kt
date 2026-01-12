@@ -159,4 +159,28 @@ class AndroidEmotionStringProvider @Inject constructor(
     override fun getAnalysisTryJournalingAction(): String {
         return context.getString(R.string.analysis_try_journaling)
     }
+
+    override fun getDerivationExplanation(
+        category: ComplexEmotionType.Category,
+        primaryEmotion: EmotionType,
+        secondaryEmotion: EmotionType?
+    ): String {
+        return when (category) {
+            ComplexEmotionType.Category.SINGLE_EMOTION -> {
+                val primary = getEmotionName(primaryEmotion)
+                context.getString(R.string.analysis_derivation_single, primary)
+            }
+            ComplexEmotionType.Category.OPPOSITE -> {
+                val primary = getEmotionName(primaryEmotion)
+                val secondary = secondaryEmotion?.let { getEmotionName(it) } ?: ""
+                context.getString(R.string.analysis_derivation_conflict, primary, secondary)
+            }
+            else -> {
+                // For combinations (Dyads)
+                val primary = getEmotionName(primaryEmotion)
+                val secondary = secondaryEmotion?.let { getEmotionName(it) } ?: ""
+                context.getString(R.string.analysis_derivation_combination, primary, secondary)
+            }
+        }
+    }
 }

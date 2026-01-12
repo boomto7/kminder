@@ -225,7 +225,7 @@ fun AnalysisDetailContent(
 
                                     // 2. Final Emotion Analysis (Network Chart) - Emphasized
                                     Text(
-                                        text = stringResource(R.string.analysis_detail_chart_title_1),
+                                        text = stringResource(R.string.analysis_detail_chart_word_cloud),
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold), // Increased emphasis
                                         color = Color.Black
                                     )
@@ -251,7 +251,7 @@ fun AnalysisDetailContent(
 
                                     // 3. Word Cloud Analysis (Constellation Chart)
                                     Text(
-                                        text = stringResource(R.string.analysis_detail_chart_title_2),
+                                        text = stringResource(R.string.analysis_detail_chart_emotion_analysis),
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                                         color = Color.Black.copy(alpha = 0.8f)
                                     )

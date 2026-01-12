@@ -38,4 +38,11 @@ interface EmotionStringProvider {
     fun getComplexEmotionDefaultDescription(): String
     fun getComplicatedEmotionDefaultLabel(): String
     fun getComplicatedEmotionDefaultDescription(): String
+    
+    // Derivation Logic Description
+    fun getDerivationExplanation(
+        category: ComplexEmotionType.Category,
+        primaryEmotion: EmotionType,
+        secondaryEmotion: EmotionType?
+    ): String
 }

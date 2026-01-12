@@ -44,6 +44,10 @@ object EmotionUiUtil {
             ?: stringProvider.getAdvice(result.primaryEmotion)
     }
 
+    fun getDerivationExplanation(result: EmotionResult, stringProvider: EmotionStringProvider): String {
+        return stringProvider.getDerivationExplanation(result.category, result.primaryEmotion, result.secondaryEmotion)
+    }
+
     fun getEmotionImageResId(context: android.content.Context, result: EmotionResult): Int? {
         val emotionName = result.complexEmotionType?.name?.lowercase() ?: result.primaryEmotion.name.lowercase()
         val key = "img_emotion_$emotionName"

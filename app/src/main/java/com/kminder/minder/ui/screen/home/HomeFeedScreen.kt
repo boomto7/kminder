@@ -14,9 +14,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -27,9 +27,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.domain.model.EntryType
 import com.kminder.domain.model.JournalEntry
@@ -92,7 +94,7 @@ fun HomeFeedScreen(
                             }
                         },
                         icon = Icons.Default.ArrowUpward,
-                        contentDescription = "Scroll to Top"
+                        contentDescription = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_cd_scroll_to_top)
                     )
                 }
             },
@@ -131,7 +133,7 @@ fun HomeFeedTopBar(
             RetroIconButton(
                 onClick = onMenuClick,
                 icon = Icons.Default.Menu,
-                contentDescription = "Menu"
+                contentDescription = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_cd_menu)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -164,23 +166,26 @@ fun HomeFeedTopBar(
 
 @Composable
 fun WriteEntryPrompt(onClick: () -> Unit) {
-    Box(
+    NeoShadowBox(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .height(48.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
-            .border(1.dp, Color.Black, RoundedCornerShape(24.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.CenterStart
+            .height(112.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(28.dp),
+        containerColor = Color.White
     ) {
-        Text(
-            text = "오늘의 기분은 어때요?", // TODO: Resource string
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
+        Box(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_prompt_mood),
+//                style = MaterialTheme.typography.titleMedium,
+                style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium),
+                color = Color.Gray
+            )
+        }
     }
 }
 
@@ -236,7 +241,8 @@ fun HomeFeedContent(
                 }
                 is HomeUiState.Empty -> {
                     Text(
-                        text = "아직 작성된 일기가 없어요.\n첫 번째 일기를 작성해보세요!", // TODO: Resource
+                        text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_title) + "\n" +
+                                androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_desc),
                         modifier = Modifier.align(Alignment.Center),
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.Gray
@@ -356,7 +362,7 @@ fun FeedSectionHeader(
         )
         
         Text(
-            text = "모아보기", // TODO: Resource
+            text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_view_all),
             style = MaterialTheme.typography.labelMedium,
             color = Color.Gray,
             modifier = Modifier.clickable { onViewAllClick() }
@@ -378,64 +384,62 @@ fun FeedEntryItem(
     val context = LocalContext.current
     val stringProvider = remember { AndroidEmotionStringProvider(context) }
 
-    NeoShadowBox(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min) // Adapts to content
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onClick),
-        containerColor = cardColor,
-        shape = RoundedCornerShape(16.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(cardColor)
+            .border(1.dp, Color.Black, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
-// Simple simplified view
-            Column {
-                if (entry.hasEmotionAnalysis() && emotionResult != null) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+            // Simple simplified view
+            if (entry.hasEmotionAnalysis() && emotionResult != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Emotion Name Badge
+                    Surface(
+                        color = Color.Black.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        // Emotion Name Badge
-                        Surface(
-                            color = Color.Black.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(8.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .background(EmotionColorUtil.getEmotionColor(emotionResult.primaryEmotion), CircleShape)
-                                        .border(1.dp, Color.Black, CircleShape)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = EmotionUiUtil.getLabel(emotionResult, stringProvider),
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = Color.Black
-                                )
-                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(EmotionColorUtil.getEmotionColor(emotionResult.primaryEmotion), CircleShape)
+                                    .border(1.dp, Color.Black, CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = EmotionUiUtil.getLabel(emotionResult, stringProvider),
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = Color.Black
+                            )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
-                Text(
-                    text = entry.content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 3,
-                    color = Color.Black
-                )
+
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = entry.createdAt.format(DateTimeFormatter.ofPattern("a hh:mm")),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
-                )
             }
+            Text(
+                text = entry.content,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 3,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = entry.createdAt.format(DateTimeFormatter.ofPattern("a hh:mm")),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray
+            )
         }
     }
 }
@@ -451,17 +455,17 @@ fun HomeDrawerContent(
     ) {
         Spacer(Modifier.height(32.dp))
         NavigationDrawerItem(
-            label = { Text("목록") }, // TODO: Resource
+            label = { Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_menu_list)) },
             selected = false,
             onClick = onNavigateToList,
-            icon = { Icon(Icons.Default.List, null) },
+            icon = { Icon(Icons.AutoMirrored.Filled.List, null) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(
-            label = { Text("통계") }, // TODO: Resource
+            label = { Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_menu_stats)) },
             selected = false,
             onClick = onNavigateToStatistics,
-            icon = { Icon(Icons.Default.ShowChart, null) },
+            icon = { Icon(Icons.AutoMirrored.Filled.ShowChart, null) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
     }

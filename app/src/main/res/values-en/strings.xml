@@ -13,6 +13,10 @@
     <string name="home_recent_diaries">Recent Entries</string>
     <string name="home_empty_title">No entries yet</string>
     <string name="home_empty_desc">Tap + to write your first diary</string>
+    <string name="home_prompt_mood">Record your day today.</string>
+    <string name="home_cd_scroll_to_top">Scroll to top</string>
+    <string name="home_cd_menu">Open menu</string>
+    <string name="home_cd_refresh">Refresh</string>
     <string name="home_dominant_emotion_prefix">Dominant: %s</string>
     <string name="home_today_mood_weather">Today\'s Mood Weather</string>
     <string name="date_format_pattern_korean">MMM d, EEEE</string>
@@ -77,8 +81,8 @@
     <string name="analysis_report_card_title">Emotion Analysis Report</string>
     <string name="analysis_detail_no_data">No analysis data available.</string>
     <string name="analysis_detail_load_error">Failed to load data.</string>
-    <string name="analysis_detail_chart_title_1">Word Cloud Analysis</string>
-    <string name="analysis_detail_chart_title_2">Final Emotion Analysis</string>
+    <string name="analysis_detail_chart_word_cloud">Word Cloud Analysis</string>
+    <string name="analysis_detail_chart_emotion_analysis">Emotion Analysis Chart</string>
     
     <!-- Statistics Screen -->
     <string name="statistics_title">Emotion Stats</string>
@@ -360,7 +364,12 @@
     <string name="analysis_complex_desc_default">A subtle combination of emotions.</string>
     <string name="analysis_complicated_desc_default">Multiple emotions are mixed together.</string>
     <string name="analysis_complex_label_default">Complex Emotion</string>
-    <string name="analysis_complicated_label_default">Complicated Emotion</string>
+    <string name="analysis_complicated_label_default">Mixed Emotion</string>
+
+    <!-- Derivation Tips -->
+    <string name="analysis_derivation_single">This emotion is the most prominent feeling identified in the keyword %1$s.</string>
+    <string name="analysis_derivation_combination">This complex emotion is derived from a combination of %1$s and %2$s.</string>
+    <string name="analysis_derivation_conflict">This represents a conflict between opposing emotions: %1$s and %2$s.</string>
 
     <!-- Emotion Guide -->
     <string name="home_menu_guide">Emotion Guide</string>

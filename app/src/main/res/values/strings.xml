@@ -12,6 +12,10 @@
     <string name="home_recent_diaries">최근 일기</string>
     <string name="home_empty_title">아직 작성된 일기가 없습니다</string>
     <string name="home_empty_desc">+ 버튼을 눌러 첫 일기를 작성해보세요</string>
+    <string name="home_prompt_mood">오늘 하루를 기록해 보세요.</string>
+    <string name="home_cd_scroll_to_top">맨 위로 스크롤</string>
+    <string name="home_cd_menu">메뉴 열기</string>
+    <string name="home_cd_refresh">새로고침</string>
     <string name="home_dominant_emotion_prefix">주요 감정: %s</string>
     <string name="home_today_mood_weather">오늘의 마음 날씨</string>
     <string name="date_format_pattern_korean">M월 d일 EEEE</string>
@@ -77,8 +81,8 @@
     <string name="analysis_report_card_title">감정 분석 리포트</string>
     <string name="analysis_detail_no_data">감정 분석 정보가 없습니다.</string>
     <string name="analysis_detail_load_error">데이터를 불러올 수 없습니다.</string>
-    <string name="analysis_detail_chart_title_1">워드 클라우드 분석</string>
-    <string name="analysis_detail_chart_title_2">최종 감정 분석</string>
+    <string name="analysis_detail_chart_word_cloud">워드 클라우드 분석</string>
+    <string name="analysis_detail_chart_emotion_analysis">감정분석 차트</string>
 
     <!-- Statistics Screen -->
     <string name="statistics_title">감정 통계</string>
@@ -353,6 +357,11 @@
     <string name="analysis_complicated_desc_default">여러 감정이 섞여 있습니다.</string>
     <string name="analysis_complex_label_default">복합적인 감정</string>
     <string name="analysis_complicated_label_default">복잡한 감정</string>
+
+    <!-- Derivation Tips -->
+    <string name="analysis_derivation_single">이 감정은 분석된 키워드 %1$s에서 가장 뚜렷하게 나타난 감정입니다.</string>
+    <string name="analysis_derivation_combination">이 복합 감정은 %1$s(와)과 %2$s의 조합으로 도출되었습니다.</string>
+    <string name="analysis_derivation_conflict">%1$s(와)과 %2$s, 서로 상반되는 두 감정이 충돌하고 있습니다.</string>
 
     <!-- Emotion Guide -->
     <string name="home_menu_guide">감정 가이드</string>

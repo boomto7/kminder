@@ -2,15 +2,12 @@ package com.kminder.minder.ui.screen.detail
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -28,8 +25,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.clickable
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kminder.domain.model.EmotionResult
+import com.kminder.minder.ui.component.chart.ConstellationChart
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
 import com.kminder.minder.data.mock.MockData
@@ -178,6 +178,7 @@ fun DetailContent(
 
     val context = LocalContext.current
     val stringProvider = remember { AndroidEmotionStringProvider(context) }
+    val density = LocalDensity.current.density
 
     Column(
         modifier = Modifier
@@ -228,66 +229,182 @@ fun DetailContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 2. Emotion Analysis (Chart inside Card Style)
+        // 2. Emotion Analysis
         val result = entry.emotionResult
-        if (entry.hasEmotionAnalysis() && result != null) {
+        if (result != null) {
             Text(
-                text = stringResource(R.string.entry_detail_section_analysis),
+                text = stringResource(R.string.analysis_report_card_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = Color.Black.copy(alpha = 0.8f)
             )
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 2-1. Emotion Report Card
+            NeoShadowBox(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                containerColor = cardColor
+            ) {
+                Column(modifier = Modifier.padding(24.dp)) {
+                    // Title (Emotion Label) with Image
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val imageResId = EmotionUiUtil.getEmotionImageResId(context, result)
+                        if (imageResId != null) {
+                            coil.compose.AsyncImage(
+                                model = imageResId,
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(
+                            text = EmotionUiUtil.getLabel(result, stringProvider),
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = Color.Black
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Description
+                    Text(
+                        text = EmotionUiUtil.getDescription(result, stringProvider),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Black.copy(alpha = 0.7f),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Advice
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Color.Black.copy(alpha = 0.05f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.common_tip_prefix),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = Color.Black.copy(alpha = 0.7f)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = EmotionUiUtil.getAdvice(result, stringProvider),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Black.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // 2-2. Word Cloud Analysis (NetworkChart)
+            Text(
+                text = stringResource(R.string.analysis_detail_chart_word_cloud), // "Word Cloud Analysis"
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black.copy(alpha = 0.8f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            NeoShadowBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.5f),
+                shape = RoundedCornerShape(24.dp)
+            ) {
+                // Use remember to prevent unnecessary recomposition
+                val networkChart = remember(result) {
+                    movableContentOf {
+                        NetworkChart(
+                            result = result,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                        )
+                    }
+                }
+                networkChart()
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // 2-3. Emotion Analysis Chart (Flippable: Polar <-> Constellation)
+            Text(
+                text = stringResource(R.string.analysis_detail_chart_emotion_analysis), // "Emotion Analysis" or similar
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black.copy(alpha = 0.8f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Flippable Chart Container
+            var isPolarView by remember { mutableStateOf(true) }
+            val rotation by androidx.compose.animation.core.animateFloatAsState(
+                targetValue = if (isPolarView) 0f else 180f,
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = 600),
+                label = "ChartFlip"
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f) // Adjusted to 4:3 ratio to reduce vertical empty space
+                    .aspectRatio(1f)
+                    .clickable { isPolarView = !isPolarView }
             ) {
                 NeoShadowBox(
-                    modifier = Modifier.fillMaxSize(),
-                    shape = RoundedCornerShape(16.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            rotationY = rotation
+                            cameraDistance = 12f * density
+                        },
+                    shape = RoundedCornerShape(24.dp)
                 ) {
-
-                    EmotionPolarChart(
-                        emotions = result.source,
-                        modifier = Modifier.fillMaxSize().padding(16.dp)
-                    )
-
-//                    NetworkChart(
-//                        result = result,
-//                        modifier = Modifier.fillMaxSize().padding(16.dp)
-//                    )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        // Content wrapper to handle back-face visibility logic
+                        if (rotation <= 90f) {
+                            // Front: PolarChart
+                            EmotionPolarChart(
+                                emotions = result.source,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp)
+                            )
+                        } else {
+                            // Back: ConstellationChart
+                            // Rotate content back 180 degrees so it's not mirrored
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer { rotationY = 180f }
+                            ) {
+                                ConstellationChart(
+                                    result = result,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Detail Button with Shadow
-            NeoShadowBox(
+            // Derivation Tip
+            Text(
+                text = "* "+EmotionUiUtil.getDerivationExplanation(result, stringProvider),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Black.copy(alpha = 0.6f),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                // Button Layer
-                Button(
-                    onClick = onNavigateToAnalysisDetail,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    shape = RoundedCornerShape(8.dp),
-                    // border is handled by NeoShadowBox, but Button might need it for consistent press state?
-                    // Actually, if we make button transparent, we rely on NeoShadowBox border.
-                    // But standard Button has elevation/interactions.
-                    // Let's keep Button transparent and fill max size.
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues()
-                ) {
-                    Text(
-                        text = stringResource(R.string.entry_detail_view_detailed_analysis),
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+                    .padding(horizontal = 4.dp)
+            )
+
         } else {
             // Analysis not available
             val status = entry.status
@@ -365,7 +482,7 @@ fun EntryDetailPreview() {
 //        )
 //    )
 
-    val mockEntry = MockData.mockJournalEntries[1]
+    val mockEntry = MockData.mockJournalEntries[2]
     MaterialTheme {
         DetailContent(entry = mockEntry)
     }

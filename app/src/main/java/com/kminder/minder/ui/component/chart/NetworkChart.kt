@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -21,12 +22,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEachReversed
 import com.kminder.domain.logic.PlutchikEmotionCalculator
+import com.kminder.domain.model.ComplexEmotionType
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionType
 import com.kminder.minder.data.mock.MockData
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
+import com.kminder.minder.util.EmotionColorUtil
+import com.kminder.minder.util.EmotionColorUtil.blendColors
+import com.kminder.minder.util.EmotionColorUtil.getEmotionColor
 import com.kminder.minder.util.EmotionUiUtil
 import kotlin.math.cos
 import kotlin.math.sin
@@ -51,6 +57,7 @@ private data class WordItem(
     val fontSizeSp: Float,
     val fontWeight: FontWeight,
     val type: ItemType,
+    val color: Color,
     val rotation: Float = 0f // 0f, 90f, -90f
 )
 
@@ -79,6 +86,25 @@ fun NetworkChart(
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
 
+    val pColor = remember(result) {
+        getEmotionColor(result.primaryEmotion)
+    }
+    val sColor = remember(result) {
+        result.secondaryEmotion?.let { getEmotionColor(it) } ?: Color.Black
+    }
+
+    val mainEmotionColor = remember(result) {
+        when (result.category) {
+            ComplexEmotionType.Category.SINGLE_EMOTION -> {
+                val intensity = 0.3f + (result.score * 0.7f)
+                blendColors(Color.White, pColor, intensity)
+            }
+            else -> {
+                Color((pColor.red+sColor.red)/2f, (pColor.green+sColor.green)/2f, (pColor.blue+sColor.blue)/2f, 1f)
+            }
+        }
+    }
+
 //    val result = remember(analysis) {
 //        PlutchikEmotionCalculator.analyzeDominantEmotionCombination(analysis)
 //    }
@@ -106,6 +132,7 @@ fun NetworkChart(
                 fontSizeSp = 40f,
                 fontWeight = FontWeight.Black,
                 type = ItemType.FINAL,
+                color = mainEmotionColor,
                 rotation = 0f // Center is usually horizontal for readability, or random? User said "text isn't necessarily normal direction", but Center is best horizontal. Let's keep Center horizontal.
             )
         )
@@ -116,12 +143,14 @@ fun NetworkChart(
         val mainEmotions = listOfNotNull(primary, secondary)
 
         mainEmotions.forEach { emotion ->
+            val color = if (emotion == primary) pColor else sColor
             list.add(
                 WordItem(
                     text = stringProvider.getEmotionName(emotion),
                     fontSizeSp = 28f,
                     fontWeight = FontWeight.ExtraBold,
                     type = ItemType.MAIN,
+                    color = color,
                     rotation = getRandomRotation()
                 )
             )
@@ -138,6 +167,8 @@ fun NetworkChart(
                     fontSizeSp = 22f,
                     fontWeight = FontWeight.Bold,
                     type = ItemType.OTHER,
+//                    color = Color.Black.copy(alpha = 0.7f),
+                    color = Color.Transparent,
                     rotation = getRandomRotation()
                 )
             )
@@ -148,13 +179,15 @@ fun NetworkChart(
         val allKeywords = analysis.keywords.sortedByDescending { it.score } // Higher score first
         allKeywords.forEach { keyword ->
             // Size variation within keywords based on score
-            val size = 10f + (keyword.score * 8f) // 14 ~ 18sp
+            val size = 8f + (keyword.score * 10f) // 14 ~ 18sp
             list.add(
                 WordItem(
                     text = keyword.word,
                     fontSizeSp = size,
                     fontWeight = FontWeight.Medium,
                     type = ItemType.KEYWORD,
+//                    color = Color.Black.copy(alpha = 0.5f),
+                    color = Color.Transparent,
                     rotation = getRandomRotation()
                 )
             )
@@ -185,7 +218,7 @@ fun NetworkChart(
                 val textStyle = TextStyle(
                     fontSize = item.fontSizeSp.sp,
                     fontWeight = item.fontWeight,
-                    color = Color.Black // Requirement 1: All Black
+                    color = Color.Black // "Block" (Black) Text Color
                 )
                 val textLayout = textMeasurer.measure(
                     text = item.text,
@@ -317,19 +350,74 @@ fun NetworkChart(
     }
 }
 
+
+// ... (existing imports)
+
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.placeWordCloudItems(
     items: List<PlacedItem>
 ) {
-    items.forEach { placed ->
+    items.fastForEachReversed { placed ->
         val rotation = placed.item.rotation
         
         // Rotate around the center position of the item
         rotate(degrees = rotation, pivot = placed.position) {
+            val textWidth = placed.layout.size.width.toFloat()
+            val textHeight = placed.layout.size.height.toFloat()
+            val maxDimension = maxOf(textWidth, textHeight)
+            val minDimension = minOf(textWidth, textHeight)
+//            val glowRadius = maxDimension * 0.8f // Slightly larger than half text size
+
+            // Draw Radial Glow Background
+            // Use item color with low alpha fading to transparent
+            val (glowColor,transparentColor, glowRadius) = when(placed.item.type){
+                ItemType.FINAL -> {
+                    Triple(placed.item.color.copy(alpha = 0.7f), placed.item.color.copy(alpha = 0.0f), minDimension * 4f)
+                }
+                ItemType.MAIN -> {
+                    Triple(placed.item.color.copy(alpha = 0.7f), placed.item.color.copy(alpha = 0.0f), minDimension * 2f)
+                }
+                ItemType.OTHER -> {
+                    Triple(placed.item.color.copy(alpha = 0.5f), placed.item.color.copy(alpha = 0.0f), minDimension * 1f)
+                }
+                ItemType.KEYWORD -> {
+                    Triple(placed.item.color.copy(alpha = 0.1f), placed.item.color.copy(alpha = 0.0f), minDimension * 0.8f)
+                }
+                else -> {
+                    Triple(placed.item.color.copy(alpha = 0.1f), placed.item.color.copy(alpha = 0.0f), minDimension * 0.8f)
+                }
+            }
+
+
+//            val transparentColor =
+            
+            val glowBrush = Brush.radialGradient(
+                colors = listOf(placed.item.color, glowColor, transparentColor),
+                center = placed.position,
+                radius = glowRadius
+            )
+            
+            drawCircle(
+                brush = glowBrush,
+                center = placed.position,
+                radius = glowRadius
+            )
+
+
+        }
+    }
+
+    items.forEach { placed ->
+        val rotation = placed.item.rotation
+
+        // Rotate around the center position of the item
+        rotate(degrees = rotation, pivot = placed.position) {
+            val textWidth = placed.layout.size.width.toFloat()
+            val textHeight = placed.layout.size.height.toFloat()
             // Draw text centered at position
             // Since we engaged rotation, we draw as if unrotated at the pivot
-            val x = placed.position.x - placed.layout.size.width / 2
-            val y = placed.position.y - placed.layout.size.height / 2
-            
+            val x = placed.position.x - textWidth / 2
+            val y = placed.position.y - textHeight / 2
+
             drawText(
                 textLayoutResult = placed.layout,
                 topLeft = Offset(x, y)
@@ -341,7 +429,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.placeWordCloudItems
 @Preview(showBackground = true, backgroundColor = 0xFFe5e4c8)
 @Composable
 fun PreviewWordCloudChart() {
-    val mockEntry = MockData.mockJournalEntries[24] 
+    val mockEntry = MockData.mockJournalEntries[50]
     mockEntry.emotionResult?.let {
         NetworkChart(result = it, modifier = Modifier.fillMaxSize())
     }

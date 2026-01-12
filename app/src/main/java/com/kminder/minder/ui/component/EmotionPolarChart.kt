@@ -204,7 +204,7 @@ fun androidx.compose.ui.graphics.Path.addRoundedAnnularSector(
     val startRad = Math.toRadians(startAngle.toDouble())
     val endRad = Math.toRadians((startAngle + sweepAngle).toDouble())
     
-    // We use a simplified strategy utilizing `arcTo` and `quadraticBezierTo` or simple lines.
+    // We use a simplified strategy utilizing `arcTo` and `quadraticTo(x1, y1, x2, y2)simple lines.
     // Since calculating exact tangent points for rounded corners on a polar sector is complex,
     // we will essentially trace the shape:
     // 1. Inner End -> Inner Start (CCW)? No, usually paths are one direction. Let's go Clockwise (CW) or CCW.
@@ -327,7 +327,7 @@ fun androidx.compose.ui.graphics.Path.addRoundedAnnularSector(
     // Better control point for "Inner Start" corner: 
     // It's the intersection of the tangent at InnerStart and the Radial Line.
     // Tangent at InnerStart is roughly perpendicular to radius.
-    quadraticBezierTo(innerCornerControl.x, innerCornerControl.y, startLineP1.x, startLineP1.y)
+    quadraticTo(innerCornerControl.x, innerCornerControl.y, startLineP1.x, startLineP1.y)
     
     // 3. Line (Start Line)
     // Go up to outer radius - cornerRadius
@@ -338,7 +338,7 @@ fun androidx.compose.ui.graphics.Path.addRoundedAnnularSector(
     // Control point: (outerRadius, startAngle)
     // Target: (outerRadius, startAngle + shift) -> outerStart
     val outerCornerControl = getPoint(outerRadius, startAngle)
-    quadraticBezierTo(outerCornerControl.x, outerCornerControl.y, outerStart.x, outerStart.y)
+    quadraticTo(outerCornerControl.x, outerCornerControl.y, outerStart.x, outerStart.y)
     
     // 5. Arc (Outer)
     arcTo(
@@ -353,7 +353,7 @@ fun androidx.compose.ui.graphics.Path.addRoundedAnnularSector(
     // Target: (outerRadius - cornerRadius, endAngle)
     val outerEndControl = getPoint(outerRadius, startAngle + sweepAngle)
     val endLineP1 = getPoint(outerRadius - cornerRadius, startAngle + sweepAngle)
-    quadraticBezierTo(outerEndControl.x, outerEndControl.y, endLineP1.x, endLineP1.y)
+    quadraticTo(outerEndControl.x, outerEndControl.y, endLineP1.x, endLineP1.y)
     
     // 7. Line (End Line)
     val endLineP2 = getPoint(innerRadius + cornerRadius, startAngle + sweepAngle)
@@ -366,7 +366,7 @@ fun androidx.compose.ui.graphics.Path.addRoundedAnnularSector(
     // We need to connect to the start of the Inner Arc (which was the first MoveTo / ArcTo start)
     // The very first point was `innerEnd` (actually the start of the reversed arc).
     // So we just curve to that.
-    quadraticBezierTo(innerEndControl.x, innerEndControl.y, innerEnd.x, innerEnd.y)
+    quadraticTo(innerEndControl.x, innerEndControl.y, innerEnd.x, innerEnd.y)
     
     close()
 }
