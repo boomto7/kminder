@@ -4,6 +4,7 @@ import com.kminder.domain.repository.EmotionAnalysisRepository
 import com.kminder.domain.repository.JournalRepository
 import com.kminder.domain.repository.QuestionRepository
 import com.kminder.domain.provider.EmotionStringProvider
+import com.kminder.domain.provider.LanguageProvider
 import com.kminder.domain.usecase.analysis.AnalyzeIntegratedEmotionUseCase
 import com.kminder.domain.usecase.emotion.AnalyzeEmotionUseCase
 import com.kminder.domain.usecase.emotion.SaveAndAnalyzeJournalEntryUseCase
@@ -73,10 +74,12 @@ object UseCaseModule {
     @Singleton
     fun provideSaveAndAnalyzeJournalEntryUseCase(
         journalRepository: JournalRepository,
-        emotionAnalysisRepository: EmotionAnalysisRepository
+        emotionAnalysisRepository: EmotionAnalysisRepository,
+        languageProvider: LanguageProvider
     ): SaveAndAnalyzeJournalEntryUseCase = SaveAndAnalyzeJournalEntryUseCase(
         journalRepository,
-        emotionAnalysisRepository
+        emotionAnalysisRepository,
+        languageProvider
     )
 
     @Provides

@@ -56,6 +56,10 @@ interface JournalEntryDao {
     @Query("SELECT * FROM journal_entries WHERE id = :entryId")
     suspend fun getById(entryId: Long): JournalWithAnalysis?
     
+    @Transaction
+    @Query("SELECT * FROM journal_entries ORDER BY createdAt DESC LIMIT :limit")
+    fun getJournalEntriesStream(limit: Int): Flow<List<JournalWithAnalysis>>
+
     /**
      * 모든 일기를 조회합니다 (최신순).
      */

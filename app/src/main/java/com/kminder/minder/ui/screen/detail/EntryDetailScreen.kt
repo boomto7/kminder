@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.clickable
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kminder.domain.model.AnalysisStatus
 import com.kminder.minder.ui.component.chart.ConstellationChart
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
@@ -36,6 +37,7 @@ import com.kminder.minder.data.mock.MockData
 import com.kminder.minder.ui.component.EmotionPolarChart
 import com.kminder.minder.ui.component.chart.NetworkChart
 import com.kminder.minder.ui.component.NeoShadowBox
+import com.kminder.minder.ui.component.BlockingLoadingOverlay
 import com.kminder.minder.ui.screen.home.OutlinedDivider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
@@ -92,9 +94,12 @@ fun EntryDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MinderBackground)
-            .systemBarsPadding()
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+        ) {
             // Custom Header for consistent alignment (matching EntryListScreen)
             Row(
                 modifier = Modifier
@@ -155,20 +160,28 @@ fun EntryDetailScreen(
                         ) {
                             DetailContent(
                                 entry = state.entry,
+                                isAnalyzing = state.isAnalyzing,
                                 onRetryAnalysis = { viewModel.retryAnalysis(entryId) },
                                 onNavigateToAnalysisDetail = { onNavigateToAnalysisDetail(entryId) }
                             )
                         }
                     }
                 }
+                }
             }
-        }
+
+        val isAnalyzing = (uiState as? EntryDetailUiState.Success)?.isAnalyzing == true
+        BlockingLoadingOverlay(
+            isVisible = isAnalyzing,
+            message = stringResource(R.string.entry_detail_analysis_analyzing)
+        )
     }
 }
 
 @Composable
 fun DetailContent(
     entry: JournalEntry,
+    isAnalyzing: Boolean = false,
     onRetryAnalysis: () -> Unit = {},
     onNavigateToAnalysisDetail: () -> Unit = {}
 ) {
@@ -408,7 +421,7 @@ fun DetailContent(
         } else {
             // Analysis not available
             val status = entry.status
-            if (status == com.kminder.domain.model.AnalysisStatus.FAILED || status == com.kminder.domain.model.AnalysisStatus.NONE) {
+            if ((status == AnalysisStatus.FAILED || status == AnalysisStatus.NONE) && !isAnalyzing) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -430,7 +443,7 @@ fun DetailContent(
                         Text(stringResource(R.string.entry_detail_analysis_retry), color = Color.White)
                     }
                 }
-            } else if (status == com.kminder.domain.model.AnalysisStatus.PENDING) {
+            } else if (status == AnalysisStatus.PENDING || isAnalyzing) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -484,6 +497,6 @@ fun EntryDetailPreview() {
 
     val mockEntry = MockData.mockJournalEntries[2]
     MaterialTheme {
-        DetailContent(entry = mockEntry)
+        DetailContent(entry = mockEntry, isAnalyzing = true)
     }
 }

@@ -6,20 +6,22 @@ import com.kminder.domain.model.EmotionType
 import com.kminder.domain.model.IntegratedAnalysis
 import com.kminder.domain.model.JournalEntry
 import com.kminder.domain.usecase.analysis.AnalyzeIntegratedEmotionUseCase
-import com.kminder.domain.usecase.journal.GetAllJournalEntriesUseCase
+import com.kminder.domain.usecase.journal.GetDynamicJournalEntriesUseCase
 import com.kminder.minder.data.mock.MockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class HomeViewModel @Inject constructor(
-    private val getAllJournalEntriesUseCase: GetAllJournalEntriesUseCase,
+    private val getDynamicJournalEntriesUseCase: GetDynamicJournalEntriesUseCase,
     private val analyzeIntegratedEmotionUseCase: AnalyzeIntegratedEmotionUseCase
 ) : ViewModel() {
     
@@ -39,110 +41,82 @@ class HomeViewModel @Inject constructor(
     private val _isLastPage = MutableStateFlow(false)
     val isLastPage: StateFlow<Boolean> = _isLastPage.asStateFlow()
 
-    private var currentPage = 0
-    private val PAGE_SIZE = 20
-    private val _allLoadedEntries = mutableListOf<JournalEntry>()
+    // Dynamic Limit (starts at 20)
+    private val _limit = MutableStateFlow(20)
+    private val LIMIT_STEP = 20
+    
+    // 로드된 모든 엔트리 (Grouping을 위해 캐시)
+    private var _cachedAllEntries = listOf<JournalEntry>()
 
     init {
         viewModelScope.launch {
-            loadFeed(reset = true)
+            // Limit 변경 시 마다 DB 재구독 (flatMapLatest)
+            // DB 변경 시에도 자동 방출 (Room Flow)
+            _limit.flatMapLatest { limit ->
+                getDynamicJournalEntriesUseCase(limit)
+            }.collect { entries ->
+                _cachedAllEntries = entries
+                
+                // 데이터가 비어있으면 Empty
+                // 하지만 Refresh 중이 아니고 데이터가 없으면 Empty 처리
+                if (entries.isEmpty() && !_isRefreshing.value) {
+                     _uiState.value = HomeUiState.Empty
+                     _isLastPage.value = true // 데이터가 없으니 마지막 페이지
+                } else {
+                    // 데이터가 있으면 Success
+                    updateUiState()
+                    
+                    // 만약 요청한 limit보다 적게 왔다면 더 이상 데이터가 없는 것 (Last Page)
+                    _isLastPage.value = entries.size < _limit.value
+                }
+                
+                // 로딩 상태 해제
+                _isRefreshing.value = false
+                _isLoadingMore.value = false
+            }
         }
     }
     
     fun setGroupingOption(option: FeedGroupingOption) {
         _groupingOption.value = option
-        
-        // Optimize: Don't reload from scratch. Just re-group existing entries.
-        if (_allLoadedEntries.isNotEmpty()) {
-            val grouped = groupEntries(_allLoadedEntries, option)
+        updateUiState()
+    }
+
+    private fun updateUiState() {
+        if (_cachedAllEntries.isNotEmpty()) {
+            val grouped = groupEntries(_cachedAllEntries, _groupingOption.value)
             _uiState.value = HomeUiState.Success(groupedFeed = grouped)
-        } else {
-            // New load if empty
-            viewModelScope.launch {
-                loadFeed(reset = true)
-            }
         }
     }
 
     fun refresh() {
         if (_isRefreshing.value) return
-        viewModelScope.launch {
-            _isRefreshing.value = true
-            kotlinx.coroutines.delay(1500) // Simulate network delay
-            loadFeed(reset = true)
-            _isRefreshing.value = false
-        }
+        _isRefreshing.value = true
+        // Refresh 시 Limit 초기화 -> 자동으로 Flow 재시작 -> DB 조회
+        // 딜레이 제거
+        _limit.value = LIMIT_STEP
     }
 
     fun loadMore() {
         if (_isLoadingMore.value || _uiState.value !is HomeUiState.Success || _isLastPage.value) return
-        viewModelScope.launch {
-            _isLoadingMore.value = true
-            kotlinx.coroutines.delay(1000) // Simulate network delay
-            loadFeed(reset = false)
-            _isLoadingMore.value = false
-        }
-    }
-
-    private suspend fun loadFeed(reset: Boolean) {
-        if (reset) {
-            currentPage = 0
-            _allLoadedEntries.clear()
-            _isLastPage.value = false
-            // Only show big loader if NOT refreshing (screen is empty or first load)
-            if (!_isRefreshing.value) {
-                _uiState.value = HomeUiState.Loading
-            }
-        } else {
-            currentPage++
-        }
-        
-        // Simulate Pagination from MockData
-        val allMockData = MockData.mockJournalEntries
-        val startIndex = currentPage * PAGE_SIZE
-        val endIndex = (startIndex + PAGE_SIZE).coerceAtMost(allMockData.size)
-        
-        val newEntries = if (startIndex < allMockData.size) {
-            allMockData.subList(startIndex, endIndex)
-        } else {
-            emptyList()
-        }
-
-        // Check if last page
-        if (newEntries.size < PAGE_SIZE) {
-            _isLastPage.value = true
-        }
-
-        if (reset && newEntries.isEmpty()) {
-            _uiState.value = HomeUiState.Empty
-        } else {
-            _allLoadedEntries.addAll(newEntries)
-            
-            // Grouping Logic on ALL loaded entries
-            val grouped = groupEntries(_allLoadedEntries, _groupingOption.value)
-            
-            _uiState.value = HomeUiState.Success(
-                groupedFeed = grouped
-            )
-        }
+        _isLoadingMore.value = true
+        // Limit 증가 -> Flow 재시작 -> DB 조회 (전체 데이터 + 추가분)
+        _limit.value += LIMIT_STEP
     }
 
     private fun groupEntries(entries: List<JournalEntry>, option: FeedGroupingOption): Map<String, List<JournalEntry>> {
-        val sorted = entries.sortedByDescending { it.createdAt }
         return when (option) {
             FeedGroupingOption.DAILY -> {
                 val formatter = DateTimeFormatter.ofPattern("M월 d일 EEEE", Locale.KOREA)
-                sorted.groupBy { it.createdAt.format(formatter) }
+                entries.groupBy { it.createdAt.format(formatter) }
             }
             FeedGroupingOption.WEEKLY -> {
-                // Simple Weekly Grouping (Week of Year)
-                // Note: For production, a more robust Calendar-based logic is preferred.
                 val formatter = DateTimeFormatter.ofPattern("M월 W주차", Locale.KOREA)
-                sorted.groupBy { it.createdAt.format(formatter) }
+                entries.groupBy { it.createdAt.format(formatter) }
             }
             FeedGroupingOption.MONTHLY -> {
                 val formatter = DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREA)
-                sorted.groupBy { it.createdAt.format(formatter) }
+                entries.groupBy { it.createdAt.format(formatter) }
             }
         }
     }

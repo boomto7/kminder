@@ -9,6 +9,7 @@ import com.kminder.data.remote.prompt.EmotionAnalysisPrompt
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionKeyword
 import com.kminder.domain.model.EmotionType
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -17,9 +18,7 @@ import javax.inject.Inject
  * 참고: 기존 com.google.ai.client.generativeai는 deprecated되었습니다.
  * Firebase Vertex AI를 사용합니다.
  */
-class GeminiApiClient @Inject constructor(
-    private val apiKey: String
-) {
+class GeminiApiClient @Inject constructor() {
     private val gson = Gson()
     
     /**
@@ -29,20 +28,13 @@ class GeminiApiClient @Inject constructor(
      * - "gemini-1.5-flash" (빠르고 효율적)
      * - "gemini-1.5-pro" (더 강력한 분석)
      */
-    private val generativeModel by lazy {
-//        GenerativeModel(
-//            modelName = "gemini-1.5-flash",
-//            apiKey = apiKey,
-//            generationConfig = generationConfig {
-//                temperature = 0.7f
-//                topK = 40
-//                topP = 0.95f
-//                maxOutputTokens = 1024
-//            }
-//        )
-        Firebase.ai(backend = GenerativeBackend.googleAI())
-            .generativeModel("gemini-2.5-flash")
 
+
+    private val generativeModel by lazy {
+        Firebase.ai(backend = GenerativeBackend.googleAI())
+            .generativeModel(
+                modelName = "gemini-2.5-flash"
+            )
     }
     
     /**
@@ -90,6 +82,7 @@ class GeminiApiClient @Inject constructor(
             
             Result.success(emotionAnalysis)
         } catch (e: Exception) {
+            Timber.e(e, "Gemini Analysis Failed")
             Result.failure(e)
         }
     }

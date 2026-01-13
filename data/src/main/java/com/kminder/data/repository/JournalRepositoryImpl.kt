@@ -50,6 +50,12 @@ class JournalRepositoryImpl @Inject constructor(
         journalEntryDao.updateStatus(journalId, status.name)
     }
     
+    override fun getJournalEntriesStream(limit: Int): Flow<List<JournalEntry>> {
+        return journalEntryDao.getJournalEntriesStream(limit).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
     override fun getAllEntries(): Flow<List<JournalEntry>> {
         return journalEntryDao.getAll().map { entities ->
             entities.map { it.toDomain() }

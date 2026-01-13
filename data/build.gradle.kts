@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.google.services)
+
 }
 
 android {
@@ -88,4 +88,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     testImplementation(libs.mockito.kotlin)
 
+    testImplementation(libs.mockito.kotlin)
+    
+    // Logging
+    implementation(libs.timber)
 }

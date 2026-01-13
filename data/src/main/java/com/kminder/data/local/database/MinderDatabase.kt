@@ -14,7 +14,7 @@ import com.kminder.data.local.entity.JournalEntryEntity
  */
 @Database(
     entities = [JournalEntryEntity::class, EmotionAnalysisEntity::class],
-    version = 4,
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(StringListConverter::class, EmotionKeywordListConverter::class)

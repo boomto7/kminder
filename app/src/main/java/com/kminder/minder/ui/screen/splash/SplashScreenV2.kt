@@ -12,7 +12,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -20,24 +19,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.minder.R
 import com.kminder.minder.ui.theme.*
 import kotlinx.coroutines.delay
 
 /**
- * 스플래시 화면 V2 (Retro / Soft Neo-Brutalism Design)
- *
- * 디자인 컨셉:
- * - 파스텔톤 배경 + 선명한 검은색 외곽선 (Sticker-like)
- * - Hard Shadow (블러 없는 그림자)로 Pop한 3D 느낌
- * - 부드러운 라운딩 요소
+ * 스플래시 화면 V2 (Stateful)
  */
 @Composable
 fun SplashScreenV2(
+    onNavigateToHome: () -> Unit,
+    viewModel: SplashViewModel = hiltViewModel()
+) {
+    val isDataReady by viewModel.isCompleted.collectAsState()
+    
+    SplashScreenV2Content(
+        isDataReady = isDataReady,
+        onNavigateToHome = onNavigateToHome
+    )
+}
+
+/**
+ * 스플래시 화면 컨텐츠 (Stateless / UI Logic)
+ */
+@Composable
+fun SplashScreenV2Content(
+    isDataReady: Boolean,
     onNavigateToHome: () -> Unit
 ) {
     // 애니메이션 상태
     var startAnimation by remember { mutableStateOf(false) }
+    // 최소 애니메이션 시간 보장 상태
+    var minTimePassed by remember { mutableStateOf(false) }
 
     // 메인 컨텐츠 등장 애니메이션 (Scale + Fade)
     val contentScale by animateFloatAsState(
@@ -49,12 +63,19 @@ fun SplashScreenV2(
         label = "content_scale"
     )
 
-    // 애니메이션 시퀀스 제어
+    // 애니메이션 시퀀스 및 네비게이션 트리거
     LaunchedEffect(Unit) {
         delay(100) // 살짝 대기
         startAnimation = true
-        delay(2500) // 로고 보여주는 시간
-        onNavigateToHome()
+        delay(2500) // 로고 보여주는 최소 시간
+        minTimePassed = true
+    }
+    
+    // 두 조건이 모두 만족되면 이동
+    LaunchedEffect(minTimePassed, isDataReady) {
+        if (minTimePassed && isDataReady) {
+            onNavigateToHome()
+        }
     }
 
     Box(
@@ -183,5 +204,8 @@ fun DecorBubble(
 @Preview
 @Composable
 fun SplashScreenV2Preview() {
-    SplashScreenV2({})
+    SplashScreenV2Content(
+        isDataReady = true,
+        onNavigateToHome = {}
+    )
 }

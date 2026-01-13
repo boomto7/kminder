@@ -22,6 +22,6 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideGeminiApiClient(): GeminiApiClient {
-        return GeminiApiClient(BuildConfig.GEMINI_API_KEY)
+        return GeminiApiClient()
     }
 }

@@ -72,8 +72,10 @@ fun MinderNavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onEntrySaved = {
-                    navController.popBackStack()
+                onEntrySaved = { entryId ->
+                    navController.navigate(Screen.EntryDetail.createRoute(entryId)) {
+                        popUpTo(Screen.WriteEntry.route) { inclusive = true }
+                    }
                 }
             )
         }

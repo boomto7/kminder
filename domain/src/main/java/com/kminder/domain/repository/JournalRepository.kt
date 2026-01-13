@@ -46,6 +46,11 @@ interface JournalRepository {
     suspend fun getEntryById(entryId: Long): JournalEntry?
     
     /**
+     * 모든 일기 목록을 Limit을 적용하여 Flow로 조회합니다.
+     */
+    fun getJournalEntriesStream(limit: Int): Flow<List<JournalEntry>>
+
+    /**
      * 모든 일기 목록을 Flow로 조회합니다.
      * 
      * @return 일기 목록 Flow

@@ -81,24 +81,6 @@ fun OutlinedTimeText(
         )
     }
 }
-@Composable
-fun RetroLoadingIndicator(
-    modifier: Modifier = Modifier.size(48.dp)
-) {
-    NeoShadowBox(
-        modifier = modifier,
-        shape = CircleShape,
-        offset = 3.dp
-    ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            androidx.compose.material3.CircularProgressIndicator(
-                modifier = Modifier.fillMaxSize(0.6f),
-                color = Color.Black,
-                strokeWidth = 3.dp
-            )
-        }
-    }
-}
 
 @Composable
 fun RetroFAB(

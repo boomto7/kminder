@@ -43,6 +43,7 @@ import com.kminder.minder.ui.screen.home.OutlinedTimeText
 import com.kminder.minder.ui.screen.home.OutlinedTimeText
 import com.kminder.minder.ui.theme.MinderBackground
 import com.kminder.minder.ui.component.NeoShadowBox
+import com.kminder.minder.ui.component.RetroLoadingIndicator
 import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionImageUtil
 import com.kminder.minder.util.EmotionUiUtil
@@ -378,21 +379,4 @@ fun RetroFAB(
     }
 }
 
-@Composable
-fun RetroLoadingIndicator(
-    modifier: Modifier = Modifier.size(48.dp)
-) {
-    NeoShadowBox(
-        modifier = modifier,
-        shape = CircleShape,
-        offset = 3.dp
-    ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            CircularProgressIndicator(
-                modifier = Modifier.fillMaxSize(0.6f),
-                color = Color.Black,
-                strokeWidth = 3.dp
-            )
-        }
-    }
-}
+

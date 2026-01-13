@@ -24,11 +24,8 @@ class AnalysisDetailViewModel @Inject constructor(
             _uiState.value = AnalysisDetailUiState.Loading
             
             // 실제 유즈케이스 호출
-            // val entry = getJournalEntryUseCase(entryId)
-
-            // Mock Data 사용 (EntryDetailViewModel과 동일한 방식 유지)
-            val mockEntries = com.kminder.minder.data.mock.MockData.mockJournalEntries
-            val entry = mockEntries.find { it.id == entryId } ?: mockEntries.firstOrNull()
+            // 실제 유즈케이스 호출
+            val entry = getJournalEntryUseCase(entryId)
 
             if (entry != null) {
                 _uiState.value = AnalysisDetailUiState.Success(entry)

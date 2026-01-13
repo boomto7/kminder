@@ -92,7 +92,8 @@ object MockData {
                         EmotionType.ANGER -> createEmotion(anger = score)
                         EmotionType.ANTICIPATION -> createEmotion(anticipation = score)
                         else -> createEmotion()
-                    }.copy(keywords = generateKeywords(type)))
+                    }.copy(keywords = generateKeywords(type))),
+                    status = AnalysisStatus.COMPLETED
                 ))
             }
         }
@@ -124,7 +125,8 @@ object MockData {
                         else -> e
                     }
                     set(set(base, p, 0.7f), s, 0.6f)
-                }.copy(keywords = generateKeywords(p, s)))
+                }.copy(keywords = generateKeywords(p, s))),
+                status = AnalysisStatus.COMPLETED
             ))
         }
 
@@ -155,7 +157,8 @@ object MockData {
                         else -> e
                     }
                     set(set(base, p, 0.7f), s, 0.6f)
-                }.copy(keywords = generateKeywords(p, s)))
+                }.copy(keywords = generateKeywords(p, s))),
+                status = AnalysisStatus.COMPLETED
             ))
         }
 
@@ -186,7 +189,8 @@ object MockData {
                         else -> e
                     }
                     set(set(base, p, 0.7f), s, 0.6f)
-                }.copy(keywords = generateKeywords(p, s)))
+                }.copy(keywords = generateKeywords(p, s))),
+                status = AnalysisStatus.COMPLETED
             ))
         }
 
@@ -213,7 +217,8 @@ object MockData {
                         else -> e
                     }
                     set(set(base, p, 0.7f), s, 0.6f)
-                }.copy(keywords = generateKeywords(p, s)))
+                }.copy(keywords = generateKeywords(p, s))),
+                status = AnalysisStatus.COMPLETED
             ))
         }
 
@@ -243,7 +248,8 @@ object MockData {
                     else -> e
                 }
                 set(set(set(set(set(base, EmotionType.JOY, 0.7f), EmotionType.TRUST, 0.6f), EmotionType.FEAR, 0.5f), EmotionType.SURPRISE, 0.4f), EmotionType.DISGUST, 0.3f)
-            }.copy(keywords = generateKeywords(EmotionType.JOY, EmotionType.TRUST)))
+            }.copy(keywords = generateKeywords(EmotionType.JOY, EmotionType.TRUST))),
+            status = AnalysisStatus.COMPLETED
         ))
 
     }.toList()

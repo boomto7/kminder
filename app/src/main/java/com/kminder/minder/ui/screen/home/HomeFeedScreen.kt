@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.domain.model.EntryType
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.ui.component.NeoShadowBox
+import com.kminder.minder.ui.component.RetroLoadingIndicator
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
@@ -104,7 +105,7 @@ fun HomeFeedScreen(
         modifier = Modifier.padding(paddingValues),
         uiState = uiState,
         onEntryClick = onNavigateToDetail,
-        onWriteClick = { /* TODO: Navigate to Write */ },
+        onWriteClick = onNavigateToWrite,
         isRefreshing = isRefreshing,
         isLoadingMore = isLoadingMore,
         isLastPage = isLastPage,
