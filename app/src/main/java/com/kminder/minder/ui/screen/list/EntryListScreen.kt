@@ -38,7 +38,7 @@ import coil.request.ImageRequest
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
-import com.kminder.minder.ui.screen.home.OutlinedDivider
+import com.kminder.minder.ui.component.OutlinedDivider
 import com.kminder.minder.ui.screen.home.OutlinedTimeText
 import com.kminder.minder.ui.screen.home.OutlinedTimeText
 import com.kminder.minder.ui.theme.MinderBackground

@@ -94,17 +94,5 @@ interface JournalRepository {
      */
     suspend fun updateAnalysisStatus(journalId: Long, status: AnalysisStatus)
     
-    /**
-     * 특정 기간의 감정 통계를 조회합니다.
-     * 
-     * @param period 조회 기간 (일/주/월)
-     * @param startDate 시작 날짜
-     * @param endDate 종료 날짜
-     * @return 감정 통계 목록
-     */
-    suspend fun getEmotionStatistics(
-        period: ChartPeriod,
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): List<EmotionStatistics>
+
 }

@@ -11,6 +11,8 @@ import java.time.LocalDate
  */
 data class EmotionStatistics(
     val date: LocalDate,
-    val emotionAnalysis: EmotionAnalysis,
+    val entries: List<JournalEntry>
+) {
     val entryCount: Int
-)
+        get() = entries.size
+}

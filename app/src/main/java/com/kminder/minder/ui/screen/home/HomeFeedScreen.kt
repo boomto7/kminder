@@ -33,10 +33,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kminder.domain.model.EntryType
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.component.RetroLoadingIndicator
+import com.kminder.minder.ui.component.OutlinedDivider
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
@@ -44,6 +46,7 @@ import com.kminder.minder.ui.theme.MinderTheme
 import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionUiUtil
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -58,10 +61,12 @@ fun HomeFeedScreen(
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    
-    val uiState by viewModel.uiState.collectAsState()
-    val isRefreshing by viewModel.isRefreshing.collectAsState()
-    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
+
+    Timber.e("isRefreshing : $isRefreshing in ui")
 
     val listState = rememberLazyListState()
     // Show FAB when scrolled past the first item
@@ -101,18 +106,18 @@ fun HomeFeedScreen(
             },
             containerColor = MinderBackground
         ) { paddingValues ->
-    HomeFeedContent(
-        modifier = Modifier.padding(paddingValues),
-        uiState = uiState,
-        onEntryClick = onNavigateToDetail,
-        onWriteClick = onNavigateToWrite,
-        isRefreshing = isRefreshing,
-        isLoadingMore = isLoadingMore,
-        isLastPage = isLastPage,
-        onRefresh = viewModel::refresh,
-        onLoadMore = viewModel::loadMore,
-        listState = listState
-    )
+            HomeFeedContent(
+                modifier = Modifier.padding(paddingValues),
+                uiState = uiState,
+                onEntryClick = onNavigateToDetail,
+                onWriteClick = onNavigateToWrite,
+                isRefreshing = isRefreshing,
+                isLoadingMore = isLoadingMore,
+                isLastPage = isLastPage,
+                onRefresh = viewModel::refresh,
+                onLoadMore = viewModel::loadMore,
+                listState = listState
+            )
         }
     }
 }
@@ -146,7 +151,7 @@ fun HomeFeedTopBar(
                 color = Color.Black
             )
         }
-        
+
         // Grouping Selector
         FeedGroupingSelector(
             selectedOption = selectedOption,
@@ -154,7 +159,7 @@ fun HomeFeedTopBar(
         )
 
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         // Divider
         OutlinedDivider(
             modifier = Modifier
@@ -177,7 +182,9 @@ fun WriteEntryPrompt(onClick: () -> Unit) {
         containerColor = Color.White
     ) {
         Box(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
@@ -205,7 +212,7 @@ fun HomeFeedContent(
     listState: LazyListState
 ) {
     val pullState = rememberPullToRefreshState()
-    
+    Timber.e("isRefreshing : $isRefreshing in content")
     PullToRefreshBox(
         state = pullState,
         isRefreshing = isRefreshing,
@@ -235,11 +242,15 @@ fun HomeFeedContent(
                 is HomeUiState.Loading -> {
                     // Only show big loader if NOT refreshing (to avoid double indicators)
                     if (!isRefreshing) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             RetroLoadingIndicator()
                         }
                     }
                 }
+
                 is HomeUiState.Empty -> {
                     Text(
                         text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_title) + "\n" +
@@ -249,6 +260,7 @@ fun HomeFeedContent(
                         color = Color.Gray
                     )
                 }
+
                 is HomeUiState.Success -> {
                     TimelineFeed(
                         groupedEntries = uiState.groupedFeed,
@@ -361,7 +373,7 @@ fun FeedSectionHeader(
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = Color.Black
         )
-        
+
         Text(
             text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_view_all),
             style = MaterialTheme.typography.labelMedium,
@@ -394,9 +406,11 @@ fun FeedEntryItem(
             .border(1.dp, Color.Black, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
     ) {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
             // Simple simplified view
             if (entry.hasEmotionAnalysis() && emotionResult != null) {
                 Row(
@@ -414,7 +428,10 @@ fun FeedEntryItem(
                             Box(
                                 modifier = Modifier
                                     .size(8.dp)
-                                    .background(EmotionColorUtil.getEmotionColor(emotionResult.primaryEmotion), CircleShape)
+                                    .background(
+                                        EmotionColorUtil.getEmotionColor(emotionResult.primaryEmotion),
+                                        CircleShape
+                                    )
                                     .border(1.dp, Color.Black, CircleShape)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -499,7 +516,7 @@ fun HomeFeedScreenPreview() {
             updatedAt = now.minusDays(1)
         )
     )
-    
+
     val grouped = mapOf(
         "오늘" to mockEntries.take(2),
         "어제" to mockEntries.takeLast(1)
@@ -508,7 +525,10 @@ fun HomeFeedScreenPreview() {
     MinderTheme {
         Scaffold(
             topBar = {
-                HomeFeedTopBar(onMenuClick = {}, selectedOption = FeedGroupingOption.WEEKLY, onOptionSelected = {})
+                HomeFeedTopBar(
+                    onMenuClick = {},
+                    selectedOption = FeedGroupingOption.WEEKLY,
+                    onOptionSelected = {})
             },
             containerColor = MinderBackground
         ) { paddingValues ->

@@ -101,4 +101,6 @@ interface JournalEntryDao {
      */
     @Query("SELECT COUNT(*) FROM journal_entries")
     suspend fun getCount(): Int
+
+
 }

@@ -58,10 +58,11 @@
     
     <!-- Write Screen -->
     <string name="write_entry_title">Write Entry</string>
+    <string name="write_entry_title_edit">Edit Entry</string>
     <string name="write_entry_placeholder">Write Screen (Coming Soon)</string>
     <string name="write_hint">How was your day?</string>
-    <string name="write_analyze_button">Analyze Emotion</string>
-    <string name="write_analyzing">Analyzing...</string>
+    <string name="write_save_button">Save</string>
+    <string name="write_saving">Saving...</string>
     <string name="write_error_toast">Analysis failed. Please try again.</string>
     
     <!-- Entry Detail Screen -->
@@ -72,6 +73,7 @@
     <string name="entry_detail_view_detailed_analysis">View Detailed Analysis</string>
     <string name="entry_detail_analysis_failed">Failed to load emotion analysis.</string>
     <string name="entry_detail_analysis_retry">Retry Analysis</string>
+    <string name="entry_detail_analysis_start">Analyze Emotion</string>
     <string name="entry_detail_analysis_analyzing">Analyzing emotions...</string>
     <string name="entry_detail_load_error">Failed to load entry.</string>
 

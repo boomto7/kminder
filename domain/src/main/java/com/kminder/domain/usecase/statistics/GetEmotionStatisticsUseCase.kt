@@ -25,8 +25,25 @@ class GetEmotionStatisticsUseCase @Inject constructor(
         startDate: LocalDate,
         endDate: LocalDate
     ): List<EmotionStatistics> {
-        require(startDate <= endDate) { "시작 날짜는 종료 날짜보다 이전이어야 합니다." }
+        val startDateTime = startDate.atStartOfDay()
+        val endDateTime = endDate.atTime(23, 59, 59)
         
-        return journalRepository.getEmotionStatistics(period, startDate, endDate)
+        val entries = journalRepository.getEntriesByDateRange(startDateTime, endDateTime)
+        
+        // Group by Date
+        val groupedEntries = entries.groupBy { it.createdAt.toLocalDate() }
+        
+        val result = mutableListOf<EmotionStatistics>()
+        var currentDate = startDate
+        while (!currentDate.isAfter(endDate)) {
+            val dailyEntries = groupedEntries[currentDate] ?: emptyList()
+            // Filter entries that have analysis if strictly required? 
+            // The requirement says "List<EmotionAnalysis>" previously, so implies analyzed ones.
+            // But JournalEntry list is more flexible. Let's keep all, UI can filter.
+            result.add(EmotionStatistics(currentDate, dailyEntries))
+            currentDate = currentDate.plusDays(1)
+        }
+        
+        return result
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.domain.model.AnalysisStatus
 import com.kminder.minder.ui.component.chart.ConstellationChart
@@ -38,12 +40,15 @@ import com.kminder.minder.ui.component.EmotionPolarChart
 import com.kminder.minder.ui.component.chart.NetworkChart
 import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.component.BlockingLoadingOverlay
-import com.kminder.minder.ui.screen.home.OutlinedDivider
+import com.kminder.minder.ui.component.OutlinedDivider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
 import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionUiUtil
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
+import com.kminder.minder.ui.screen.write.WriteEntryContent
+import com.kminder.minder.ui.screen.write.WriteUiState
+import com.kminder.minder.ui.theme.MinderTheme
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -56,6 +61,7 @@ fun EntryDetailScreen(
     entryId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToAnalysisDetail: (Long) -> Unit,
+    onNavigateToEdit: (Long) -> Unit,
     viewModel: EntryDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -90,87 +96,101 @@ fun EntryDetailScreen(
         )
     }
 
+    EntryDetailContent(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onDeleteClick = { showDeleteDialog = true },
+        onRetryAnalysis = { viewModel.retryAnalysis(entryId) },
+        onNavigateToAnalysisDetail = { onNavigateToAnalysisDetail(entryId) },
+        onEditClick = { onNavigateToEdit(entryId) }
+    )
+}
+
+@Composable
+fun EntryDetailContent(
+    uiState: EntryDetailUiState,
+    onNavigateBack: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onRetryAnalysis: () -> Unit,
+    onNavigateToAnalysisDetail: () -> Unit,
+    onEditClick: () -> Unit
+) {
+    val isAnalyzing = (uiState as? EntryDetailUiState.Success)?.isAnalyzing == true
+    val entry = (uiState as? EntryDetailUiState.Success)?.entry
+    
+    // Edit possible if not analyzing and status is not COMPLETED
+    val isEditable = !isAnalyzing && entry != null && entry.status != AnalysisStatus.COMPLETED
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MinderBackground)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-        ) {
-            // Custom Header for consistent alignment (matching EntryListScreen)
-            Row(
+        Scaffold(
+            containerColor = MinderBackground,
+            topBar = {
+                EntryDetailTopBar(
+                    onBackClick = onNavigateBack,
+                    onDeleteClick = onDeleteClick,
+                    onEditClick = onEditClick,
+                    isEditable = isEditable
+                )
+            }
+        ) { paddingValues ->
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
-                // Back Button
-                RetroIconButton(
-                    onClick = onNavigateBack,
-                    icon = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.common_back)
-                )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Divider matching List screen style
+                    OutlinedDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                            .height(4.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
 
-                // Delete Button
-                RetroIconButton(
-                    onClick = { showDeleteDialog = true },
-                    icon = Icons.Default.Delete,
-                    contentDescription = "Delete"
-                )
-            }
+                    Box(modifier = Modifier.weight(1f)) {
+                        when (uiState) {
+                            is EntryDetailUiState.Loading -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = Color.Black)
+                                }
+                            }
 
-            // Divider matching List screen style (optional but good for consistency)
-            OutlinedDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp)
-                    .height(4.dp),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+                            is EntryDetailUiState.Error -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(text = stringResource(R.string.entry_detail_load_error))
+                                }
+                            }
 
-            // Content
-            Box(modifier = Modifier.weight(1f)) {
-                when (val state = uiState) {
-                    is EntryDetailUiState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color.Black)
-                        }
-                    }
-
-                    is EntryDetailUiState.Error -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = stringResource(R.string.entry_detail_load_error))
-                        }
-                    }
-
-                    is EntryDetailUiState.Success -> {
-                        @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
-                        CompositionLocalProvider(
-                            LocalOverscrollFactory provides null
-                        ) {
-                            DetailContent(
-                                entry = state.entry,
-                                isAnalyzing = state.isAnalyzing,
-                                onRetryAnalysis = { viewModel.retryAnalysis(entryId) },
-                                onNavigateToAnalysisDetail = { onNavigateToAnalysisDetail(entryId) }
-                            )
+                            is EntryDetailUiState.Success -> {
+                                @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+                                CompositionLocalProvider(
+                                    LocalOverscrollFactory provides null
+                                ) {
+                                    DetailBody(
+                                        entry = uiState.entry,
+                                        isAnalyzing = uiState.isAnalyzing,
+                                        onRetryAnalysis = onRetryAnalysis,
+                                        onNavigateToAnalysisDetail = onNavigateToAnalysisDetail
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-                }
             }
+        }
 
-        val isAnalyzing = (uiState as? EntryDetailUiState.Success)?.isAnalyzing == true
         BlockingLoadingOverlay(
             isVisible = isAnalyzing,
             message = stringResource(R.string.entry_detail_analysis_analyzing)
@@ -179,7 +199,60 @@ fun EntryDetailScreen(
 }
 
 @Composable
-fun DetailContent(
+fun EntryDetailTopBar(
+    onBackClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onEditClick: () -> Unit,
+    isEditable: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .statusBarsPadding()
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Back Button & Title
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RetroIconButton(
+                onClick = onBackClick,
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.common_back)
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Text(
+                text = stringResource(R.string.entry_detail_title),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black
+            )
+        }
+
+        Row {
+            // Edit Button (Visible only if editable)
+            if (isEditable) {
+                RetroIconButton(
+                    onClick = onEditClick,
+                    icon = Icons.Default.Edit,
+                    contentDescription = "Edit"
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
+            // Delete Button
+            RetroIconButton(
+                onClick = onDeleteClick,
+                icon = Icons.Default.Delete,
+                contentDescription = "Delete"
+            )
+        }
+    }
+}
+
+@Composable
+fun DetailBody(
     entry: JournalEntry,
     isAnalyzing: Boolean = false,
     onRetryAnalysis: () -> Unit = {},
@@ -421,41 +494,44 @@ fun DetailContent(
         } else {
             // Analysis not available
             val status = entry.status
-            if ((status == AnalysisStatus.FAILED || status == AnalysisStatus.NONE) && !isAnalyzing) {
+            if ((status == AnalysisStatus.FAILED || status == AnalysisStatus.NONE || status == AnalysisStatus.PENDING) && !isAnalyzing) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = stringResource(R.string.entry_detail_analysis_failed),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black.copy(alpha = 0.6f)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    if (status == AnalysisStatus.FAILED) {
+                        Text(
+                            text = stringResource(R.string.entry_detail_analysis_failed),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Black.copy(alpha = 0.6f)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    
                     Button(
                         onClick = onRetryAnalysis,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, Color.White)
                     ) {
-                        Text(stringResource(R.string.entry_detail_analysis_retry), color = Color.White)
+                        Text(
+                            text = stringResource(
+                                if (status == AnalysisStatus.FAILED) R.string.entry_detail_analysis_retry 
+                                else R.string.entry_detail_analysis_start
+                            ), 
+                            color = Color.White
+                        )
                     }
                 }
-            } else if (status == AnalysisStatus.PENDING || isAnalyzing) {
+            } else if (isAnalyzing) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp),
-                        color = Color.Black,
-                        strokeWidth = 3.dp
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.entry_detail_analysis_analyzing),
                         style = MaterialTheme.typography.bodySmall,
@@ -469,34 +545,36 @@ fun DetailContent(
     }
 }
 
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true, backgroundColor = 0xFFe5e4c8)
+@Preview(showBackground = true)
 @Composable
-fun EntryDetailPreview() {
-//    val mockEntry = com.kminder.domain.model.JournalEntry(
-//        id = 1,
-//        content = "오늘은 정말 기분 좋은 날이었다. 친구들과 만나서 즐거운 시간을 보냈다. 날씨도 좋고 모든 게 완벽했다.",
-//        entryType = com.kminder.domain.model.EntryType.FREE_WRITING,
-//        createdAt = java.time.LocalDateTime.now(),
-//        updatedAt = java.time.LocalDateTime.now(),
-//        emotionAnalysis = com.kminder.domain.model.EmotionAnalysis(
-//            anger = 0.0f,
-//            anticipation = 0.0f,
-//            joy = 0.9f,
-//            trust = 0.5f,
-//            fear = 0.0f,
-//            sadness = 0.0f,
-//            disgust = 0.0f,
-//            surprise = 0.2f,
-//            keywords = listOf(
-//                com.kminder.domain.model.EmotionKeyword("행복", com.kminder.domain.model.EmotionType.JOY, 0.9f),
-//                com.kminder.domain.model.EmotionKeyword("친구", com.kminder.domain.model.EmotionType.TRUST, 0.8f),
-//                com.kminder.domain.model.EmotionKeyword("날씨", com.kminder.domain.model.EmotionType.JOY, 0.7f)
-//            )
-//        )
-//    )
+fun WriteEntryScreenPreview() {
+    val mockEntry = MockData.mockJournalEntries[52]
+    MinderTheme {
+        EntryDetailContent(
+            uiState = EntryDetailUiState.Success(mockEntry),
+            onNavigateBack = {},
+            onDeleteClick = {  },
+            onRetryAnalysis = {  },
+            onNavigateToAnalysisDetail = {},
+            onEditClick = {}
+        )
+    }
+}
 
-    val mockEntry = MockData.mockJournalEntries[2]
-    MaterialTheme {
-        DetailContent(entry = mockEntry, isAnalyzing = true)
+@Preview(showBackground = true)
+@Composable
+fun WriteEntryScreenLoadingPreview() {
+    MinderTheme {
+        val mockEntry = MockData.mockJournalEntries[21]
+        MinderTheme {
+            EntryDetailContent(
+                uiState = EntryDetailUiState.Success(mockEntry),
+                onNavigateBack = {},
+                onDeleteClick = {  },
+                onRetryAnalysis = {  },
+                onNavigateToAnalysisDetail = {},
+                onEditClick = {}
+            )
+        }
     }
 }
