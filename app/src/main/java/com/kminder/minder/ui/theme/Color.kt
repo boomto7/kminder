@@ -56,3 +56,9 @@ val MinderBackground = Color(0xFFe5e4c8) // Was: 0xFFFAFAFA
 val MinderTextDark = Color(0xFF424242)
 val MinderTextGray = Color(0xFF616161)
 val MinderSurface = Color(0xFFFFFFFF)
+
+//val SelectorPrimary = Color(0xffe4b196)
+//val SelectorPrimary = Color(0xffb7b6a0)
+//val SelectorPrimary = Color(0xffeae9d3)
+//val SelectorPrimary = Color(0xffefefde)
+val SelectorPrimary = Color(0xffD97706)

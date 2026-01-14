@@ -67,7 +67,15 @@ fun MinderNavGraph(
         }
         
         // 일기 작성 화면
-        composable(Screen.WriteEntry.route) {
+        composable(
+            route = Screen.WriteEntry.route,
+            arguments = listOf(
+                navArgument("entryId") { 
+                    type = NavType.LongType 
+                    defaultValue = 0L // 0L implies new entry
+                }
+            )
+        ) {
             WriteEntryScreen(
                 onNavigateBack = {
                     navController.popBackStack()
@@ -108,6 +116,9 @@ fun MinderNavGraph(
                 },
                 onNavigateToAnalysisDetail = { id ->
                     navController.navigate(Screen.AnalysisDetail.createRoute(id))
+                },
+                onNavigateToEdit = { id ->
+                    navController.navigate(Screen.WriteEntry.createRoute(id))
                 }
             )
         }

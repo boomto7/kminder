@@ -45,6 +45,7 @@ import com.kminder.minder.R
 import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.component.chart.ConstellationChart
 import com.kminder.minder.ui.component.chart.NetworkChart
+import com.kminder.minder.ui.component.OutlinedDivider
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
@@ -317,7 +318,7 @@ fun AnalysisDetailHeader(onNavigateBack: () -> Unit) {
             Spacer(modifier = Modifier.size(50.dp))
         }
 
-        com.kminder.minder.ui.screen.home.OutlinedDivider(
+        OutlinedDivider(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp)

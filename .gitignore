@@ -15,9 +15,6 @@
 .cxx
 local.properties
 
+
 # Design files
-
-
-
-
-
+.docs/design/

@@ -54,4 +54,10 @@ object EmotionUiUtil {
         val resId = context.resources.getIdentifier(key, "drawable", context.packageName)
         return if (resId != 0) resId else null
     }
+
+    fun getEmotionImageResId(context: android.content.Context, emotionType: com.kminder.domain.model.EmotionType): Int? {
+        val key = "img_emotion_${emotionType.name.lowercase()}"
+        val resId = context.resources.getIdentifier(key, "drawable", context.packageName)
+        return if (resId != 0) resId else null
+    }
 }

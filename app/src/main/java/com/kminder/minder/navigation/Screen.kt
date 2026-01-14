@@ -17,7 +17,11 @@ sealed class Screen(val route: String) {
     /**
      * 일기 작성 화면
      */
-    data object WriteEntry : Screen("write_entry")
+    data object WriteEntry : Screen("write_entry?entryId={entryId}") {
+        fun createRoute(entryId: Long? = null): String {
+            return if (entryId != null) "write_entry?entryId=$entryId" else "write_entry"
+        }
+    }
     
     /**
      * 일기 목록 화면

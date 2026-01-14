@@ -40,6 +40,7 @@ import com.kminder.minder.R
 import com.kminder.minder.ui.component.BlockingLoadingOverlay
 import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.component.RetroLoadingIndicator
+import com.kminder.minder.ui.component.OutlinedDivider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
 import com.kminder.minder.ui.theme.MinderTheme
@@ -72,7 +73,7 @@ fun WriteEntryScreen(
         uiState = uiState,
         onNavigateBack = onNavigateBack,
         onContentChange = viewModel::updateContent,
-        onSaveClick = viewModel::saveAndAnalyze
+        onSaveClick = viewModel::saveEntry
     )
 }
 
@@ -89,7 +90,8 @@ fun WriteEntryContent(
             topBar = {
                 WriteEntryTopBar(
                     onBackClick = onNavigateBack,
-                    isSaving = uiState.isSaving
+                    isSaving = uiState.isSaving,
+                    isEditMode = uiState.isEditMode
                 )
             }
         ) { paddingValues ->
@@ -98,6 +100,14 @@ fun WriteEntryContent(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+                OutlinedDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .height(4.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -162,14 +172,14 @@ fun WriteEntryContent(
                                      RetroLoadingIndicator(modifier = Modifier.size(24.dp))
                                      Spacer(modifier = Modifier.width(8.dp))
                                      Text(
-                                         text = stringResource(R.string.write_analyzing),
+                                         text = stringResource(R.string.write_saving),
                                          color = Color.White,
                                          fontWeight = FontWeight.Bold
                                      )
                                  }
                             } else {
                                 Text(
-                                    text = stringResource(R.string.write_analyze_button),
+                                    text = stringResource(R.string.write_save_button),
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                                 )
@@ -183,7 +193,7 @@ fun WriteEntryContent(
         // Blocking Overlay (Covers everything including TopBar)
         BlockingLoadingOverlay(
             isVisible = uiState.isSaving,
-            message = stringResource(R.string.write_analyzing)
+            message = stringResource(R.string.write_saving)
         )
     }
 }
@@ -191,7 +201,8 @@ fun WriteEntryContent(
 @Composable
 fun WriteEntryTopBar(
     onBackClick: () -> Unit,
-    isSaving: Boolean
+    isSaving: Boolean,
+    isEditMode: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -209,7 +220,7 @@ fun WriteEntryTopBar(
         Spacer(modifier = Modifier.width(16.dp))
         
         Text(
-            text = stringResource(R.string.write_entry_title),
+            text = stringResource(if (isEditMode) R.string.write_entry_title_edit else R.string.write_entry_title),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = Color.Black
         )
