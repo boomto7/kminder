@@ -127,16 +127,21 @@ fun EntryListScreen(
                                         .align(Alignment.TopCenter)
                                         .padding(top = 16.dp)
                                 ) {
-                                    RetroLoadingIndicator(
-                                        modifier = Modifier
-                                            .size(42.dp)
-                                            .graphicsLayer {
-                                                val fraction = pullState.distanceFraction
-                                                alpha = if (uiState.isRefreshing) 1f else fraction.coerceIn(0f, 1f)
-                                                scaleX = if (uiState.isRefreshing) 1f else fraction.coerceIn(0f, 1f)
-                                                scaleY = if (uiState.isRefreshing) 1f else fraction.coerceIn(0f, 1f)
-                                            }
-                                    )
+                                    val fraction = pullState.distanceFraction
+                                    if (fraction > 0f || uiState.isRefreshing) {
+                                        RetroLoadingIndicator(
+                                            modifier = Modifier
+                                                .size(42.dp)
+                                                .graphicsLayer {
+                                                    val validFraction = if (fraction.isNaN()) 0f else fraction.coerceIn(0f, 1f)
+                                                    alpha = if (uiState.isRefreshing) 1f else validFraction
+
+                                                    val safeScale = if (uiState.isRefreshing) 1f else validFraction.coerceAtLeast(0.01f)
+                                                    scaleX = safeScale
+                                                    scaleY = safeScale
+                                                }
+                                        )
+                                    }
                                 }
                             },
                             modifier = Modifier.fillMaxSize()

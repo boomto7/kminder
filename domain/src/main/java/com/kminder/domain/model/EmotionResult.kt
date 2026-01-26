@@ -18,5 +18,8 @@ data class EmotionResult(
     val score: Float,
     val category: ComplexEmotionType.Category,
     val complexEmotionType: ComplexEmotionType? = null,
-    val source: EmotionAnalysis
+    val source: EmotionAnalysis,
+    // 추가: 판단의 근거가 된 수정자 감정 리스트 (예: 운명론 판정 시 사용된 JOY, SADNESS 등)
+    val modifierEmotions: List<EmotionType> = emptyList(),
+    val logicKey: String? = null            // 내부 디버깅 및 분석용 로직 키
 )

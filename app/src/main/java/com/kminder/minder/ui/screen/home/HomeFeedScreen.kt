@@ -1,7 +1,6 @@
 package com.kminder.minder.ui.screen.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kminder.domain.model.ChartPeriod
 import com.kminder.domain.model.EntryType
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.ui.component.NeoShadowBox
@@ -47,15 +47,18 @@ import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionUiUtil
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 @Composable
 fun HomeFeedScreen(
     onNavigateToWrite: () -> Unit,
     onNavigateToList: () -> Unit,
-    onNavigateToStatistics: () -> Unit,
+    onNavigateToStatistics: (ChartPeriod?, Long?) -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -79,7 +82,7 @@ fun HomeFeedScreen(
         drawerContent = {
             HomeDrawerContent(
                 onNavigateToList = onNavigateToList,
-                onNavigateToStatistics = onNavigateToStatistics
+                onNavigateToStatistics = { onNavigateToStatistics(null, null) }
             )
         }
     ) {
@@ -116,7 +119,8 @@ fun HomeFeedScreen(
                 isLastPage = isLastPage,
                 onRefresh = viewModel::refresh,
                 onLoadMore = viewModel::loadMore,
-                listState = listState
+                listState = listState,
+                onNavigateToStatistics = onNavigateToStatistics
             )
         }
     }
@@ -209,7 +213,8 @@ fun HomeFeedContent(
     isLastPage: Boolean,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
-    listState: LazyListState
+    listState: LazyListState,
+    onNavigateToStatistics: (ChartPeriod?, Long?) -> Unit
 ) {
     val pullState = rememberPullToRefreshState()
     Timber.e("isRefreshing : $isRefreshing in content")
@@ -224,16 +229,24 @@ fun HomeFeedContent(
                     .align(Alignment.TopCenter)
                     .padding(top = 16.dp)
             ) {
-                RetroLoadingIndicator(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .graphicsLayer {
-                            val fraction = pullState.distanceFraction
-                            alpha = if (isRefreshing) 1f else fraction.coerceIn(0f, 1f)
-                            scaleX = if (isRefreshing) 1f else fraction.coerceIn(0f, 1f)
-                            scaleY = if (isRefreshing) 1f else fraction.coerceIn(0f, 1f)
-                        }
-                )
+                val fraction = pullState.distanceFraction
+                // 당기기 시작했거나 로딩 중일 때만 인디케이터를 Composition 트리에 추가
+                // (미리 추가해두면 내부 무한 애니메이션이 돌면서 시스템 로그 유발 가능성)
+                if (fraction > 0f || isRefreshing) {
+                    RetroLoadingIndicator(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .graphicsLayer {
+                                val validFraction = if (fraction.isNaN()) 0f else fraction.coerceIn(0f, 1f)
+                                
+                                alpha = if (isRefreshing) 1f else validFraction
+                                
+                                val safeScale = if (isRefreshing) 1f else validFraction.coerceAtLeast(0.01f)
+                                scaleX = safeScale
+                                scaleY = safeScale
+                            }
+                    )
+                }
             }
         }
     ) {
@@ -252,12 +265,15 @@ fun HomeFeedContent(
                 }
 
                 is HomeUiState.Empty -> {
-                    Text(
-                        text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_title) + "\n" +
-                                androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_desc),
-                        modifier = Modifier.align(Alignment.Center),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
+                    TimelineFeed(
+                        groupedEntries = emptyMap(),
+                        onEntryClick = onEntryClick,
+                        onWriteClick = onWriteClick,
+                        listState = listState,
+                        onLoadMore = onLoadMore,
+                        isLoadingMore = isLoadingMore,
+                        isLastPage = isLastPage,
+                        onNavigateToStatistics = onNavigateToStatistics
                     )
                 }
 
@@ -269,7 +285,8 @@ fun HomeFeedContent(
                         listState = listState,
                         onLoadMore = onLoadMore,
                         isLoadingMore = isLoadingMore,
-                        isLastPage = isLastPage
+                        isLastPage = isLastPage,
+                        onNavigateToStatistics = onNavigateToStatistics
                     )
                 }
             }
@@ -287,7 +304,8 @@ fun TimelineFeed(
     listState: LazyListState,
     onLoadMore: () -> Unit,
     isLoadingMore: Boolean,
-    isLastPage: Boolean
+    isLastPage: Boolean,
+    onNavigateToStatistics: (ChartPeriod?, Long?) -> Unit
 ) {
     // Disable Overscroll Effect (Glow)
     CompositionLocalProvider(
@@ -320,20 +338,65 @@ fun TimelineFeed(
                 WriteEntryPrompt(onClick = onWriteClick)
             }
 
-            groupedEntries.forEach { (header, entries) ->
-                stickyHeader(key = header) {
-                    FeedSectionHeader(title = header, onViewAllClick = { /* TODO */ })
+            if (groupedEntries.isEmpty()) {
+                item {
+                    HomeEmptyView()
                 }
+            } else {
+                groupedEntries.forEach { (header, entries) ->
+                    stickyHeader(key = header) {
+                        FeedSectionHeader(
+                            title = header, 
+                            onViewAllClick = {
+                                // Parse header to trigger navigation
+                                // Note: This parsing logic relies on the format defined in HomeViewModel.kt
+                                try {
+                                    val now = LocalDateTime.now()
+                                    val (period, date) = when {
+                                        header.contains("주차") -> { // Weekly: "M월 W주차"
+                                            // Parsing fuzzy week string is hard, so we use the first entry's date as approximation
+                                            // or we rely on the fact that entries are sorted.
+                                            // Best is to use the first entry's date.
+                                            ChartPeriod.WEEKLY to entries.firstOrNull()?.createdAt?.toLocalDate()
+                                        }
+                                        header.contains("년") && header.contains("월") && !header.contains("일") -> { // Monthly: "yyyy년 M월"
+                                            val formatter = DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREA)
+                                            // toLocalDate requires day, default to 1st
+                                            val temporal = formatter.parse(header)
+                                            val year = temporal.get(java.time.temporal.ChronoField.YEAR)
+                                            val month = temporal.get(java.time.temporal.ChronoField.MONTH_OF_YEAR)
+                                            ChartPeriod.MONTHLY to LocalDate.of(year, month, 1)
+                                        }
+                                        else -> { // Daily: "M월 d일 EEEE" or fallback
+                                            // Try daily parser or fallback to first entry
+                                            ChartPeriod.DAILY to entries.firstOrNull()?.createdAt?.toLocalDate()
+                                        }
+                                    }
+                                    
+                                    if (date != null) {
+                                        val dateMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                                        onNavigateToStatistics(period, dateMillis)
+                                    } else {
+                                        onNavigateToStatistics(null, null)
+                                    }
+                                } catch (e: Exception) {
+                                    Timber.e(e, "Failed to parse header for navigation: $header")
+                                    onNavigateToStatistics(null, null)
+                                }
+                            }
+                        )
+                    }
 
-                items(
-                    count = entries.size,
-                    key = { index -> entries[index].id },
-                    contentType = { _ -> "FeedEntry" }
-                ) { index ->
-                    FeedEntryItem(
-                        entry = entries[index],
-                        onClick = { onEntryClick(entries[index].id) }
-                    )
+                    items(
+                        count = entries.size,
+                        key = { index -> entries[index].id },
+                        contentType = { _ -> "FeedEntry" }
+                    ) { index ->
+                        FeedEntryItem(
+                            entry = entries[index],
+                            onClick = { onEntryClick(entries[index].id) }
+                        )
+                    }
                 }
             }
 
@@ -408,8 +471,8 @@ fun FeedEntryItem(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            .fillMaxWidth()
+            .padding(16.dp)
         ) {
             // Simple simplified view
             if (entry.hasEmotionAnalysis() && emotionResult != null) {
@@ -542,8 +605,27 @@ fun HomeFeedScreenPreview() {
                 isLastPage = false,
                 onRefresh = {},
                 onLoadMore = {},
-                listState = rememberLazyListState()
+                listState = rememberLazyListState(),
+                onNavigateToStatistics = { _, _ -> }
             )
         }
+    }
+}
+
+@Composable
+fun HomeEmptyView() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp), // Height to occupy some space
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_title) + "\n" +
+                    androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_desc),
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.Gray,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
     }
 }

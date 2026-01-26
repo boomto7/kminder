@@ -114,10 +114,9 @@ fun WeeklyEmotionChart(
                         )
                     } else {
                         dayStat.entries.forEach { entry ->
-                             val analysis = entry.emotionResult?.source
-                             val dominantEmotion = analysis?.getDominantEmotion() 
-                             val emotionColor = if (analysis != null && dominantEmotion != null) 
-                                EmotionColorUtil.getEmotionColor(dominantEmotion) else Color.White
+                             val result = entry.emotionResult
+                             val emotionColor = if (result != null) 
+                                EmotionColorUtil.getEmotionResultColor(result) else Color.White
                              
                              // Compact Card
                              NeoShadowBox(
@@ -132,8 +131,8 @@ fun WeeklyEmotionChart(
                                         .padding(horizontal = 12.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                     if (dominantEmotion != null) {
-                                         val iconRes = EmotionUiUtil.getEmotionImageResId(context, dominantEmotion)
+                                     if (result != null) {
+                                         val iconRes = EmotionUiUtil.getEmotionImageResId(context, result)
                                          if (iconRes != null) {
                                              Image(
                                                 painter = painterResource(id = iconRes),
@@ -143,7 +142,7 @@ fun WeeklyEmotionChart(
                                             Spacer(modifier = Modifier.width(8.dp))
                                          }
                                          Text(
-                                            text = stringProvider.getEmotionName(dominantEmotion),
+                                            text = EmotionUiUtil.getLabel(result, stringProvider),
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Bold
                                         )

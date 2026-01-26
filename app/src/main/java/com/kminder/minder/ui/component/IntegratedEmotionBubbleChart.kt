@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -78,28 +80,31 @@ fun IntegratedEmotionBubbleChart(
     // Names from Resources
     val basicNames = remember { mutableMapOf<EmotionType, String>() }
     EmotionType.entries.forEach { 
-        basicNames[it] = androidx.compose.ui.res.stringResource(EmotionColorUtil.getEmotionNameResId(it)) 
+        basicNames[it] = stringResource(EmotionColorUtil.getEmotionNameResId(it))
     }
     
     val complexNames = remember { mutableMapOf<ComplexEmotionType, String>() }
     ComplexEmotionType.entries.forEach {
-        val fullTitle = androidx.compose.ui.res.stringResource(EmotionColorUtil.getComplexEmotionNameResId(it))
+        val fullTitle = stringResource(EmotionColorUtil.getComplexEmotionNameResId(it))
         complexNames[it] = fullTitle.substringBefore(" (")
     }
 
-    val conflictFormat = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.analysis_conflict_format)
+    val conflictFormat = stringResource(com.kminder.minder.R.string.analysis_conflict_format)
 
     val bubbleNodes = remember(emotionCounts, basicNames, complexNames) {
         createAllEmotionNodes(emotionCounts, basicNames, complexNames, conflictFormat)
     }
 
     // Entrance Animation
-    val progress = remember { Animatable(0f) }
-    LaunchedEffect(emotionCounts) {
-        progress.animateTo(
-            targetValue = 1f,
-            animationSpec = spring(stiffness = Spring.StiffnessLow)
-        )
+    val isInspection = LocalInspectionMode.current
+    val progress = remember { Animatable(if (isInspection) 1f else 0f) }
+    LaunchedEffect(emotionCounts, isInspection) {
+        if (!isInspection) {
+            progress.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(stiffness = Spring.StiffnessLow)
+            )
+        }
     }
 
     // --- 1. Wind Effect (Idle Animation) ---
@@ -210,14 +215,22 @@ fun IntegratedEmotionBubbleChart(
             style = Stroke(width = 4.dp.toPx(), cap = androidx.compose.ui.graphics.StrokeCap.Round)
         )
         
-        // --- 4. Bubble Layout ---
+        // --- 4. Bubble Layout Calculation ---
         val sortedNodes = bubbleNodes.sortedByDescending { it.count }
         val maxCount = sortedNodes.maxOfOrNull { it.count }?.takeIf { it > 0 } ?: 1
         
         val baseRadius = 6.dp.toPx()
         val activeScale = 32.dp.toPx()
         
-        sortedNodes.forEachIndexed { index, node ->
+        // 레이아웃 정보 저장용 클래스
+        data class BubbleLayout(
+            val node: BubbleNode,
+            val x: Float,
+            val y: Float,
+            val radius: Float
+        )
+
+        val layoutList = sortedNodes.mapIndexed { index, node ->
             // Size
             val rawRadius = if (node.count > 0) {
                 baseRadius + (activeScale * sqrt(node.count.toFloat() / maxCount))
@@ -226,7 +239,15 @@ fun IntegratedEmotionBubbleChart(
             }
             
             // Position (Spiral around Active Center)
-            val spreadFactorStart = 35.dp.toPx()
+            // Position (Spiral around Active Center)
+            // Spread Factors: Determine the distance between bubbles.
+            // Increased to prevents overlapping (Previous: 35.dp -> 12.dp)
+            // New: Start broad (55.dp) to give space for large central bubbles, 
+            // then tighten (20.dp) for smaller outer bubbles.
+//            val spreadFactorStart = 55.dp.toPx()
+//            val spreadFactorEnd = 20.dp.toPx()
+            // 35, 12
+            val spreadFactorStart = 40.dp.toPx()
             val spreadFactorEnd = 12.dp.toPx()
             val indexRatio = index.toFloat() / sortedNodes.size
             val currentSpread = spreadFactorStart * (1f - indexRatio) + spreadFactorEnd * indexRatio
@@ -251,6 +272,16 @@ fun IntegratedEmotionBubbleChart(
             }
             
             val finalRadius = rawRadius * scale * progress.value
+            BubbleLayout(node, nodeX, nodeY, finalRadius)
+        }
+
+        // --- 5. Draw Bubbles (Reverse Order) ---
+        // 중심(가장 큰 원, index 0)이 가장 나중에 그려져야 맨 위에 보임
+        layoutList.asReversed().forEach { layout ->
+            val node = layout.node
+            val finalRadius = layout.radius
+            val nodeX = layout.x
+            val nodeY = layout.y
 
             // Draw
             val color = if (node.count > 0) node.color else Color.LightGray.copy(alpha = 0.4f)
@@ -273,11 +304,12 @@ fun IntegratedEmotionBubbleChart(
             )
             
             // Label
+            // 중심 버블(가장 큰 버블)인 경우 텍스트도 가장 위에 그려짐
             if (node.count > 0 && finalRadius > 10.dp.toPx() && progress.value > 0.8f) {
                 val label = if (node.name.length > 2) node.name.take(2) else node.name
                 val measure = textMeasurer.measure(
                     text = label,
-                    style = TextStyle(fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    style = TextStyle(fontSize = 10.sp, color = Color.Black, fontWeight = FontWeight.Bold)
                 )
                 drawText(
                     textLayoutResult = measure,
@@ -328,50 +360,29 @@ private fun createAllEmotionNodes(
         ))
     }
     
-    // 2. Complex 24 Emotions
+    // 2. Complex & Opposite Emotions (Dyads + Conflicts)
     ComplexEmotionType.entries.forEach { complex ->
-        val color1 = EmotionColorUtil.getEmotionColor(complex.composition.first)
-        val color2 = EmotionColorUtil.getEmotionColor(complex.composition.second)
-        val blended = EmotionColorUtil.blendColors(color1, color2, 0.5f)
-        val simpleName = complexNames[complex] ?: complex.name
-        
-        nodes.add(BubbleNode(
-            id = complex.name,
-            name = simpleName,
-            color = blended,
-            count = counts[simpleName] ?: counts[complex.name] ?: 0
-        ))
+        // Single Emotion은 제외 (이미 위에서 처리함)
+        if (complex.category != ComplexEmotionType.Category.SINGLE_EMOTION) {
+            val color1 = EmotionColorUtil.getEmotionColor(complex.composition.first)
+            val color2 = EmotionColorUtil.getEmotionColor(complex.composition.second)
+            val blended = EmotionColorUtil.blendColors(color1, color2, 0.5f)
+            val simpleName = complexNames[complex] ?: complex.name
+            
+            nodes.add(BubbleNode(
+                id = complex.name,
+                name = simpleName,
+                color = blended,
+                count = counts[simpleName] ?: counts[complex.name] ?: 0
+            ))
+        }
     }
     
-    // 3. Conflict 4 Emotions
-    val conflicts = listOf(
-        Pair(EmotionType.JOY, EmotionType.SADNESS),
-        Pair(EmotionType.TRUST, EmotionType.DISGUST),
-        Pair(EmotionType.FEAR, EmotionType.ANGER),
-        Pair(EmotionType.SURPRISE, EmotionType.ANTICIPATION)
-    )
-    
-    conflicts.forEach { (t1, t2) ->
-        val name1 = basicNames[t1] ?: t1.name
-        val name2 = basicNames[t2] ?: t2.name
-        val conflictName = "${name1}/${name2}"
-        val keyName = String.format(conflictFormat, name1, name2) // e.g. "기쁨과(와) 슬픔의 충돌"
-        
-        val color = EmotionColorUtil.blendColors(EmotionColorUtil.getEmotionColor(t1), EmotionColorUtil.getEmotionColor(t2), 0.5f)
-        val count = counts[conflictName] ?: counts[keyName] ?: 0
-        
-        nodes.add(BubbleNode(
-            id = "CONFLICT_${t1.name}_${t2.name}",
-            name = "충돌",
-            color = color,
-            count = count
-        ))
-    }
     return nodes
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, locale = "ko", heightDp = 600)
 @Composable
 fun PreviewIntegratedEmotionChart() {
     val mockCounts = mapOf(
@@ -395,9 +406,11 @@ fun PreviewIntegratedEmotionChart() {
         "냉소" to 7,       // 혐오+기대
         "후회" to 5,       // 슬픔+혐오
         
-        // Conflicts
-        "기쁨/슬픔" to 6,
-        "신뢰/혐오" to 4
+        // Conflicts (Opposite Emotions) -> Now using Real Names
+        "씁쓸함" to 6,    // 기쁨/슬픔
+        "애증" to 4,      // 신뢰/혐오
+        "얼어붙음" to 5,  // 공포/분노
+        "혼란스러움" to 3 // 놀람/기대
     )
     
     MinderTheme {

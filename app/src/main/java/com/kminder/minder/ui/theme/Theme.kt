@@ -25,8 +25,8 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = EmotionJoy,
-//    primary = SelectorPrimary,
+//    primary = EmotionJoy,
+    primary = SelectorPrimary,
     secondary = MinderSkyBlue,
     tertiary = MinderPeach,
     background = MinderBackground,
@@ -49,11 +49,13 @@ fun MinderTheme(
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColorScheme
         else -> LightColorScheme
+//
+//        darkTheme -> DarkColorScheme
+//        else -> LightColorScheme
     }
 
     MaterialTheme(

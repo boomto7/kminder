@@ -1,5 +1,6 @@
 package com.kminder.minder.ui.screen.statistics
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kminder.domain.model.ChartPeriod
@@ -14,7 +15,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 import java.util.Locale
@@ -50,18 +53,41 @@ data class StatisticsUiState(
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
     private val getEmotionStatisticsUseCase: GetEmotionStatisticsUseCase,
-    private val getKeywordNetworkDataUseCase: GetKeywordNetworkDataUseCase
+    private val getKeywordNetworkDataUseCase: GetKeywordNetworkDataUseCase,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatisticsUiState())
     val uiState: StateFlow<StatisticsUiState> = _uiState.asStateFlow()
 
     init {
+        // Navigation Arguments 확인 (IntegratedAnalysisScreen에서 사용)
+        val periodArg = savedStateHandle.get<String>("period")
+        val dateMillisArg = savedStateHandle.get<Long>("dateMillis")
+
+        if (periodArg != null && dateMillisArg != null && dateMillisArg != -1L) {
+            val period = try {
+                ChartPeriod.valueOf(periodArg)
+            } catch (e: Exception) {
+                ChartPeriod.WEEKLY
+            }
+            val date = Instant.ofEpochMilli(dateMillisArg).atZone(ZoneId.systemDefault()).toLocalDate()
+
+            _uiState.update {
+                it.copy(selectedPeriod = period, anchorDate = date)
+            }
+        }
+
         loadStatistics()
     }
 
     fun setPeriod(period: ChartPeriod) {
         _uiState.update { it.copy(selectedPeriod = period, anchorDate = LocalDate.now()) }
+        loadStatistics()
+    }
+
+    fun setDate(date: LocalDate) {
+        _uiState.update { it.copy(anchorDate = date) }
         loadStatistics()
     }
 

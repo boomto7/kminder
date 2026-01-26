@@ -38,7 +38,18 @@ sealed class Screen(val route: String) {
     /**
      * 통계/차트 화면
      */
-    data object Statistics : Screen("statistics")
+    /**
+     * 통계/차트 화면
+     */
+    data object Statistics : Screen("statistics?period={period}&dateMillis={dateMillis}") {
+        fun createRoute(period: String? = null, dateMillis: Long? = null): String {
+            return if (period != null && dateMillis != null) {
+                "statistics?period=$period&dateMillis=$dateMillis"
+            } else {
+                "statistics"
+            }
+        }
+    }
 
     /**
      * 감정 가이드 화면
@@ -50,5 +61,12 @@ sealed class Screen(val route: String) {
      */
     data object AnalysisDetail : Screen("analysis_detail/{entryId}") {
         fun createRoute(entryId: Long) = "analysis_detail/$entryId"
+    }
+
+    /**
+     * 통합 감정 분석 화면 (버블 차트)
+     */
+    data object IntegratedAnalysis : Screen("integrated_analysis/{period}/{dateMillis}") {
+        fun createRoute(period: String, dateMillis: Long) = "integrated_analysis/$period/$dateMillis"
     }
 }

@@ -70,34 +70,65 @@ object EmotionColorUtil {
      */
     fun getComplexEmotionNameResId(type: ComplexEmotionType): Int {
         return when(type) {
+            // Primary Dyads
             ComplexEmotionType.LOVE -> com.kminder.minder.R.string.emotion_complex_love_title
+            ComplexEmotionType.POSSESSIVENESS -> com.kminder.minder.R.string.emotion_complex_possessiveness_title
             ComplexEmotionType.SUBMISSION -> com.kminder.minder.R.string.emotion_complex_submission_title
+            ComplexEmotionType.SERVILITY -> com.kminder.minder.R.string.emotion_complex_servility_title
             ComplexEmotionType.AWE -> com.kminder.minder.R.string.emotion_complex_awe_title
+            ComplexEmotionType.ALARM -> com.kminder.minder.R.string.emotion_complex_alarm_title
             ComplexEmotionType.DISAPPROVAL -> com.kminder.minder.R.string.emotion_complex_disapproval_title
+            ComplexEmotionType.SHOCK -> com.kminder.minder.R.string.emotion_complex_shock_title
             ComplexEmotionType.REMORSE -> com.kminder.minder.R.string.emotion_complex_remorse_title
+            ComplexEmotionType.SELF_LOATHING -> com.kminder.minder.R.string.emotion_complex_self_loathing_title
             ComplexEmotionType.CONTEMPT -> com.kminder.minder.R.string.emotion_complex_contempt_title
+            ComplexEmotionType.ENVY_CONTEMPT -> com.kminder.minder.R.string.emotion_complex_envy_contempt_title
             ComplexEmotionType.AGGRESSIVENESS -> com.kminder.minder.R.string.emotion_complex_aggressiveness_title
+            ComplexEmotionType.VENGEANCE -> com.kminder.minder.R.string.emotion_complex_vengeance_title
             ComplexEmotionType.OPTIMISM -> com.kminder.minder.R.string.emotion_complex_optimism_title
+            ComplexEmotionType.NAIVETY -> com.kminder.minder.R.string.emotion_complex_naivety_title
+
+            // Secondary Dyads
             ComplexEmotionType.GUILT -> com.kminder.minder.R.string.emotion_complex_guilt_title
+            ComplexEmotionType.SELF_DENIAL -> com.kminder.minder.R.string.emotion_complex_self_denial_title
             ComplexEmotionType.CURIOSITY -> com.kminder.minder.R.string.emotion_complex_curiosity_title
+            ComplexEmotionType.AMBIVALENCE_CURIOSITY -> com.kminder.minder.R.string.emotion_complex_ambivalence_curiosity_title
             ComplexEmotionType.DESPAIR -> com.kminder.minder.R.string.emotion_complex_despair_title
+            ComplexEmotionType.HELPLESSNESS -> com.kminder.minder.R.string.emotion_complex_helplessness_title
             ComplexEmotionType.UNBELIEF -> com.kminder.minder.R.string.emotion_complex_unbelief_title
+            ComplexEmotionType.ABHORRENCE -> com.kminder.minder.R.string.emotion_complex_abhorrence_title
             ComplexEmotionType.ENVY -> com.kminder.minder.R.string.emotion_complex_envy_title
+            ComplexEmotionType.RESENTMENT -> com.kminder.minder.R.string.emotion_complex_resentment_title
             ComplexEmotionType.CYNICISM -> com.kminder.minder.R.string.emotion_complex_cynicism_title
+            ComplexEmotionType.DISTRUST -> com.kminder.minder.R.string.emotion_complex_distrust_title
             ComplexEmotionType.PRIDE -> com.kminder.minder.R.string.emotion_complex_pride_title
+            ComplexEmotionType.HUBRIS -> com.kminder.minder.R.string.emotion_complex_hubris_title
+            ComplexEmotionType.HOPE -> com.kminder.minder.R.string.emotion_complex_hope_title
             ComplexEmotionType.FATALISM -> com.kminder.minder.R.string.emotion_complex_fatalism_title
+
+            // Tertiary Dyads
             ComplexEmotionType.DELIGHT -> com.kminder.minder.R.string.emotion_complex_delight_title
+            ComplexEmotionType.CONFUSED_JOY -> com.kminder.minder.R.string.emotion_complex_confused_joy_title
             ComplexEmotionType.SENTIMENTALITY -> com.kminder.minder.R.string.emotion_complex_sentimentality_title
+            ComplexEmotionType.SELF_PITY -> com.kminder.minder.R.string.emotion_complex_self_pity_title
             ComplexEmotionType.SHAME -> com.kminder.minder.R.string.emotion_complex_shame_title
+            ComplexEmotionType.HUMILIATION -> com.kminder.minder.R.string.emotion_complex_humiliation_title
             ComplexEmotionType.OUTRAGE -> com.kminder.minder.R.string.emotion_complex_outrage_title
+            ComplexEmotionType.DISORIENTATION -> com.kminder.minder.R.string.emotion_complex_disorientation_title
             ComplexEmotionType.PESSIMISM -> com.kminder.minder.R.string.emotion_complex_pessimism_title
+            ComplexEmotionType.RESIGNATION -> com.kminder.minder.R.string.emotion_complex_resignation_title
             ComplexEmotionType.MORBIDNESS -> com.kminder.minder.R.string.emotion_complex_morbidness_title
+            ComplexEmotionType.DERISION -> com.kminder.minder.R.string.emotion_complex_derision_title
             ComplexEmotionType.DOMINANCE -> com.kminder.minder.R.string.emotion_complex_dominance_title
+            ComplexEmotionType.TYRANNY -> com.kminder.minder.R.string.emotion_complex_tyranny_title
             ComplexEmotionType.ANXIETY -> com.kminder.minder.R.string.emotion_complex_anxiety_title
+            ComplexEmotionType.DREAD -> com.kminder.minder.R.string.emotion_complex_dread_title
 
             // Opposite Emotions
             ComplexEmotionType.BITTERSWEETNESS -> com.kminder.minder.R.string.emotion_complex_bittersweetness_title
+            ComplexEmotionType.NOSTALGIA -> com.kminder.minder.R.string.emotion_complex_nostalgia_title
             ComplexEmotionType.AMBIVALENCE -> com.kminder.minder.R.string.emotion_complex_ambivalence_title
+            ComplexEmotionType.MISTRUST -> com.kminder.minder.R.string.emotion_complex_mistrust_title
             ComplexEmotionType.FROZENNESS -> com.kminder.minder.R.string.emotion_complex_frozenness_title
             ComplexEmotionType.CONFUSION -> com.kminder.minder.R.string.emotion_complex_confusion_title
 

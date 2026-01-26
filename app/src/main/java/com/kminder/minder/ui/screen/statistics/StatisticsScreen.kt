@@ -67,8 +67,20 @@ import com.kminder.minder.ui.theme.MinderBackground
 import com.kminder.minder.util.EmotionColorUtil
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.kminder.domain.model.EmotionStatistics
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * 통계/차트 화면
@@ -77,16 +89,70 @@ import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 @Composable
 fun StatisticsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToIntegratedAnalysis: (ChartPeriod, LocalDate) -> Unit,
     viewModel: StatisticsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        if (uiState.selectedPeriod == ChartPeriod.MONTHLY) {
+            YearMonthPickerDialog(
+                initialDate = uiState.anchorDate,
+                onDateSelected = {
+                    viewModel.setDate(it)
+                    showDatePicker = false
+                },
+                onDismissRequest = { showDatePicker = false }
+            )
+        } else {
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = uiState.anchorDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                selectableDates = object : SelectableDates {
+                    override fun isSelectableYear(year: Int): Boolean {
+                        return year <= LocalDate.now().year
+                    }
+
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                        return utcTimeMillis <= System.currentTimeMillis()
+                    }
+                }
+            )
+
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val date = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                            viewModel.setDate(date)
+                        }
+                        showDatePicker = false
+                    }) {
+                        Text("확인")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("취소")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+    }
     
     StatisticsContent(
         uiState = uiState,
         onNavigateBack = onNavigateBack,
         onPeriodSelect = { viewModel.setPeriod(it) },
         onPrevClick = { viewModel.moveDate(-1) },
-        onNextClick = { viewModel.moveDate(1) }
+        onNextClick = { viewModel.moveDate(1) },
+        onDateClick = { showDatePicker = true },
+        onIntegratedAnalysisClick = {
+            onNavigateToIntegratedAnalysis(uiState.selectedPeriod, uiState.anchorDate)
+        }
     )
 }
 
@@ -97,7 +163,9 @@ fun StatisticsContent(
     onNavigateBack: () -> Unit,
     onPeriodSelect: (ChartPeriod) -> Unit,
     onPrevClick: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    onDateClick: () -> Unit,
+    onIntegratedAnalysisClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -147,7 +215,8 @@ fun StatisticsContent(
                                 periodLabel = uiState.periodLabel,
                                 onPeriodSelect = onPeriodSelect,
                                 onPrevClick = onPrevClick,
-                                onNextClick = onNextClick
+                                onNextClick = onNextClick,
+                                onDateClick = onDateClick
                             )
 
                             if (uiState.totalEntryCount == 0) {
@@ -162,8 +231,11 @@ fun StatisticsContent(
                                     }
                                 }
                             } else {
-                                // 2. 요약 카드
-                                SummarySection(uiState)
+                                // 2. 요약 및 통합 분석 버튼
+                                SummarySection(
+                                    uiState = uiState,
+                                    onIntegratedAnalysisClick = onIntegratedAnalysisClick
+                                )
 
                                 // 3. 타임라인 차트
                                 ChartSection(title = "감정 타임라인") {
@@ -202,7 +274,8 @@ fun ChartControlSection(
     periodLabel: String,
     onPeriodSelect: (ChartPeriod) -> Unit,
     onPrevClick: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    onDateClick: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Period Selector
@@ -236,11 +309,23 @@ fun ChartControlSection(
             IconButton(onClick = onPrevClick) {
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Prev")
             }
-            Text(
-                text = periodLabel,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            NeoShadowBox(
+                modifier = Modifier.clickable(onClick = onDateClick),
+                containerColor = Color.White,
+                shape = RoundedCornerShape(8.dp),
+                offset = 4.dp
+            ) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = periodLabel,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
             IconButton(onClick = onNextClick) {
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next")
             }
@@ -281,7 +366,10 @@ fun PeriodTab(
 
 
 @Composable
-fun SummarySection(uiState: StatisticsUiState) {
+fun SummarySection(
+    uiState: StatisticsUiState,
+    onIntegratedAnalysisClick: () -> Unit
+) {
     val context = LocalContext.current
     val stringProvider = remember(context) { AndroidEmotionStringProvider(context) }
     
@@ -289,38 +377,54 @@ fun SummarySection(uiState: StatisticsUiState) {
     val dominantColor = EmotionColorUtil.getEmotionColor(dominantEmotion)
     
     Row(
-        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.dp), // Height fixed for consistent layout
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Total Entries Card
-        NeoShadowBox(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+        // Left Column: Small Info Cards
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // 1. Total Entries Card (Small)
+            NeoShadowBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                containerColor = Color.White
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("기록된 일기", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                     Text(
                         text = "${uiState.totalEntryCount}개",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black
                     )
                 }
             }
-        }
-        
-        // Dominant Emotion Card
-        NeoShadowBox(
-            modifier = Modifier.weight(1f).fillMaxHeight(),
-            containerColor = dominantColor
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
+
+            // 2. Dominant Emotion Card (Small & Colored)
+            NeoShadowBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                containerColor = dominantColor
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                 Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("주요 감정", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -329,16 +433,58 @@ fun SummarySection(uiState: StatisticsUiState) {
                             Image(
                                 painter = painterResource(id = iconRes),
                                 contentDescription = null,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                         }
                         Text(
                             text = stringProvider.getEmotionName(dominantEmotion),
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                     }
+                }
+            }
+        }
+
+        // Right Column: Integrated Analysis Button (Large)
+        NeoShadowBox(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable(onClick = onIntegratedAnalysisClick),
+            containerColor = Color(0xFFE0E0E0) // Light Gray or Distinct Color
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Icon or Graphic
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(Color.White)
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Using a generic chart icon or emotion icon
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, // Placeholder
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "통합 분석\n보러가기",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
                 }
             }
         }
@@ -392,7 +538,7 @@ fun StatisticsTopBar(
 
 @Composable
 fun DailyEmotionTimelineChart(
-    statistics: List<com.kminder.domain.model.EmotionStatistics>
+    statistics: List<EmotionStatistics>
 ) {
     val context = LocalContext.current
     val stringProvider = remember(context) { AndroidEmotionStringProvider(context) }
@@ -437,9 +583,8 @@ fun TimelineItem(
     stringProvider: AndroidEmotionStringProvider,
     context: android.content.Context
 ) {
-    val analysis = entry.emotionResult?.source
-    val dominantEmotion = analysis?.getDominantEmotion() ?: com.kminder.domain.model.EmotionType.JOY 
-    val emotionColor = if(analysis != null) EmotionColorUtil.getEmotionColor(dominantEmotion) else Color.Gray
+    val result = entry.emotionResult
+    val emotionColor = if(result != null) EmotionColorUtil.getEmotionResultColor(result) else Color.Gray
 
     Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
         Column(
@@ -483,7 +628,7 @@ fun TimelineItem(
             )
             
             NeoShadowBox(
-                containerColor = if(analysis != null) emotionColor else Color.White,
+                containerColor = if(result != null) emotionColor else Color.White,
                 borderWidth = 2.dp
             ) {
                  Row(
@@ -492,8 +637,8 @@ fun TimelineItem(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (analysis != null) {
-                         val iconRes = EmotionUiUtil.getEmotionImageResId(context, dominantEmotion)
+                    if (result != null) {
+                         val iconRes = EmotionUiUtil.getEmotionImageResId(context, result)
                          if (iconRes != null) {
                              Image(
                                 painter = painterResource(id = iconRes),
@@ -506,7 +651,7 @@ fun TimelineItem(
                     
                     Column {
                          Text(
-                            text = if(analysis != null) stringProvider.getEmotionName(dominantEmotion) else "분석 대기 중",
+                            text = if(result != null) EmotionUiUtil.getLabel(result, stringProvider) else "분석 대기 중",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -580,7 +725,89 @@ fun StatisticsScreenPreview() {
             onNavigateBack = {},
             onPeriodSelect = {},
             onPrevClick = {},
-            onNextClick = {}
+            onNextClick = {},
+            onDateClick = {},
+            onIntegratedAnalysisClick = {}
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun YearMonthPickerDialog(
+    initialDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    var selectedYear by remember { mutableStateOf(initialDate.year) }
+    var selectedMonth by remember { mutableStateOf(initialDate.monthValue) }
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("월 선택") },
+        text = {
+            Column {
+                // Year Selector (Simple Row)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { selectedYear-- }) {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Prev Year")
+                    }
+                    Text(
+                        text = "$selectedYear",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(onClick = { if (selectedYear < LocalDate.now().year) selectedYear++ }) {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Next Year")
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Month Grid
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    maxItemsInEachRow = 4
+                ) {
+                    (1..12).forEach { month ->
+                        val isSelected = month == selectedMonth
+                        val isFuture = selectedYear == LocalDate.now().year && month > LocalDate.now().monthValue
+                        
+                        Box(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .size(48.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                .clickable(enabled = !isFuture) { selectedMonth = month },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$month",
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else if (isFuture) Color.LightGray else Color.Black,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(LocalDate.of(selectedYear, selectedMonth, 1))
+            }) {
+                Text("확인")
+            }
+        },
+        dismissButton = {
+             TextButton(onClick = onDismissRequest) {
+                Text("취소")
+            }
+        }
+    )
 }

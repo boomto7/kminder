@@ -130,12 +130,11 @@ fun MonthlyEmotionChart(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             entries.forEach { entry ->
-                                val analysis = entry.emotionResult?.source
-                                val dominantEmotion = analysis?.getDominantEmotion()
-                                val emotionColor = if (analysis != null && dominantEmotion != null)
-                                    EmotionColorUtil.getEmotionColor(dominantEmotion) else Color.White
+                                val result = entry.emotionResult
+                                val emotionColor = if (result != null)
+                                    EmotionColorUtil.getEmotionResultColor(result) else Color.White
                                     
-                                if (dominantEmotion != null) {
+                                if (result != null) {
                                      NeoShadowBox(
                                         containerColor = emotionColor,
                                         borderWidth = 1.dp,
@@ -146,7 +145,7 @@ fun MonthlyEmotionChart(
                                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            val iconRes = EmotionUiUtil.getEmotionImageResId(context, dominantEmotion)
+                                            val iconRes = EmotionUiUtil.getEmotionImageResId(context, result)
                                             if (iconRes != null) {
                                                 Image(
                                                     painter = painterResource(id = iconRes),
@@ -156,7 +155,7 @@ fun MonthlyEmotionChart(
                                                 Spacer(modifier = Modifier.width(4.dp))
                                             }
                                             Text(
-                                                text = stringProvider.getEmotionName(dominantEmotion),
+                                                text = EmotionUiUtil.getLabel(result, stringProvider),
                                                 style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.Bold
                                             )

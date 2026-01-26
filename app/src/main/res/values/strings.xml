@@ -185,6 +185,41 @@
     <string name="emotion_complex_frozenness_title">Frozenness</string>
     <string name="emotion_complex_confusion_title">Confusion</string>
 
+    <!-- Nuance Variants (Added) -->
+    <!-- Primary Dyads Variants -->
+    <string name="emotion_complex_possessiveness_title">Possessiveness</string>
+    <string name="emotion_complex_servility_title">Servility</string>
+    <string name="emotion_complex_alarm_title">Alarm</string>
+    <string name="emotion_complex_shock_title">Shock</string>
+    <string name="emotion_complex_self_loathing_title">Self-Loathing</string>
+    <string name="emotion_complex_envy_contempt_title">Envy (Contemptuous)</string>
+    <string name="emotion_complex_vengeance_title">Vengeance</string>
+    <string name="emotion_complex_naivety_title">Naivety</string>
+
+    <!-- Secondary Dyad Variants -->
+    <string name="emotion_complex_self_denial_title">Self-Denial</string>
+    <string name="emotion_complex_ambivalence_curiosity_title">Ambivalence (Curious)</string>
+    <string name="emotion_complex_helplessness_title">Helplessness</string>
+    <string name="emotion_complex_abhorrence_title">Abhorrence</string>
+    <string name="emotion_complex_resentment_title">Resentment</string>
+    <string name="emotion_complex_distrust_title">Distrust</string>
+    <string name="emotion_complex_hubris_title">Hubris</string>
+    <string name="emotion_complex_hope_title">Hope</string>
+
+    <!-- Tertiary Dyad Variants -->
+    <string name="emotion_complex_confused_joy_title">Confused Joy</string>
+    <string name="emotion_complex_self_pity_title">Self-Pity</string>
+    <string name="emotion_complex_humiliation_title">Humiliation</string>
+    <string name="emotion_complex_disorientation_title">Disorientation</string>
+    <string name="emotion_complex_resignation_title">Resignation</string>
+    <string name="emotion_complex_derision_title">Derision</string>
+    <string name="emotion_complex_tyranny_title">Tyranny</string>
+    <string name="emotion_complex_dread_title">Dread</string>
+
+    <!-- Opposite Variants -->
+    <string name="emotion_complex_nostalgia_title">Nostalgia</string>
+    <string name="emotion_complex_mistrust_title">Mistrust</string>
+
     <!-- Rich Emotion Data (Descriptions & Advice) - English -->
     <!-- 1. Single Emotions (Intensity: Strong, Medium, Weak) -->
     
@@ -357,6 +392,89 @@
     
     <string name="emotion_desc_confusion">Surprise and Anticipation mix, puzzled by a completely unpredictable future.</string>
     <string name="emotion_advice_confusion">Confusion is a process of finding order. Don\'t rush; believe that everything will become clear with time.</string>
+
+    <!-- Detailed Nuance Descriptions (Added) -->
+    <!-- Primary Dyads -->
+    <string name="emotion_desc_possessiveness">You feel a desperate need to control or keep someone close, driven by fear of loss.</string>
+    <string name="emotion_advice_possessiveness">True connection is built on trust, not control. Creating space can actually strengthen your bond.</string>
+
+    <string name="emotion_desc_servility">You bow down to authority but feel a deep sense of self-dislike for doing so.</string>
+    <string name="emotion_advice_servility">Respecting others is good, but not at the cost of your self-worth. Stand a little taller.</string>
+
+    <string name="emotion_desc_alarm">A sudden threat has put you on high alert, ready to fight back.</string>
+    <string name="emotion_advice_alarm">Your instincts are sharp right now. Check if the threat is real before reacting aggressively.</string>
+
+    <string name="emotion_desc_shock">An unexpected event has left you stunned and deeply saddened.</string>
+    <string name="emotion_advice_shock">Give yourself time to process this news. It\'s okay to be shaken.</string>
+
+    <string name="emotion_desc_self_loathing">Regret has turned inward, becoming a deep dislike for yourself.</string>
+    <string name="emotion_advice_self_loathing">Be as kind to yourself as you would be to a friend. You are more than your mistakes.</string>
+
+    <string name="emotion_desc_envy_contempt">You look down on others while secretly wanting what they have.</string>
+    <string name="emotion_advice_envy_contempt">This bitterness hurts you most. Focus on your own path instead of judging others.</string>
+
+    <string name="emotion_desc_vengeance">You feel a burning drive to strike back at those who wronged you.</string>
+    <string name="emotion_advice_vengeance">Revenge often leaves more emptiness. Channel this energy into building your own success.</string>
+
+    <string name="emotion_desc_naivety">You trust blindly, perhaps ignoring signs of danger.</string>
+    <string name="emotion_advice_naivety">Trust is beautiful, but wisdom protects it. Verify before you fully open your heart.</string>
+
+    <!-- Secondary Dyads -->
+    <string name="emotion_desc_self_denial">You deny your own happiness out of guilt or fear.</string>
+    <string name="emotion_advice_self_denial">Acknowledging your needs isn\'t selfish. You deserve joy just as much as anyone else.</string>
+
+    <string name="emotion_desc_ambivalence_curiosity">You are curious but hesitant, torn between wanting to know and staying safe.</string>
+    <string name="emotion_advice_ambivalence_curiosity">It\'s okay to be cautious. Take small steps to satisfy your curiosity safely.</string>
+
+    <string name="emotion_desc_helplessness">You feel trapped and powerless, believing nothing you do matters.</string>
+    <string name="emotion_advice_helplessness">Start with one tiny thing you can control. Small victories build the strength to change.</string>
+
+    <string name="emotion_desc_abhorrence">You are shocked and appalled by something deeply repulsive.</string>
+    <string name="emotion_advice_abhorrence">Remove yourself from the source. Protect your peace of mind.</string>
+
+    <string name="emotion_desc_resentment">Unfairness has festered into a deep, bitter anger over time.</string>
+    <string name="emotion_advice_resentment">Holding onto this poison harms you. Express it safely or let it go for your own sake.</string>
+
+    <string name="emotion_desc_distrust">You expect the worst and cynical doubts cloud your view.</string>
+    <string name="emotion_advice_distrust">Healthy skepticism is good, but don\'t close yourself off completely. Look for evidence of good.</string>
+
+    <string name="emotion_desc_hubris">Confidence has swollen into arrogance, blinding you to risks.</string>
+    <string name="emotion_advice_hubris">True strength includes humility. Listen to others to keep your perspective grounded.</string>
+
+    <string name="emotion_desc_hope">You look forward to the future with a trusting heart.</string>
+    <string name="emotion_advice_hope">Nurture this light. It will guide you through uncertain times.</string>
+
+    <!-- Tertiary Dyads -->
+    <string name="emotion_desc_confused_joy">You are happy but puzzled, unsure why or how this happened.</string>
+    <string name="emotion_advice_confused_joy">Just enjoy the moment. Not everything needs an immediate explanation.</string>
+
+    <string name="emotion_desc_self_pity">You feel sorry for yourself, nursing old wounds.</string>
+    <string name="emotion_advice_self_pity">It\'s okay to lick your wounds, but don\'t stay there. You have the power to heal.</string>
+
+    <string name="emotion_desc_humiliation">Shame feels public and crushing, making you want to disappear.</string>
+    <string name="emotion_advice_humiliation">This moment does not define you. Hold your head up; your worth is internal.</string>
+
+    <string name="emotion_desc_disorientation">You are angry and confused, thrown off balance by a surprise.</string>
+    <string name="emotion_advice_disorientation">Regain your footing first. Acting while dizzy with anger often leads to mistakes.</string>
+
+    <string name="emotion_desc_resignation">You\'ve given up on expecting better, accepting a sad status quo.</string>
+    <string name="emotion_advice_resignation">Acceptance brings peace, but don\'t lose your spark. Change is always possible.</string>
+
+    <string name="emotion_desc_derision">You find amusement in mocking what you find disgusting.</string>
+    <string name="emotion_advice_derision">Ask yourself what this mockery serves. Kindness is a higher form of intelligence.</string>
+
+    <string name="emotion_desc_tyranny">You use your power to force others, driven by anger and a need for control.</string>
+    <string name="emotion_advice_tyranny">Real power inspires rather than forces. Step back and lead with empathy.</string>
+
+    <string name="emotion_desc_dread">A heavy, cold fear hangs over you, anticipating something terrible.</string>
+    <string name="emotion_advice_dread">This shadow is often bigger than the reality. Face it one light at a time.</string>
+
+    <!-- Opposites -->
+    <string name="emotion_desc_nostalgia">Recent joys make you miss the past with a tinge of sadness.</string>
+    <string name="emotion_advice_nostalgia">Cherish the memories, but don\'t live in them. Make new memories today.</string>
+
+    <string name="emotion_desc_mistrust">You are torn between wanting to trust and feeling deep distaste.</string>
+    <string name="emotion_advice_mistrust">Trust your gut. If something feels off, it\'s okay to keep a distance.</string>
 
     <!-- Analysis Formats -->
     <string name="analysis_impossible">Unable to analyze</string>

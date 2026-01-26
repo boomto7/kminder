@@ -1,6 +1,7 @@
 package com.kminder.minder.ui.screen.splash
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.minder.R
 import com.kminder.minder.ui.theme.*
 import kotlinx.coroutines.delay
+import timber.log.Timber
 
 /**
  * 스플래시 화면 V2 (Stateful)
@@ -33,7 +36,7 @@ fun SplashScreenV2(
     viewModel: SplashViewModel = hiltViewModel()
 ) {
     val isDataReady by viewModel.isCompleted.collectAsState()
-    
+
     SplashScreenV2Content(
         isDataReady = isDataReady,
         onNavigateToHome = onNavigateToHome
@@ -54,11 +57,12 @@ fun SplashScreenV2Content(
     var minTimePassed by remember { mutableStateOf(false) }
 
     // 메인 컨텐츠 등장 애니메이션 (Scale + Fade)
+    // 메인 컨텐츠 등장 애니메이션 (Scale + Fade)
     val contentScale by animateFloatAsState(
         targetValue = if (startAnimation) 1.2f else 0.8f, // 튀어오르는 느낌 (0.8 -> 1.2 -> 1.0)
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+        animationSpec = tween(
+            durationMillis = 800,
+            easing = FastOutSlowInEasing
         ),
         label = "content_scale"
     )
@@ -70,7 +74,7 @@ fun SplashScreenV2Content(
         delay(2500) // 로고 보여주는 최소 시간
         minTimePassed = true
     }
-    
+
     // 두 조건이 모두 만족되면 이동
     LaunchedEffect(minTimePassed, isDataReady) {
         if (minTimePassed && isDataReady) {
@@ -84,8 +88,9 @@ fun SplashScreenV2Content(
             .background(MinderBackground), // 앱 기본 배경색 (파스텔톤)
         contentAlignment = Alignment.Center
     ) {
-        // --- 배경 장식 요소 (Floating Bubbles) ---
-        // 애니메이션: 둥둥 떠다니는 효과
+
+        // --- 배경 장식 요소 (Floating Bubbles) - Canvas Drawing for Performance ---
+        // 애니메이션: 둥둥 떠다니는 효과 (Loop)
         val infiniteTransition = rememberInfiniteTransition(label = "floating")
         val floatY by infiniteTransition.animateFloat(
             initialValue = -10f, targetValue = 10f,
@@ -95,43 +100,57 @@ fun SplashScreenV2Content(
             ), label = "floatY"
         )
 
+        val bubbleColor1 = EmotionJoy
+        val bubbleColor2 = EmotionTrust
+        val bubbleColor3 = EmotionSurprise
+
+        // --- 배경 장식 요소 (Floating Bubbles) - Box Implementation for Stability ---
+        // Canvas에서 drawCircle을 반복 호출하는 대신, Box 컴포넌트를 사용하여
+        // graphicsLayer를 통해 이동시킵니다. (시스템 프레임워크 로그 회피)
+
         // 장식 1 (좌상단)
-        DecorBubble(
-            color = EmotionJoy,
-            size = 80.dp,
+        Box(
             modifier = Modifier
+                .offset(x = 40.dp, y = 100.dp)
                 .align(Alignment.TopStart)
-                .padding(top = 100.dp, start = 40.dp)
-                .offset(y = floatY.dp)
-        )
+                .graphicsLayer {
+                    translationY = if (floatY.isNaN()) 0f else floatY.dp.toPx()
+                }
+        ) {
+            DecorBubble(color = bubbleColor1, size = 80.dp)
+        }
 
         // 장식 2 (우하단)
-        DecorBubble(
-            color = EmotionTrust,
-            size = 120.dp,
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 120.dp, end = 20.dp)
-                .offset(y = -floatY.dp) // 반대 방향 움직임
-        )
+                .padding(bottom = 120.dp, end = 20.dp) // align 사용 시 padding으로 위치 조정
+                .graphicsLayer {
+                    translationY = if (floatY.isNaN()) 0f else -floatY.dp.toPx() // 반대 방향
+                }
+        ) {
+            DecorBubble(color = bubbleColor2, size = 120.dp)
+        }
 
         // 장식 3 (중앙 하단 미니)
-        DecorBubble(
-            color = EmotionSurprise,
-            size = 40.dp,
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomEnd)
                 .padding(bottom = 200.dp, end = 100.dp)
-                .offset(y = (floatY * 0.5f).dp)
-        )
-
+                .graphicsLayer {
+                    translationY = if (floatY.isNaN()) 0f else (floatY * 0.5f).dp.toPx()
+                }
+        ) {
+            DecorBubble(color = bubbleColor3, size = 40.dp)
+        }
 
         // --- 메인 로고 컨테이너 (Hard Shadow + Border) ---
         // 그림자 (Shadow Layer) - 뒤쪽에 위치
+        val safeScale = if (contentScale.isNaN()) 1f else contentScale
         Box(
             modifier = Modifier
                 .size(280.dp)
-                .scale(contentScale)
+                .scale(safeScale)
                 .offset(x = 6.dp, y = 6.dp) // Hard Shadow Offset
                 .background(Color.Black, shape = RoundedCornerShape(32.dp))
         )
@@ -140,7 +159,7 @@ fun SplashScreenV2Content(
         Box(
             modifier = Modifier
                 .size(280.dp)
-                .scale(contentScale)
+                .scale(safeScale)
                 .background(Color.White, shape = RoundedCornerShape(32.dp))
                 .border(3.dp, Color.Black, shape = RoundedCornerShape(32.dp)) // Bold Outline
                 .padding(24.dp),
