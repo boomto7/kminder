@@ -124,7 +124,10 @@ class PlutchikEmotionDetailCalculator @Inject constructor() {
         ),
         EmotionNuanceRule(
             ComplexEmotionType.DESPAIR,
-            listOf(EmotionCondition.Single(EmotionType.ANTICIPATION, 0.3f, false)),
+            listOf(
+                EmotionCondition.Single(EmotionType.ANTICIPATION, 0.3f, false),
+                EmotionCondition.Single(EmotionType.DISGUST, 0.3f, true) // 무기력에는 '자기부정/혐오'가 동반됨
+            ),
             ComplexEmotionType.HELPLESSNESS
         ),
         EmotionNuanceRule(
@@ -144,7 +147,10 @@ class PlutchikEmotionDetailCalculator @Inject constructor() {
         ),
         EmotionNuanceRule(
             ComplexEmotionType.PRIDE,
-            listOf(EmotionCondition.Single(EmotionType.TRUST, 0.3f, false)),
+            listOf(
+                EmotionCondition.Single(EmotionType.TRUST, 0.3f, false),
+                EmotionCondition.Single(EmotionType.DISGUST, 0.3f, true) // 오만에는 '경멸(혐오)'이 동반됨
+            ),
             ComplexEmotionType.HUBRIS
         ),
         EmotionNuanceRule(
@@ -182,7 +188,10 @@ class PlutchikEmotionDetailCalculator @Inject constructor() {
         ),
         EmotionNuanceRule(
             ComplexEmotionType.OUTRAGE,
-            listOf(EmotionCondition.Single(EmotionType.ANTICIPATION, 0.3f, false)),
+            listOf(
+                EmotionCondition.Single(EmotionType.ANTICIPATION, 0.3f, false),
+                EmotionCondition.Single(EmotionType.FEAR, 0.3f, true) // 당혹에는 '불안(두려움)'이 동반됨
+            ),
             ComplexEmotionType.DISORIENTATION
         ),
         EmotionNuanceRule(
@@ -209,7 +218,10 @@ class PlutchikEmotionDetailCalculator @Inject constructor() {
         // --- 반대 축 변종 ---
         EmotionNuanceRule(
             ComplexEmotionType.BITTERSWEETNESS,
-            listOf(EmotionCondition.Single(EmotionType.ANTICIPATION, 0.3f, false)),
+            listOf(
+                EmotionCondition.Single(EmotionType.ANTICIPATION, 0.3f, false),
+                EmotionCondition.Single(EmotionType.TRUST, 0.3f, true) // 향수에는 '애착/신뢰'가 동반됨
+            ),
             ComplexEmotionType.NOSTALGIA
         ),
         EmotionNuanceRule(
