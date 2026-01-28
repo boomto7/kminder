@@ -103,7 +103,7 @@ fun EmotionPolarChart(
         // 1. Draw Slices
         emotionList.forEachIndexed { index, (intensity, color, category) ->
             // Center angle for this slice
-            val centerAngle = -90f + (index * availableSweep) + (availableSweep / 2f)
+            val centerAngle = -90f + (index * availableSweep)
             val startAngle = centerAngle - (sweepAngle / 2f)
 
             // 0. Background Wedge

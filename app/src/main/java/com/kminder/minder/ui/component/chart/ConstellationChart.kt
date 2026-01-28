@@ -452,6 +452,26 @@ fun ConstellationChart(
             }
 
 
+            // 2-B. Raw Score Visualization (User Request)
+            // Show all other emotions that have intensity > 0 but are NOT part of the main classification.
+             axesEmotions.forEachIndexed { idx, emotion ->
+                 if (idx !in activeBasicIndices) {
+                     val rawScore = intensityMap[emotion] ?: 0f
+                     if (rawScore > 0f) {
+                         val r = radii.strong * rawScore
+                         val axis = layout.axes[idx]
+                         val pos = Offset(centerX + r * axis.cos, centerY + r * axis.sin)
+                         val color = getEmotionColor(emotion)
+                         
+                         // Draw Line
+                         drawLine(color.copy(alpha=0.5f), center, pos, activeLineThickness.toPx() * 0.3f)
+                         
+                         // Draw Dot
+                         drawCircle(color = color.copy(alpha=0.8f), radius = activeDotRadius.toPx(), center = pos)
+                     }
+                 }
+             }
+
             // 3. Dots
              activeBasicIndices.forEach { idx ->
                  val isPrimaryMode = result.category == ComplexEmotionType.Category.PRIMARY_DYAD
@@ -526,7 +546,7 @@ fun ConstellationChart(
 @Preview(showBackground = true, backgroundColor = 0xFFe5e4c8)
 @Composable
 fun PreviewConstellationChart() {
-    val mockEntry = MockData.mockJournalEntries[27]
+    val mockEntry = MockData.mockJournalEntries[4]
     mockEntry.emotionResult?.let { result ->
         ConstellationChart(result = result, modifier = Modifier.fillMaxSize())
     }

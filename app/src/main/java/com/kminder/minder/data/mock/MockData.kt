@@ -24,13 +24,35 @@ object MockData {
         // Helper to create basic analysis
         fun createAnalysis(
             joy: Float = 0f, trust: Float = 0f, fear: Float = 0f, surprise: Float = 0f,
-            sadness: Float = 0f, disgust: Float = 0f, anger: Float = 0f, anticipation: Float = 0f
+            sadness: Float = 0f, disgust: Float = 0f, anger: Float = 0f, anticipation: Float = 0f,
+            keywords: List<String> = emptyList()
         ): EmotionAnalysis {
             return EmotionAnalysis(
                 joy = joy, trust = trust, fear = fear, surprise = surprise,
                 sadness = sadness, disgust = disgust, anger = anger, anticipation = anticipation,
-                keywords = emptyList() // Keywords generated in classify if needed, or ignored for this test
+                keywords = keywords
             )
+        }
+
+        fun generateKeywords(scores: Map<EmotionType, Float>): List<String> {
+            val pool = mapOf(
+                EmotionType.JOY to listOf("행복", "즐거움", "만족", "웃음", "쾌활", "뿌듯함"),
+                EmotionType.TRUST to listOf("신뢰", "편안함", "의지", "믿음", "안정", "감사"),
+                EmotionType.FEAR to listOf("두려움", "불안", "걱정", "동요", "긴장", "무서움"),
+                EmotionType.SURPRISE to listOf("놀람", "충격", "예상밖", "당황", "신기함", "경이"),
+                EmotionType.SADNESS to listOf("슬픔", "눈물", "우울", "상실", "아픔", "그리움"),
+                EmotionType.DISGUST to listOf("혐오", "거부감", "불쾌", "실망", "지루함", "질림"),
+                EmotionType.ANGER to listOf("분노", "화", "짜증", "격분", "답답", "억울"),
+                EmotionType.ANTICIPATION to listOf("기대", "설렘", "호기심", "계획", "준비", "희망")
+            )
+            val keywords = mutableListOf<String>()
+            scores.forEach { (type, score) ->
+                if (score >= 0.3f) { // 유의미한 점수일 때 키워드 추가
+                    val count = if(score > 0.7f) 2 else 1
+                    keywords.addAll(pool[type]?.shuffled()?.take(count) ?: emptyList())
+                }
+            }
+            return keywords.distinct().shuffled()
         }
 
         // --- 1. Single Emotions (8 Types x 3 Intensities = 24 cases) ---
@@ -50,7 +72,8 @@ object MockData {
                     joy = scores[EmotionType.JOY]!!, trust = scores[EmotionType.TRUST]!!,
                     fear = scores[EmotionType.FEAR]!!, surprise = scores[EmotionType.SURPRISE]!!,
                     sadness = scores[EmotionType.SADNESS]!!, disgust = scores[EmotionType.DISGUST]!!,
-                    anger = scores[EmotionType.ANGER]!!, anticipation = scores[EmotionType.ANTICIPATION]!!
+                    anger = scores[EmotionType.ANGER]!!, anticipation = scores[EmotionType.ANTICIPATION]!!,
+                    keywords = generateKeywords(scores)
                 )
                 
                 entries.add(createEntry("단일 감정 ($intensityKor): ${type.name}", analysis))
@@ -75,7 +98,8 @@ object MockData {
                 joy = scores[EmotionType.JOY]!!, trust = scores[EmotionType.TRUST]!!,
                 fear = scores[EmotionType.FEAR]!!, surprise = scores[EmotionType.SURPRISE]!!,
                 sadness = scores[EmotionType.SADNESS]!!, disgust = scores[EmotionType.DISGUST]!!,
-                anger = scores[EmotionType.ANGER]!!, anticipation = scores[EmotionType.ANTICIPATION]!!
+                anger = scores[EmotionType.ANGER]!!, anticipation = scores[EmotionType.ANTICIPATION]!!,
+                keywords = generateKeywords(scores)
             )
             entries.add(createEntry("${type.category} 기본: ${type.name}", analysis))
         }
@@ -135,7 +159,8 @@ object MockData {
                 joy = scores[EmotionType.JOY]!!, trust = scores[EmotionType.TRUST]!!,
                 fear = scores[EmotionType.FEAR]!!, surprise = scores[EmotionType.SURPRISE]!!,
                 sadness = scores[EmotionType.SADNESS]!!, disgust = scores[EmotionType.DISGUST]!!,
-                anger = scores[EmotionType.ANGER]!!, anticipation = scores[EmotionType.ANTICIPATION]!!
+                anger = scores[EmotionType.ANGER]!!, anticipation = scores[EmotionType.ANTICIPATION]!!,
+                keywords = generateKeywords(scores)
             )
             entries.add(createEntry("뉘앙스 테스트: ${case.expectLabel}", analysis))
         }
