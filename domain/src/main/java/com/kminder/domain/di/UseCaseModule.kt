@@ -1,5 +1,6 @@
 package com.kminder.domain.di
 
+import com.kminder.domain.logic.PlutchikEmotionDetailCalculator
 import com.kminder.domain.repository.EmotionAnalysisRepository
 import com.kminder.domain.repository.JournalRepository
 import com.kminder.domain.repository.QuestionRepository
@@ -75,18 +76,21 @@ object UseCaseModule {
     fun provideSaveAndAnalyzeJournalEntryUseCase(
         journalRepository: JournalRepository,
         emotionAnalysisRepository: EmotionAnalysisRepository,
-        languageProvider: LanguageProvider
+        languageProvider: LanguageProvider,
+        emotionDetailCalculator: PlutchikEmotionDetailCalculator
     ): SaveAndAnalyzeJournalEntryUseCase = SaveAndAnalyzeJournalEntryUseCase(
         journalRepository,
         emotionAnalysisRepository,
-        languageProvider
+        languageProvider,
+        emotionDetailCalculator
     )
 
     @Provides
     @Singleton
     fun provideAnalyzeIntegratedEmotionUseCase(
-        stringProvider: EmotionStringProvider
-    ): AnalyzeIntegratedEmotionUseCase = AnalyzeIntegratedEmotionUseCase(stringProvider)
+        stringProvider: EmotionStringProvider,
+        emotionDetailCalculator: PlutchikEmotionDetailCalculator
+    ): AnalyzeIntegratedEmotionUseCase = AnalyzeIntegratedEmotionUseCase(stringProvider, emotionDetailCalculator)
     
     // Statistics UseCases
     

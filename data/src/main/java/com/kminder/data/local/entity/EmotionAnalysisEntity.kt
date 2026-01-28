@@ -43,7 +43,11 @@ data class EmotionAnalysisEntity(
     val sadness: Float = 0f,
     val disgust: Float = 0f,
     val surprise: Float = 0f,
-    val keywords: List<EmotionKeyword> = emptyList()
+    val keywords: List<EmotionKeyword> = emptyList(),
+
+    // New detailed analysis fields
+    val modifierEmotions: List<EmotionType> = emptyList(),
+    val logicKey: String? = null
 )
 
 fun EmotionResult.toEntity(journalId: Long): EmotionAnalysisEntity {
@@ -62,7 +66,9 @@ fun EmotionResult.toEntity(journalId: Long): EmotionAnalysisEntity {
         sadness = source.sadness,
         disgust = source.disgust,
         surprise = source.surprise,
-        keywords = source.keywords
+        keywords = source.keywords,
+        modifierEmotions = modifierEmotions,
+        logicKey = logicKey
     )
 }
 
@@ -83,6 +89,8 @@ fun EmotionAnalysisEntity.toDomain(): EmotionResult {
             disgust = disgust,
             surprise = surprise,
             keywords = keywords
-        )
+        ),
+        modifierEmotions = modifierEmotions,
+        logicKey = logicKey
     )
 }

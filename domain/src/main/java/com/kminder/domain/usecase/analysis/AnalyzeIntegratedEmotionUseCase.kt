@@ -1,6 +1,6 @@
 package com.kminder.domain.usecase.analysis
 
-import com.kminder.domain.logic.PlutchikEmotionCalculator
+import com.kminder.domain.logic.PlutchikEmotionDetailCalculator
 import com.kminder.domain.model.DetailedEmotionType
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionKeyword
@@ -17,7 +17,8 @@ import javax.inject.Inject
  * (현재는 Mock 알고리즘/데이터를 사용합니다)
  */
 class AnalyzeIntegratedEmotionUseCase @Inject constructor(
-    private val stringProvider: EmotionStringProvider
+    private val stringProvider: EmotionStringProvider,
+    private val emotionCalculator: PlutchikEmotionDetailCalculator
 ) {
 
     operator fun invoke(entries: List<JournalEntry>): IntegratedAnalysis {
@@ -67,7 +68,7 @@ class AnalyzeIntegratedEmotionUseCase @Inject constructor(
         )
         
         // 상위 2개 감정 조합 분석
-        val emotionResult = PlutchikEmotionCalculator.analyzeDominantEmotionCombination(
+        val emotionResult = emotionCalculator.classify(
             averageEmotionAnalysis
         )
         

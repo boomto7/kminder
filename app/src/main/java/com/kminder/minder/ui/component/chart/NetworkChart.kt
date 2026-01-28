@@ -23,7 +23,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachReversed
-import com.kminder.domain.logic.PlutchikEmotionCalculator
 import com.kminder.domain.model.ComplexEmotionType
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionResult

@@ -6,7 +6,9 @@ import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionType
 import kotlin.math.sqrt
 
-class PlutchikEmotionDetailCalculator {
+import javax.inject.Inject
+
+class PlutchikEmotionDetailCalculator @Inject constructor() {
 
     sealed class EmotionCondition {
         abstract fun isSatisfied(data: EmotionAnalysis): Boolean

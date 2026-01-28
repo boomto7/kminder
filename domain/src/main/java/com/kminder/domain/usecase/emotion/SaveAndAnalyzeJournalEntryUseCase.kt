@@ -1,6 +1,6 @@
 package com.kminder.domain.usecase.emotion
 
-import com.kminder.domain.logic.PlutchikEmotionCalculator
+import com.kminder.domain.logic.PlutchikEmotionDetailCalculator
 import com.kminder.domain.provider.LanguageProvider
 import com.kminder.domain.model.JournalEntry
 import com.kminder.domain.repository.EmotionAnalysisRepository
@@ -14,7 +14,8 @@ import javax.inject.Inject
 class SaveAndAnalyzeJournalEntryUseCase @Inject constructor(
     private val journalRepository: JournalRepository,
     private val emotionAnalysisRepository: EmotionAnalysisRepository,
-    private val languageProvider: LanguageProvider
+    private val languageProvider: LanguageProvider,
+    private val emotionCalculator: PlutchikEmotionDetailCalculator
 ) {
     /**
      * 일기를 저장하고 감정 분석을 수행합니다.
@@ -36,7 +37,7 @@ class SaveAndAnalyzeJournalEntryUseCase @Inject constructor(
             
             // 3. 심층 감정 분석 (EmotionResult 도출)
             val emotionResult = analysis?.let {
-                PlutchikEmotionCalculator.analyzeDominantEmotionCombination(it)
+                emotionCalculator.classify(it)
             }
             
             // 4. 분석 결과를 일기에 업데이트

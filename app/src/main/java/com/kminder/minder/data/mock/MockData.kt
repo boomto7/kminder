@@ -1,6 +1,6 @@
 package com.kminder.minder.data.mock
 
-import com.kminder.domain.logic.PlutchikEmotionCalculator
+import com.kminder.domain.logic.PlutchikEmotionDetailCalculator
 import com.kminder.domain.model.*
 import java.time.LocalDateTime
 import kotlin.random.Random
@@ -11,6 +11,8 @@ import kotlin.random.Random
  * 각 데이터는 UI 풍성함을 위해 5~10개의 키워드를 포함합니다.
  */
 object MockData {
+    private val calculator = PlutchikEmotionDetailCalculator()
+
     private fun createEmotion(
         joy: Float = 0f, trust: Float = 0f, fear: Float = 0f, surprise: Float = 0f,
         sadness: Float = 0f, disgust: Float = 0f, anger: Float = 0f, anticipation: Float = 0f,
@@ -22,7 +24,7 @@ object MockData {
     )
 
     private fun createResult(analysis: EmotionAnalysis): EmotionResult {
-        return PlutchikEmotionCalculator.analyzeDominantEmotionCombination(analysis)
+        return calculator.classify(analysis)
     }
 
     // 각 감정별 풍부한 키워드 풀
@@ -218,6 +220,69 @@ object MockData {
                     }
                     set(set(base, p, 0.7f), s, 0.6f)
                 }.copy(keywords = generateKeywords(p, s))),
+                status = AnalysisStatus.COMPLETED
+            ))
+        }
+
+        // --- 7. 뉘앙스/변종 감정 (Nuance Variants - 26개) ---
+        // Positive/Negative 등 논리적 판단에 의해 도출되는 상세 감정들
+        val variantCases = listOf(
+            // 1차 이중감정 변종 (8)
+            Triple(Pair(EmotionType.JOY, EmotionType.TRUST), mapOf(EmotionType.FEAR to 0.6f), "집착 (Love + Fear)"),
+            Triple(Pair(EmotionType.TRUST, EmotionType.FEAR), mapOf(EmotionType.DISGUST to 0.5f), "비굴함 (Submission + Disgust)"),
+            Triple(Pair(EmotionType.FEAR, EmotionType.SURPRISE), mapOf(EmotionType.ANGER to 0.5f), "공황 (Awe + Anger)"),
+            Triple(Pair(EmotionType.SURPRISE, EmotionType.SADNESS), mapOf(EmotionType.FEAR to 0.7f), "충격 (Disapproval + Fear)"),
+            Triple(Pair(EmotionType.SADNESS, EmotionType.DISGUST), mapOf(EmotionType.ANGER to 0.6f), "자기비하 (Remorse + Anger)"),
+            Triple(Pair(EmotionType.DISGUST, EmotionType.ANGER), mapOf(EmotionType.SADNESS to 0.6f), "질투_경멸 (Contempt + Sadness)"),
+            Triple(Pair(EmotionType.ANGER, EmotionType.ANTICIPATION), mapOf(EmotionType.SADNESS to 0.7f), "복수심 (Aggressiveness + Sadness)"),
+            Triple(Pair(EmotionType.ANTICIPATION, EmotionType.JOY), mapOf(EmotionType.TRUST to 0.9f, EmotionType.FEAR to 0.1f), "순진함 (Optimism + HighTrust/LowFear)"),
+
+            // 2차 이중감정 변종 (8)
+            Triple(Pair(EmotionType.JOY, EmotionType.FEAR), mapOf(EmotionType.DISGUST to 0.6f), "자기부정 (Guilt + Disgust)"),
+            Triple(Pair(EmotionType.TRUST, EmotionType.SURPRISE), mapOf(EmotionType.DISGUST to 0.5f), "의구심 (Curiosity + Disgust)"),
+            Triple(Pair(EmotionType.FEAR, EmotionType.SADNESS), mapOf(EmotionType.ANTICIPATION to 0.2f), "무기력 (Despair + LowAnticipation)"),
+            Triple(Pair(EmotionType.SURPRISE, EmotionType.DISGUST), mapOf(EmotionType.ANGER to 0.6f), "혐오적 경악 (Unbelief + Anger)"),
+            Triple(Pair(EmotionType.SADNESS, EmotionType.ANGER), mapOf(EmotionType.DISGUST to 0.7f), "울분 (Envy + Disgust)"),
+            Triple(Pair(EmotionType.DISGUST, EmotionType.ANTICIPATION), mapOf(EmotionType.SADNESS to 0.7f), "불신 (Cynicism + Sadness)"),
+            Triple(Pair(EmotionType.ANGER, EmotionType.JOY), mapOf(EmotionType.TRUST to 0.2f), "오만 (Pride + LowTrust)"),
+            Triple(Pair(EmotionType.ANTICIPATION, EmotionType.TRUST), mapOf(EmotionType.JOY to 0.2f, EmotionType.SADNESS to 0.5f), "운명론 (Hope + LowJoy + Sadness)"),
+
+            // 3차 이중감정 변종 (8)
+            Triple(Pair(EmotionType.JOY, EmotionType.SURPRISE), mapOf(EmotionType.FEAR to 0.6f), "혼란스러운 기쁨 (Delight + Fear)"),
+            Triple(Pair(EmotionType.TRUST, EmotionType.SADNESS), mapOf(EmotionType.DISGUST to 0.5f), "자기연민 (Sentimentality + Disgust)"),
+            Triple(Pair(EmotionType.FEAR, EmotionType.DISGUST), mapOf(EmotionType.ANGER to 0.6f), "굴욕 (Shame + Anger)"),
+            Triple(Pair(EmotionType.SURPRISE, EmotionType.ANGER), mapOf(EmotionType.ANTICIPATION to 0.2f), "당혹 (Outrage + LowAnticipation)"),
+            Triple(Pair(EmotionType.SADNESS, EmotionType.ANTICIPATION), mapOf(EmotionType.TRUST to 0.6f), "체념 (Pessimism + Trust)"),
+            Triple(Pair(EmotionType.DISGUST, EmotionType.JOY), mapOf(EmotionType.ANGER to 0.5f), "조소 (Morbidness + Anger)"),
+            Triple(Pair(EmotionType.ANGER, EmotionType.TRUST), mapOf(EmotionType.DISGUST to 0.6f), "강압 (Dominance + Disgust)"),
+            Triple(Pair(EmotionType.ANTICIPATION, EmotionType.FEAR), mapOf(EmotionType.SADNESS to 0.6f), "공포탄 (Anxiety + Sadness)"),
+
+            // 반대 감정 변종 (2)
+            Triple(Pair(EmotionType.JOY, EmotionType.SADNESS), mapOf(EmotionType.ANTICIPATION to 0.2f), "향수 (Bittersweetness + LowAnticipation)"),
+            Triple(Pair(EmotionType.TRUST, EmotionType.DISGUST), mapOf(EmotionType.FEAR to 0.6f), "회의감 (Ambivalence + Fear)")
+        )
+
+        variantCases.forEach { (basePair, modifiers, label) ->
+            add(JournalEntry(
+                id = currentId++,
+                content = "뉘앙스 감정 테스트: $label",
+                entryType = EntryType.FREE_WRITING,
+                createdAt = LocalDateTime.now().minusHours(currentId.toLong()),
+                updatedAt = LocalDateTime.now().minusHours(currentId.toLong()),
+                emotionResult = createResult(createEmotion().let { base ->
+                    fun set(e: EmotionAnalysis, t: EmotionType, v: Float) = when(t) {
+                        EmotionType.JOY -> e.copy(joy = v); EmotionType.TRUST -> e.copy(trust = v)
+                        EmotionType.FEAR -> e.copy(fear = v); EmotionType.SURPRISE -> e.copy(surprise = v)
+                        EmotionType.SADNESS -> e.copy(sadness = v); EmotionType.DISGUST -> e.copy(disgust = v)
+                        EmotionType.ANGER -> e.copy(anger = v); EmotionType.ANTICIPATION -> e.copy(anticipation = v)
+                        else -> e
+                    }
+                    // 기본 베이스 감정 설정 (0.7, 0.6)
+                    var temp = set(set(base, basePair.first, 0.7f), basePair.second, 0.6f)
+                    // Modifier 적용
+                    modifiers.forEach { (t, v) -> temp = set(temp, t, v) }
+                    temp
+                }.copy(keywords = generateKeywords(basePair.first, basePair.second))),
                 status = AnalysisStatus.COMPLETED
             ))
         }
