@@ -2,6 +2,7 @@ package com.kminder.minder.util
 
 import com.kminder.domain.model.ComplexEmotionType
 import com.kminder.domain.model.EmotionResult
+import com.kminder.domain.model.EmotionType
 import com.kminder.domain.provider.EmotionStringProvider
 
 object EmotionUiUtil {
@@ -55,7 +56,13 @@ object EmotionUiUtil {
         return if (resId != 0) resId else null
     }
 
-    fun getEmotionImageResId(context: android.content.Context, emotionType: com.kminder.domain.model.EmotionType): Int? {
+    fun getEmotionImageResId(context: android.content.Context, emotionType: ComplexEmotionType): Int? {
+        val key = "img_emotion_${emotionType.name.lowercase()}"
+        val resId = context.resources.getIdentifier(key, "drawable", context.packageName)
+        return if (resId != 0) resId else null
+    }
+
+    fun getEmotionImageResId(context: android.content.Context, emotionType: EmotionType): Int? {
         val key = "img_emotion_${emotionType.name.lowercase()}"
         val resId = context.resources.getIdentifier(key, "drawable", context.packageName)
         return if (resId != 0) resId else null

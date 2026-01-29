@@ -1,18 +1,21 @@
 package com.kminder.minder.ui.screen.statistics
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,21 +26,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,37 +62,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.domain.model.ChartPeriod
+import com.kminder.domain.model.EmotionStatistics
+import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
 import com.kminder.minder.ui.component.BlockingLoadingOverlay
 import com.kminder.minder.ui.component.NeoShadowBox
-import com.kminder.minder.util.EmotionUiUtil
-import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
-import com.kminder.domain.model.EntryType
-import com.kminder.minder.ui.theme.MinderTheme
-import com.kminder.domain.model.EmotionType
-import com.kminder.domain.model.JournalEntry
-import java.util.Locale
 import com.kminder.minder.ui.component.OutlinedDivider
+import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
+import com.kminder.minder.ui.theme.MinderTheme
 import com.kminder.minder.util.EmotionColorUtil
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.LocalOverscrollFactory
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.SelectableDates
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import com.kminder.domain.model.EmotionStatistics
-import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
+import com.kminder.minder.util.EmotionUiUtil
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * 통계/차트 화면
@@ -89,7 +87,7 @@ import java.time.ZoneId
 @Composable
 fun StatisticsScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToIntegratedAnalysis: (ChartPeriod, LocalDate) -> Unit,
+    onNavigateToMindBlossom: (ChartPeriod, LocalDate) -> Unit,
     viewModel: StatisticsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -129,12 +127,12 @@ fun StatisticsScreen(
                         }
                         showDatePicker = false
                     }) {
-                        Text("확인")
+                        Text(stringResource(R.string.common_confirm))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("취소")
+                        Text(stringResource(R.string.common_cancel))
                     }
                 }
             ) {
@@ -150,8 +148,8 @@ fun StatisticsScreen(
         onPrevClick = { viewModel.moveDate(-1) },
         onNextClick = { viewModel.moveDate(1) },
         onDateClick = { showDatePicker = true },
-        onIntegratedAnalysisClick = {
-            onNavigateToIntegratedAnalysis(uiState.selectedPeriod, uiState.anchorDate)
+        onMindBlossomClick = {
+            onNavigateToMindBlossom(uiState.selectedPeriod, uiState.anchorDate)
         }
     )
 }
@@ -165,7 +163,7 @@ fun StatisticsContent(
     onPrevClick: () -> Unit,
     onNextClick: () -> Unit,
     onDateClick: () -> Unit,
-    onIntegratedAnalysisClick: () -> Unit
+    onMindBlossomClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -220,27 +218,25 @@ fun StatisticsContent(
                             )
 
                             if (uiState.totalEntryCount == 0) {
-                                 if (!uiState.isLoading) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(300.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("해당 기간에 작성된 일기가 없습니다.", color = Color.Gray)
-                                    }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(300.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(stringResource(R.string.statistics_no_data_message), color = Color.Gray)
                                 }
                             } else {
                                 // 2. 요약 및 통합 분석 버튼
                                 SummarySection(
                                     uiState = uiState,
-                                    onIntegratedAnalysisClick = onIntegratedAnalysisClick
+                                    onMindBlossomClick = onMindBlossomClick
                                 )
 
                                 // 3. 타임라인 차트
                                 ChartSection(title = "감정 타임라인") {
                                     when (uiState.selectedPeriod) {
-                                        ChartPeriod.DAILY -> DailyEmotionTimelineChart(statistics = uiState.statistics)
+                                        ChartPeriod.DAILY -> DailyEmotionList(statistics = uiState.statistics)
                                         ChartPeriod.WEEKLY -> WeeklyEmotionChart(statistics = uiState.statistics)
                                         ChartPeriod.MONTHLY -> MonthlyEmotionChart(statistics = uiState.statistics)
                                         else -> MonthlyEmotionChart(statistics = uiState.statistics)
@@ -259,7 +255,7 @@ fun StatisticsContent(
             if (uiState.isLoading && uiState.totalEntryCount > 0) {
                  BlockingLoadingOverlay(
                     isVisible = true,
-                    message = "데이터 불러오는 중..."
+                    message = stringResource(R.string.common_loading_data)
                 )
             }
         }
@@ -286,10 +282,10 @@ fun ChartControlSection(
             val periods = listOf(ChartPeriod.DAILY, ChartPeriod.WEEKLY, ChartPeriod.MONTHLY)
             periods.forEach { period ->
                 val label = when (period) {
-                    ChartPeriod.DAILY -> "일간"
-                    ChartPeriod.WEEKLY -> "주간"
-                    ChartPeriod.MONTHLY -> "월간"
-                    ChartPeriod.YEARLY -> "연간"
+                    ChartPeriod.DAILY -> stringResource(R.string.period_daily)
+                    ChartPeriod.WEEKLY -> stringResource(R.string.period_weekly)
+                    ChartPeriod.MONTHLY -> stringResource(R.string.period_monthly)
+                    ChartPeriod.YEARLY -> stringResource(R.string.period_yearly)
                 }
                 PeriodTab(
                     text = label,
@@ -368,125 +364,296 @@ fun PeriodTab(
 @Composable
 fun SummarySection(
     uiState: StatisticsUiState,
-    onIntegratedAnalysisClick: () -> Unit
+    onMindBlossomClick: () -> Unit
 ) {
     val context = LocalContext.current
     val stringProvider = remember(context) { AndroidEmotionStringProvider(context) }
     
-    val dominantEmotion = uiState.aggregatedAnalysis.getDominantEmotion()
-    val dominantColor = EmotionColorUtil.getEmotionColor(dominantEmotion)
+    val totalAnalysis = uiState.totalEmotionAnalysis
     
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(140.dp), // Height fixed for consistent layout
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Left Column: Small Info Cards
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        
+        // 1. Header Row: Total Entries + Integrated Analysis Button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp) // Match ChartControlSection spacing
         ) {
-            // 1. Total Entries Card (Small)
-            NeoShadowBox(
+            // Total Entries (Compact Left - Border Style)
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                containerColor = Color.White
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White)
+                    .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                    .padding(vertical = 10.dp), // Match PeriodTab vertical padding
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("기록된 일기", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
-                    Text(
-                        text = "${uiState.totalEntryCount}개",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.statistics_total_entries_format, uiState.totalEntryCount),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color.Black
+                )
             }
 
-            // 2. Dominant Emotion Card (Small & Colored)
+            // Integrated Analysis (Compact Right - Neo Button Style)
             NeoShadowBox(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                containerColor = dominantColor
+                modifier = Modifier.weight(1f).clickable(onClick = onMindBlossomClick),
+                containerColor = Color.White,
+                shape = RoundedCornerShape(8.dp),
+                offset = 4.dp
             ) {
-                 Row(
+                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp), // Match PeriodTab
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("주요 감정", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val iconRes = EmotionUiUtil.getEmotionImageResId(context, dominantEmotion)
-                        if (iconRes != 0 && iconRes != null) {
-                            Image(
-                                painter = painterResource(id = iconRes),
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
                         Text(
-                            text = stringProvider.getEmotionName(dominantEmotion),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            text = stringResource(R.string.statistics_mind_blossom),
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
             }
         }
 
-        // Right Column: Integrated Analysis Button (Large)
-        NeoShadowBox(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .clickable(onClick = onIntegratedAnalysisClick),
-            containerColor = Color(0xFFE0E0E0) // Light Gray or Distinct Color
-        ) {
+        // 2. Top 5 Emotions List
+        if (totalAnalysis.top5ComplexEmotions.isNotEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                contentAlignment = Alignment.Center
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .border(1.dp, Color.Black, RoundedCornerShape(16.dp))
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Icon or Graphic
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(androidx.compose.foundation.shape.CircleShape)
-                            .background(Color.White)
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Using a generic chart icon or emotion icon
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, // Placeholder
-                            contentDescription = null,
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
+                Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "통합 분석\n보러가기",
+                        text = stringResource(R.string.statistics_top_emotions),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
+                    
+                    totalAnalysis.top5ComplexEmotions.forEachIndexed { index, (type, count) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Rank
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(androidx.compose.foundation.shape.CircleShape)
+                                    .background(if(index == 0) MaterialTheme.colorScheme.primary else Color.LightGray),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${index + 1}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if(index == 0) MaterialTheme.colorScheme.onPrimary else Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.width(12.dp))
+                            
+                            // Emotion Icon & Name
+                            val iconRes = EmotionUiUtil.getEmotionImageResId(context, type)
+                            if (iconRes != null) {
+                                Image(
+                                    painter = painterResource(id = iconRes),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+                            
+                            Text(
+                                text = stringProvider.getComplexEmotionTitle(type),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            
+                            Spacer(modifier = Modifier.weight(1f))
+                            
+                            // Count Bar (Visual representation)
+                            val maxCount = totalAnalysis.top5ComplexEmotions.first().second.toFloat()
+                            val widthFraction = (count / maxCount) * 0.4f // Max 40% width
+                            
+                            Box(
+                                modifier = Modifier
+                                    .height(8.dp)
+                                    .fillMaxWidth(widthFraction)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(EmotionColorUtil.getComplexEmotionColor(type).copy(alpha = 0.5f))
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Text(
+                                text = stringResource(R.string.statistics_count_format, count),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.Gray
+                            )
+                        }
+                        if (index < totalAnalysis.top5ComplexEmotions.lastIndex) {
+                             HorizontalDivider(color = Color.LightGray.copy(alpha=0.3f), thickness = 1.dp)
+                        }
+                    }
                 }
             }
+        }
+
+        // 3. Insights Row (Compact & Equal Height)
+        Row(
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Most Frequent Basic Emotion
+            totalAnalysis.mostFrequentBasicEmotion?.let { (emotion, _) ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight() // Restore fillMaxHeight to match sibling
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(EmotionColorUtil.getEmotionColor(emotion))
+                        .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.SpaceBetween // Distribute space
+                    ) {
+                         Text(
+                            text = stringResource(R.string.statistics_most_frequent_emotion),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                             val iconRes = EmotionUiUtil.getEmotionImageResId(context, emotion)
+                             if (iconRes != null) {
+                                Image(
+                                    painter = painterResource(id = iconRes),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                             }
+                             Text(
+                                text = stringProvider.getEmotionName(emotion),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Highest Scored Emotion
+            totalAnalysis.highestScoredEmotion?.let { (type, score) ->
+                 Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight() // Restore fillMaxHeight
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.SpaceBetween // Distribute space
+                    ) {
+                         Text(
+                            text = stringResource(R.string.statistics_highest_scored_emotion),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                         Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.statistics_score_format, (score * 100).toInt()),
+                                style = MaterialTheme.typography.titleMedium, // Reduced to TitleMedium to match Left
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringProvider.getComplexEmotionTitle(type),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+
+
+// ... inside SummarySection ...
+        // 4. Time Analysis
+        totalAnalysis.mostFrequentTimeRange?.let { timeRange ->
+             val dominantInTime = totalAnalysis.dominantEmotionByTime[timeRange]
+             Box(
+                 modifier = Modifier
+                     .fillMaxWidth()
+                     .clip(RoundedCornerShape(16.dp))
+                     .background(Color(0xFFF0F0F0)) // Keep original light gray
+                     .border(1.dp, Color.Black, RoundedCornerShape(16.dp))
+             ) {
+                 Row(
+                     modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                     verticalAlignment = Alignment.CenterVertically
+                 ) {
+                     Box(
+                         modifier = Modifier
+                             .size(40.dp)
+                             .clip(androidx.compose.foundation.shape.CircleShape)
+                             .background(Color.White),
+                         contentAlignment = Alignment.Center
+                     ) {
+                         Icon(
+                             imageVector = Icons.Default.DateRange, 
+                             contentDescription = null, 
+                             tint = Color.Black
+                         )
+                     }
+                     Spacer(modifier = Modifier.width(16.dp))
+                     Column {
+                         Text(
+                             text = stringResource(R.string.statistics_emotional_time),
+                             style = MaterialTheme.typography.labelSmall,
+                             color = Color.Gray
+                         )
+                         val emotionName = dominantInTime?.let { stringProvider.getComplexEmotionTitle(it) } ?: stringResource(R.string.statistics_diverse_emotions)
+                         Text(
+                             text = "$timeRange",
+                             style = MaterialTheme.typography.titleSmall,
+                             fontWeight = FontWeight.Bold
+                         )
+                         Text(
+                             text = stringResource(R.string.statistics_dominant_emotion_in_time_format, emotionName),
+                             style = MaterialTheme.typography.bodyMedium
+                         )
+                     }
+                 }
+             }
         }
     }
 }
@@ -499,10 +666,14 @@ fun ChartSection(title: String, content: @Composable () -> Unit) {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
-        NeoShadowBox {
-            Box(modifier = Modifier.padding(16.dp)) {
-                content()
-            }
+        Box(modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .border(1.dp, Color.Black, RoundedCornerShape(16.dp))
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+
+        ) {
+            content()
         }
     }
 }
@@ -537,18 +708,20 @@ fun StatisticsTopBar(
 
 
 @Composable
-fun DailyEmotionTimelineChart(
+fun DailyEmotionList(
     statistics: List<EmotionStatistics>
 ) {
     val context = LocalContext.current
     val stringProvider = remember(context) { AndroidEmotionStringProvider(context) }
+    val datePattern = stringResource(R.string.format_date_day_pattern)
+    val timePattern = stringResource(R.string.format_time_pattern)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         statistics.forEach { dayStat ->
             Column(modifier = Modifier.padding(bottom = 24.dp)) {
                 // Header (Date)
                 Text(
-                    text = dayStat.date.format(DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA)),
+                    text = dayStat.date.format(DateTimeFormatter.ofPattern(datePattern, Locale.getDefault())),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -556,7 +729,7 @@ fun DailyEmotionTimelineChart(
 
                 if (dayStat.entries.isEmpty()) {
                     Text(
-                         text = "기록된 감정이 없습니다.",
+                         text = stringResource(R.string.statistics_no_emotions_recorded),
                          style = MaterialTheme.typography.bodyMedium,
                          color = Color.Gray,
                          modifier = Modifier.padding(start = 8.dp)
@@ -567,7 +740,8 @@ fun DailyEmotionTimelineChart(
                              entry = entry, 
                              isLast = index == dayStat.entries.lastIndex,
                              stringProvider = stringProvider,
-                             context = context
+                             context = context,
+                             timePattern = timePattern
                          )
                     }
                 }
@@ -581,7 +755,8 @@ fun TimelineItem(
     entry: JournalEntry, 
     isLast: Boolean,
     stringProvider: AndroidEmotionStringProvider,
-    context: android.content.Context
+    context: android.content.Context,
+    timePattern: String
 ) {
     val result = entry.emotionResult
     val emotionColor = if(result != null) EmotionColorUtil.getEmotionResultColor(result) else Color.Gray
@@ -621,7 +796,7 @@ fun TimelineItem(
         
         Column(modifier = Modifier.padding(bottom = 24.dp).weight(1f)) {
              Text(
-                text = entry.createdAt.format(DateTimeFormatter.ofPattern("a h:mm", Locale.KOREA)),
+                text = entry.createdAt.format(DateTimeFormatter.ofPattern(timePattern, Locale.getDefault())),
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -651,7 +826,7 @@ fun TimelineItem(
                     
                     Column {
                          Text(
-                            text = if(result != null) EmotionUiUtil.getLabel(result, stringProvider) else "분석 대기 중",
+                            text = if(result != null) EmotionUiUtil.getLabel(result, stringProvider) else stringResource(R.string.statistics_analysis_pending),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -680,6 +855,25 @@ fun StatisticsScreenPreview() {
         surprise = 0.1f,
         anger = 0.2f
     )
+
+    val dummyTotalAnalysis = com.kminder.minder.ui.screen.statistics.TotalEmotionAnalysis(
+        top5ComplexEmotions = listOf(
+            com.kminder.domain.model.ComplexEmotionType.JOY to 12,
+            com.kminder.domain.model.ComplexEmotionType.LOVE to 8,
+            com.kminder.domain.model.ComplexEmotionType.ANTICIPATION to 5,
+            com.kminder.domain.model.ComplexEmotionType.OPTIMISM to 3,
+            com.kminder.domain.model.ComplexEmotionType.SERENITY to 2
+        ),
+        mostFrequentBasicEmotion = com.kminder.domain.model.EmotionType.JOY to 20,
+        highestScoredEmotion = com.kminder.domain.model.ComplexEmotionType.ECSTASY to 0.95f,
+        mostFrequentTimeRange = "14:00 - 16:00",
+        dominantEmotionByTime = mapOf(
+            "08:00 - 10:00" to com.kminder.domain.model.ComplexEmotionType.ANTICIPATION,
+            "12:00 - 14:00" to com.kminder.domain.model.ComplexEmotionType.JOY,
+            "18:00 - 20:00" to com.kminder.domain.model.ComplexEmotionType.SERENITY
+        )
+    )
+
     val dummyStats = listOf(
         com.kminder.domain.model.EmotionStatistics(
             date = java.time.LocalDate.now().minusDays(1),
@@ -715,7 +909,8 @@ fun StatisticsScreenPreview() {
             com.kminder.domain.model.EmotionKeyword("행복", com.kminder.domain.model.EmotionType.JOY, 0.8f),
             com.kminder.domain.model.EmotionKeyword("즐거움", com.kminder.domain.model.EmotionType.JOY, 0.6f)
         ),
-        aggregatedAnalysis = dummyAnalysis,
+//        aggregatedAnalysis = dummyAnalysis,
+        totalEmotionAnalysis = dummyTotalAnalysis,
         totalEntryCount = 5
     )
 
@@ -727,7 +922,7 @@ fun StatisticsScreenPreview() {
             onPrevClick = {},
             onNextClick = {},
             onDateClick = {},
-            onIntegratedAnalysisClick = {}
+            onMindBlossomClick = {}
         )
     }
 }
@@ -811,3 +1006,4 @@ fun YearMonthPickerDialog(
         }
     )
 }
+

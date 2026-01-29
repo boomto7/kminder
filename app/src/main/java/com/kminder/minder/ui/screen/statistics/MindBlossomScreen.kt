@@ -37,7 +37,7 @@ import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionUiUtil
 
 @Composable
-fun IntegratedAnalysisScreen(
+fun MindBlossomScreen(
     onNavigateBack: () -> Unit,
     viewModel: StatisticsViewModel = hiltViewModel()
 ) {
@@ -82,7 +82,7 @@ fun IntegratedAnalysisScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 
                 Text(
-                    text = "통합 감정 분석",
+                    text = stringResource(R.string.statistics_mind_blossom),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = Color.Black
                 )
@@ -98,7 +98,7 @@ fun IntegratedAnalysisScreen(
         ) {
             if (uiState.totalEntryCount == 0) {
                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                     Text("분석할 데이터가 없습니다.", color = Color.Gray)
+                     Text(stringResource(R.string.analysis_no_data_available), color = Color.Gray)
                  }
             } else {
                  // Chart Container including logic

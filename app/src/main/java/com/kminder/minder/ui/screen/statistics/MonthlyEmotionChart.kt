@@ -1,42 +1,52 @@
 package com.kminder.minder.ui.screen.statistics
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.kminder.domain.model.EmotionStatistics
-import java.util.Locale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.runtime.remember
-import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
-import com.kminder.minder.ui.component.NeoShadowBox
-import com.kminder.minder.util.EmotionColorUtil
-import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
-import com.kminder.minder.util.EmotionUiUtil
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.kminder.domain.model.ComplexEmotionType
+import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.EmotionResult
+import com.kminder.domain.model.EmotionStatistics
+import com.kminder.domain.model.EmotionType
+import com.kminder.domain.model.EntryType
+import com.kminder.minder.R
+import com.kminder.minder.ui.component.NeoShadowBox
+import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.theme.MinderTheme
+import com.kminder.minder.util.EmotionColorUtil
+import com.kminder.minder.util.EmotionUiUtil
+import java.time.LocalDateTime
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -45,23 +55,26 @@ fun MonthlyEmotionChart(
 ) {
     val context = LocalContext.current
     val stringProvider = remember(context) { AndroidEmotionStringProvider(context) }
+    
+    val weekLabelFormat = androidx.compose.ui.res.stringResource(R.string.format_month_week_label)
+    val monthLabelFormat = androidx.compose.ui.res.stringResource(R.string.format_month_label)
 
     // 1. Group by Week
-    val groupedData = remember(statistics) {
+    val groupedData = remember(statistics, weekLabelFormat) {
         statistics.flatMap { it.entries }
             .groupBy { entry ->
                 val date = entry.createdAt.toLocalDate()
-                val weekField = java.time.temporal.WeekFields.of(Locale.KOREA).weekOfMonth()
+                val weekField = WeekFields.of(Locale.getDefault()).weekOfMonth()
                 val week = date.get(weekField)
-                 "${date.monthValue}월 ${week}주차"
+                 String.format(weekLabelFormat, date.monthValue, week)
             }
             .toSortedMap(compareBy { it }) // Sort by week string (simple approximation)
     }
     
     // Month Label (from first entry)
-    val monthLabel = remember(statistics) {
+    val monthLabel = remember(statistics, monthLabelFormat) {
         if (statistics.isNotEmpty()) {
-            "${statistics.first().date.monthValue}월"
+            String.format(monthLabelFormat, statistics.first().date.monthValue)
         } else ""
     }
 
@@ -77,7 +90,7 @@ fun MonthlyEmotionChart(
         
         if (groupedData.isEmpty()) {
              Text(
-                text = "기록된 감정이 없습니다.",
+                text = stringResource(com.kminder.minder.R.string.statistics_no_emotions_recorded),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
@@ -107,7 +120,7 @@ fun MonthlyEmotionChart(
                             modifier = Modifier
                                 .padding(top = 4.dp)
                                 .size(12.dp)
-                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .clip(CircleShape)
                                 .background(Color.Black)
                         )
                     }
@@ -181,15 +194,15 @@ fun MonthlyEmotionChartPreview() {
                 com.kminder.domain.model.JournalEntry(
                      id = 1,
                      content = "Weekly Preview Content",
-                     entryType = com.kminder.domain.model.EntryType.FREE_WRITING,
-                     createdAt = java.time.LocalDateTime.now(),
-                     updatedAt = java.time.LocalDateTime.now(),
-                     emotionResult = com.kminder.domain.model.EmotionResult(
-                         primaryEmotion = com.kminder.domain.model.EmotionType.JOY,
+                     entryType = EntryType.FREE_WRITING,
+                     createdAt = LocalDateTime.now(),
+                     updatedAt = LocalDateTime.now(),
+                     emotionResult = EmotionResult(
+                         primaryEmotion = EmotionType.JOY,
                          secondaryEmotion = null,
                          score = 0.8f,
-                         category = com.kminder.domain.model.ComplexEmotionType.Category.SINGLE_EMOTION,
-                         source = com.kminder.domain.model.EmotionAnalysis(joy = 0.8f)
+                         category = ComplexEmotionType.Category.SINGLE_EMOTION,
+                         source = EmotionAnalysis(joy = 0.8f)
                      )
                  )
             )

@@ -48,6 +48,7 @@
     <!-- Common -->
     <string name="common_back">뒤로가기</string>
     <string name="common_loading">로딩 중...</string>
+    <string name="common_loading_data">데이터 불러오는 중...</string>
     <string name="common_no_data">데이터 없음</string>
     <string name="common_tip_prefix">💡 Tip</string>
 
@@ -93,7 +94,34 @@
     <!-- Statistics Screen -->
     <string name="statistics_title">감정 통계</string>
     <string name="statistics_placeholder">통계 화면 (구현 예정)</string>
+    <string name="statistics_no_data_message">해당 기간에 작성된 일기가 없습니다.</string>
+    <string name="statistics_total_entries_format">기록 %d개</string>
+    <string name="statistics_mind_blossom">마인드 블러썸</string>
+    <string name="statistics_top_emotions">자주 찾아온 감정들</string>
+    <string name="statistics_count_format">%d회</string>
+    <string name="statistics_most_frequent_emotion">내 마음의 기조</string>
+    <string name="statistics_highest_scored_emotion">가장 강렬했던 순간</string>
+    <string name="statistics_score_format">%d점</string>
+    <string name="statistics_emotional_time">나의 감성 시간</string>
+    <string name="statistics_dominant_emotion_in_time_format">주로 \'%s\'을(를) 느꼈어요.</string>
+    <string name="statistics_emotion_timeline">감정 타임라인</string>
+    <string name="statistics_no_emotions_recorded">기록된 감정이 없습니다.</string>
+    <string name="statistics_diverse_emotions">다양한 감정</string>
+    <string name="statistics_analysis_pending">분석 대기 중</string>
+
+    <string name="period_daily">일간</string>
+    <string name="period_weekly">주간</string>
+    <string name="period_monthly">월간</string>
+    <string name="period_yearly">연간</string>
     
+    <string name="common_confirm">확인</string>
+    <string name="analysis_no_data_available">분석할 데이터가 없습니다.</string>
+
+    <string name="format_month_week_label">%1$d월 %2$d주차</string>
+    <string name="format_month_label">%d월</string>
+    <string name="format_date_day_pattern">M월 d일 (E)</string>
+    <string name="format_time_pattern">a h:mm</string>
+
     <!-- List Screen -->
     <string name="date_format_pattern_list_item">yyyy년 MM월 dd일 HH:mm</string>
     

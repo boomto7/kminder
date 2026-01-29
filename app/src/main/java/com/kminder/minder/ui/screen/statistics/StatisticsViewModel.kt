@@ -4,9 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kminder.domain.model.ChartPeriod
+import com.kminder.domain.model.ComplexEmotionType
 import com.kminder.domain.model.EmotionAnalysis
 import com.kminder.domain.model.EmotionKeyword
+import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionStatistics
+import com.kminder.domain.model.EmotionType
 import com.kminder.domain.usecase.statistics.GetEmotionStatisticsUseCase
 import com.kminder.domain.usecase.statistics.GetKeywordNetworkDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +32,8 @@ data class StatisticsUiState(
     val anchorDate: LocalDate = LocalDate.now(), // 기준 날짜 (오늘이 포함된 주/월)
     val statistics: List<EmotionStatistics> = emptyList(), // 기간 내 일별 데이터를 일차적으로 저장
     val keywords: List<EmotionKeyword> = emptyList(),
-    val aggregatedAnalysis: EmotionAnalysis = EmotionAnalysis(), // 도넛 차트용 합계
+//    val aggregatedAnalysis: EmotionAnalysis = EmotionAnalysis(), // 도넛 차트용 합계
+    val totalEmotionAnalysis: TotalEmotionAnalysis = TotalEmotionAnalysis(),
     val totalEntryCount: Int = 0
 ) {
     val periodLabel: String
@@ -49,6 +53,17 @@ data class StatisticsUiState(
             }
         }
 }
+
+data class TotalEmotionAnalysis (
+    val finalType: ComplexEmotionType = ComplexEmotionType.JOY,
+    val score: Float = 0f,
+    val emotionCounts: Map<ComplexEmotionType, Int> = emptyMap(),
+    val top5ComplexEmotions: List<Pair<ComplexEmotionType, Int>> = emptyList(),
+    val highestScoredEmotion: Pair<ComplexEmotionType, Float>? = null,
+    val mostFrequentBasicEmotion: Pair<EmotionType, Int>? = null,
+    val mostFrequentTimeRange: String? = null,
+    val dominantEmotionByTime: Map<String, ComplexEmotionType> = emptyMap()
+)
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
@@ -124,42 +139,93 @@ class StatisticsViewModel @Inject constructor(
                 val analyzedEntries = allEntries.filter { it.hasEmotionAnalysis() && it.emotionResult != null }
                 val analyzedCount = analyzedEntries.size
 
-                val aggregatedAnalysis = if (analyzedCount > 0) {
-                     var sumJoy = 0f
-                     var sumTrust = 0f
-                     var sumFear = 0f
-                     var sumSurprise = 0f
-                     var sumSadness = 0f
-                     var sumDisgust = 0f
-                     var sumAnger = 0f
-                     var sumAnticipation = 0f
-                     
-                     analyzedEntries.forEach { entry ->
-                         val analysis = entry.emotionResult!!.source
-                         sumJoy += analysis.joy
-                         sumTrust += analysis.trust
-                         sumFear += analysis.fear
-                         sumSurprise += analysis.surprise
-                         sumSadness += analysis.sadness
-                         sumDisgust += analysis.disgust
-                         sumAnger += analysis.anger
-                         sumAnticipation += analysis.anticipation
-                     }
-                     
-                     val count = analyzedCount.toFloat()
-                     EmotionAnalysis(
-                         joy = sumJoy / count,
-                         trust = sumTrust / count,
-                         fear = sumFear / count,
-                         surprise = sumSurprise / count,
-                         sadness = sumSadness / count,
-                         disgust = sumDisgust / count,
-                         anger = sumAnger / count,
-                         anticipation = sumAnticipation / count
-                     )
+                val totalEmotionAnalysis = if(analyzedCount > 0) {
+                    val emotionCounts = analyzedEntries.mapNotNull { it.emotionResult?.complexEmotionType }
+                        .groupingBy { it }
+                        .eachCount()
+
+                    val top5 = emotionCounts.toList()
+                        .sortedByDescending { it.second }
+                        .take(5)
+                        
+                    val finalType = top5.firstOrNull()?.first ?: ComplexEmotionType.JOY
+                    
+                    // Highest Scored
+                    val highestScored = analyzedEntries.maxByOrNull { it.emotionResult!!.score }
+                        ?.let { it.emotionResult!!.complexEmotionType!! to it.emotionResult!!.score } // assuming complex type exists if analyzed
+                        
+                    // Most Frequent Basic Emotion
+                    val basicCounts = analyzedEntries.groupingBy { it.emotionResult!!.primaryEmotion }
+                        .eachCount()
+                    val mostFrequentBasic = basicCounts.maxByOrNull { it.value }?.toPair()
+                    
+                    // Time Analysis (2-hour slots)
+                    // 00-02, 02-04 ...
+                    fun getTimeSlot(hour: Int): String {
+                        val start = (hour / 2) * 2
+                        return String.format("%02d:00 - %02d:00", start, start + 2)
+                    }
+                    
+                    val entriesByTimeSlot = analyzedEntries.groupBy { getTimeSlot(it.createdAt.hour) }
+                    val mostFrequentTimeRange = entriesByTimeSlot.maxByOrNull { it.value.size }?.key
+                    
+                    val dominantEmotionByTime = entriesByTimeSlot.mapValues { (_, entries) ->
+                         entries.mapNotNull { it.emotionResult?.complexEmotionType }
+                             .groupingBy { it }
+                             .eachCount()
+                             .maxByOrNull { it.value }?.key ?: ComplexEmotionType.JOY 
+                    }
+
+                    TotalEmotionAnalysis(
+                        finalType = finalType,
+                        score = 0f, // Not specifically aggregating average score for 'Total' here unless needed
+                        emotionCounts = emotionCounts,
+                        top5ComplexEmotions = top5,
+                        highestScoredEmotion = highestScored,
+                        mostFrequentBasicEmotion = mostFrequentBasic,
+                        mostFrequentTimeRange = mostFrequentTimeRange,
+                        dominantEmotionByTime = dominantEmotionByTime
+                    )
                 } else {
-                    EmotionAnalysis()
+                    TotalEmotionAnalysis()
                 }
+
+//                val aggregatedAnalysis = if (analyzedCount > 0) {
+//                     var sumJoy = 0f
+//                     var sumTrust = 0f
+//                     var sumFear = 0f
+//                     var sumSurprise = 0f
+//                     var sumSadness = 0f
+//                     var sumDisgust = 0f
+//                     var sumAnger = 0f
+//                     var sumAnticipation = 0f
+//
+//                     analyzedEntries.forEach { entry ->
+//                         val analysis = entry.emotionResult!!.source
+//                         sumJoy += analysis.joy
+//                         sumTrust += analysis.trust
+//                         sumFear += analysis.fear
+//                         sumSurprise += analysis.surprise
+//                         sumSadness += analysis.sadness
+//                         sumDisgust += analysis.disgust
+//                         sumAnger += analysis.anger
+//                         sumAnticipation += analysis.anticipation
+//                     }
+//
+//                     val count = analyzedCount.toFloat()
+//                     EmotionAnalysis(
+//                         joy = sumJoy / count,
+//                         trust = sumTrust / count,
+//                         fear = sumFear / count,
+//                         surprise = sumSurprise / count,
+//                         sadness = sumSadness / count,
+//                         disgust = sumDisgust / count,
+//                         anger = sumAnger / count,
+//                         anticipation = sumAnticipation / count
+//                     )
+//                } else {
+//                    EmotionAnalysis()
+//                }
 
                 // 4. 키워드 머지 로직 (기존 유지)
                 val mergedKeywords = keywords.groupBy { it.word }
@@ -179,7 +245,8 @@ class StatisticsViewModel @Inject constructor(
                         isLoading = false,
                         statistics = stats,
                         keywords = mergedKeywords,
-                        aggregatedAnalysis = aggregatedAnalysis,
+//                        aggregatedAnalysis = aggregatedAnalysis,
+                        totalEmotionAnalysis = totalEmotionAnalysis,
                         totalEntryCount = totalEntries
                     )
                 }

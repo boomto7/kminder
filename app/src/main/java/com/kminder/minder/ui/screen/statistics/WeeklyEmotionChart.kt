@@ -1,40 +1,49 @@
 package com.kminder.minder.ui.screen.statistics
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.kminder.domain.model.ComplexEmotionType
+import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionStatistics
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import com.kminder.domain.model.EmotionType
+import com.kminder.domain.model.EntryType
+import com.kminder.minder.R
 import com.kminder.minder.ui.component.NeoShadowBox
-import com.kminder.minder.util.EmotionColorUtil
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import com.kminder.minder.util.EmotionUiUtil
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.runtime.remember
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.theme.MinderTheme
+import com.kminder.minder.util.EmotionColorUtil
+import com.kminder.minder.util.EmotionUiUtil
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 @Composable
 fun WeeklyEmotionChart(
@@ -44,14 +53,18 @@ fun WeeklyEmotionChart(
     val stringProvider = remember(context) { AndroidEmotionStringProvider(context) }
     
     // 1. Calculate Week Label
-    val weekLabel = remember(statistics) {
+    val weekLabelFormat = stringResource(R.string.format_month_week_label)
+    val weekLabel = remember(statistics, weekLabelFormat) {
         if (statistics.isNotEmpty()) {
             val firstDate = statistics.first().date
-            val weekFields = java.time.temporal.WeekFields.of(Locale.KOREA)
+            val weekFields = WeekFields.of(Locale.getDefault())
             val weekOfMonth = firstDate.get(weekFields.weekOfMonth())
-            "${firstDate.monthValue}월 ${weekOfMonth}주차"
+            String.format(weekLabelFormat, firstDate.monthValue, weekOfMonth)
         } else ""
     }
+
+    val datePattern = stringResource(R.string.format_date_day_pattern)
+    val timePattern = stringResource(R.string.format_time_pattern)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         // Top Header
@@ -100,7 +113,7 @@ fun WeeklyEmotionChart(
                 Column(modifier = Modifier.padding(bottom = 32.dp).weight(1f)) {
                     // Date Header
                     Text(
-                        text = dayStat.date.format(DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREA)),
+                        text = dayStat.date.format(DateTimeFormatter.ofPattern(datePattern, Locale.getDefault())),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -108,7 +121,7 @@ fun WeeklyEmotionChart(
                     
                     if (dayStat.entries.isEmpty()) {
                          Text(
-                            text = "기록된 감정이 없습니다.",
+                            text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.statistics_no_emotions_recorded),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Gray
                         )
@@ -148,7 +161,7 @@ fun WeeklyEmotionChart(
                                         )
                                      } else {
                                           Text(
-                                            text = "분석 대기 중",
+                                            text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.statistics_analysis_pending),
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -157,7 +170,7 @@ fun WeeklyEmotionChart(
                                      Spacer(modifier = Modifier.weight(1f))
                                      
                                      Text(
-                                        text = entry.createdAt.format(DateTimeFormatter.ofPattern("a h:mm", Locale.KOREA)),
+                                        text = entry.createdAt.format(DateTimeFormatter.ofPattern(timePattern, Locale.getDefault())),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = Color.DarkGray
                                     )
@@ -181,21 +194,21 @@ fun WeeklyEmotionChartPreview() {
                 com.kminder.domain.model.JournalEntry(
                      id = 1,
                      content = "Weekly Preview Content",
-                     entryType = com.kminder.domain.model.EntryType.FREE_WRITING,
-                     createdAt = java.time.LocalDateTime.now(),
-                     updatedAt = java.time.LocalDateTime.now(),
-                     emotionResult = com.kminder.domain.model.EmotionResult(
-                         primaryEmotion = com.kminder.domain.model.EmotionType.JOY,
+                     entryType = EntryType.FREE_WRITING,
+                     createdAt = LocalDateTime.now(),
+                     updatedAt = LocalDateTime.now(),
+                     emotionResult = EmotionResult(
+                         primaryEmotion = EmotionType.JOY,
                          secondaryEmotion = null,
                          score = 0.8f,
-                         category = com.kminder.domain.model.ComplexEmotionType.Category.SINGLE_EMOTION,
-                         source = com.kminder.domain.model.EmotionAnalysis(joy = 0.8f)
+                         category = ComplexEmotionType.Category.SINGLE_EMOTION,
+                         source = EmotionAnalysis(joy = 0.8f)
                      )
                  )
             )
         ),
          EmotionStatistics(
-            date = java.time.LocalDate.now(),
+            date = LocalDate.now(),
             entries = emptyList()
         )
     )

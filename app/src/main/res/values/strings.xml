@@ -48,6 +48,7 @@
     <!-- Common -->
     <string name="common_back">Back</string>
     <string name="common_loading">Loading...</string>
+    <string name="common_loading_data">Loading data...</string>
     <string name="common_no_data">No Data</string>
     <string name="common_tip_prefix">💡 Tip</string>
 
@@ -93,7 +94,34 @@
     <!-- Statistics Screen -->
     <string name="statistics_title">Emotion Stats</string>
     <string name="statistics_placeholder">Statistics Screen (Coming Soon)</string>
+    <string name="statistics_no_data_message">No entries found for this period.</string>
+    <string name="statistics_total_entries_format">Total %d</string>
+    <string name="statistics_mind_blossom">Mind Blossom</string>
+    <string name="statistics_top_emotions">Frequent Emotions</string>
+    <string name="statistics_count_format">%d times</string>
+    <string name="statistics_most_frequent_emotion">Emotional Tone</string>
+    <string name="statistics_highest_scored_emotion">Most Intense Moment</string>
+    <string name="statistics_score_format">%d pts</string>
+    <string name="statistics_emotional_time">My Emotional Time</string>
+    <string name="statistics_dominant_emotion_in_time_format">Mainly felt \'%s\'.</string>
+    <string name="statistics_emotion_timeline">Emotion Timeline</string>
+    <string name="statistics_no_emotions_recorded">No emotions recorded.</string>
+    <string name="statistics_diverse_emotions">Diverse Emotions</string>
+    <string name="statistics_analysis_pending">Analysis Pending</string>
+
+    <string name="period_daily">Daily</string>
+    <string name="period_weekly">Weekly</string>
+    <string name="period_monthly">Monthly</string>
+    <string name="period_yearly">Yearly</string>
+
+    <string name="common_confirm">Confirm</string>
+    <string name="analysis_no_data_available">No analysis data available.</string>
     
+    <string name="format_month_week_label">Month %1$d, Week %2$d</string>
+    <string name="format_month_label">Month %d</string>
+    <string name="format_date_day_pattern">MMM d (E)</string>
+    <string name="format_time_pattern">h:mm a</string>
+
     <!-- List Screen -->
     <string name="date_format_pattern_list_item">MMM dd, yyyy HH:mm</string>
     

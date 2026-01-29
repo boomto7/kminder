@@ -6,14 +6,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.kminder.minder.ui.screen.splash.SplashScreenV2
-import com.kminder.minder.ui.screen.home.HomeFeedScreen
-import com.kminder.minder.ui.screen.write.WriteEntryScreen
-import com.kminder.minder.ui.screen.list.EntryListScreen
-import com.kminder.minder.ui.screen.detail.EntryDetailScreen
-import com.kminder.minder.ui.screen.statistics.StatisticsScreen
-import com.kminder.minder.ui.screen.guide.EmotionGuideScreen
 import com.kminder.minder.ui.screen.analysis.AnalysisDetailScreen
+import com.kminder.minder.ui.screen.detail.EntryDetailScreen
+import com.kminder.minder.ui.screen.guide.EmotionGuideScreen
+import com.kminder.minder.ui.screen.home.HomeFeedScreen
+import com.kminder.minder.ui.screen.list.EntryListScreen
+import com.kminder.minder.ui.screen.splash.SplashScreenV2
+import com.kminder.minder.ui.screen.statistics.MindBlossomScreen
+import com.kminder.minder.ui.screen.statistics.StatisticsScreen
+import com.kminder.minder.ui.screen.write.WriteEntryScreen
 
 /**
  * 앱의 Navigation Graph
@@ -163,22 +164,22 @@ fun MinderNavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onNavigateToIntegratedAnalysis = { period, date ->
+                onNavigateToMindBlossom = { period, date ->
                     val dateMillis = date.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    navController.navigate(Screen.IntegratedAnalysis.createRoute(period.name, dateMillis))
+                    navController.navigate(Screen.MindBlossom.createRoute(period.name, dateMillis))
                 }
             )
         }
 
-        // 통합 감정 분석 화면
+        // 마인드 블러썸 화면 (통합 감정 분석)
         composable(
-            route = Screen.IntegratedAnalysis.route,
+            route = Screen.MindBlossom.route,
             arguments = listOf(
                 navArgument("period") { type = NavType.StringType },
                 navArgument("dateMillis") { type = NavType.LongType }
             )
         ) {
-            com.kminder.minder.ui.screen.statistics.IntegratedAnalysisScreen(
+            MindBlossomScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

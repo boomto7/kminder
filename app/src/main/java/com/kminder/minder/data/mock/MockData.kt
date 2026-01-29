@@ -8,6 +8,7 @@ import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EntryType
 import com.kminder.domain.model.JournalEntry
 import com.kminder.domain.model.EmotionType
+import com.kminder.domain.model.EmotionKeyword
 import java.time.LocalDateTime
 import kotlin.random.Random
 
@@ -25,7 +26,7 @@ object MockData {
         fun createAnalysis(
             joy: Float = 0f, trust: Float = 0f, fear: Float = 0f, surprise: Float = 0f,
             sadness: Float = 0f, disgust: Float = 0f, anger: Float = 0f, anticipation: Float = 0f,
-            keywords: List<String> = emptyList()
+            keywords: List<EmotionKeyword> = emptyList()
         ): EmotionAnalysis {
             return EmotionAnalysis(
                 joy = joy, trust = trust, fear = fear, surprise = surprise,
@@ -34,7 +35,7 @@ object MockData {
             )
         }
 
-        fun generateKeywords(scores: Map<EmotionType, Float>): List<String> {
+        fun generateKeywords(scores: Map<EmotionType, Float>): List<EmotionKeyword> {
             val pool = mapOf(
                 EmotionType.JOY to listOf("행복", "즐거움", "만족", "웃음", "쾌활", "뿌듯함"),
                 EmotionType.TRUST to listOf("신뢰", "편안함", "의지", "믿음", "안정", "감사"),
@@ -45,14 +46,17 @@ object MockData {
                 EmotionType.ANGER to listOf("분노", "화", "짜증", "격분", "답답", "억울"),
                 EmotionType.ANTICIPATION to listOf("기대", "설렘", "호기심", "계획", "준비", "희망")
             )
-            val keywords = mutableListOf<String>()
+            val keywords = mutableListOf<EmotionKeyword>()
             scores.forEach { (type, score) ->
                 if (score >= 0.3f) { // 유의미한 점수일 때 키워드 추가
                     val count = if(score > 0.7f) 2 else 1
-                    keywords.addAll(pool[type]?.shuffled()?.take(count) ?: emptyList())
+                    val words = pool[type]?.shuffled()?.take(count) ?: emptyList()
+                    words.forEach { word ->
+                        keywords.add(EmotionKeyword(word, type, score))
+                    }
                 }
             }
-            return keywords.distinct().shuffled()
+            return keywords.distinctBy { it.word }.shuffled()
         }
 
         // --- 1. Single Emotions (8 Types x 3 Intensities = 24 cases) ---

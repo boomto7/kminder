@@ -66,6 +66,27 @@ object EmotionColorUtil {
     }
 
     /**
+     * 복합 감정(ComplexEmotionType)에 해당하는 색상을 반환합니다.
+     */
+    fun getComplexEmotionColor(type: ComplexEmotionType): Color {
+        val (primary, secondary) = type.composition
+        
+        return if (type.category == ComplexEmotionType.Category.SINGLE_EMOTION) {
+            val baseColor = getEmotionColor(primary)
+            when (type.intensity) {
+                ComplexEmotionType.Intensity.STRONG -> blendColors(Color.Black, baseColor, 0.2f) // Slightly darker
+                ComplexEmotionType.Intensity.WEAK -> blendColors(Color.White, baseColor, 0.4f) // Lighter
+                else -> baseColor // Medium is base
+            }
+        } else {
+            // 복합 감정은 두 구성 감정의 색상을 혼합
+            val c1 = getEmotionColor(primary)
+            val c2 = getEmotionColor(secondary)
+            blendColors(c1, c2)
+        }
+    }
+
+    /**
      * 복합 감정(ComplexEmotionType)의 한글 조작 이름 리소스 ID를 반환합니다.
      */
     fun getComplexEmotionNameResId(type: ComplexEmotionType): Int {

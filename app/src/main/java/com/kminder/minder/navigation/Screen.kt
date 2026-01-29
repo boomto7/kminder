@@ -64,9 +64,9 @@ sealed class Screen(val route: String) {
     }
 
     /**
-     * 통합 감정 분석 화면 (버블 차트)
+     * 마인드 블러썸 화면 (통합 감정 분석 / 버블 차트)
      */
-    data object IntegratedAnalysis : Screen("integrated_analysis/{period}/{dateMillis}") {
-        fun createRoute(period: String, dateMillis: Long) = "integrated_analysis/$period/$dateMillis"
+    data object MindBlossom : Screen("mind_blossom/{period}/{dateMillis}") {
+        fun createRoute(period: String, dateMillis: Long) = "mind_blossom/$period/$dateMillis"
     }
 }
