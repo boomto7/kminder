@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -42,6 +43,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.kminder.minder.ui.component.MinderEmptyView
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -62,7 +64,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kminder.domain.model.ChartPeriod
+import com.kminder.domain.model.ComplexEmotionType
+import com.kminder.domain.model.EmotionAnalysis
+import com.kminder.domain.model.EmotionKeyword
+import com.kminder.domain.model.EmotionResult
 import com.kminder.domain.model.EmotionStatistics
+import com.kminder.domain.model.EmotionType
+import com.kminder.domain.model.EntryType
 import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.R
 import com.kminder.minder.ui.component.BlockingLoadingOverlay
@@ -76,6 +84,7 @@ import com.kminder.minder.util.EmotionColorUtil
 import com.kminder.minder.util.EmotionUiUtil
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -87,6 +96,7 @@ import java.util.Locale
 @Composable
 fun StatisticsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToWrite: () -> Unit,
     onNavigateToMindBlossom: (ChartPeriod, LocalDate) -> Unit,
     viewModel: StatisticsViewModel = hiltViewModel()
 ) {
@@ -150,7 +160,8 @@ fun StatisticsScreen(
         onDateClick = { showDatePicker = true },
         onMindBlossomClick = {
             onNavigateToMindBlossom(uiState.selectedPeriod, uiState.anchorDate)
-        }
+        },
+        onNavigateToWrite = onNavigateToWrite
     )
 }
 
@@ -163,7 +174,8 @@ fun StatisticsContent(
     onPrevClick: () -> Unit,
     onNextClick: () -> Unit,
     onDateClick: () -> Unit,
-    onMindBlossomClick: () -> Unit
+    onMindBlossomClick: () -> Unit,
+    onNavigateToWrite: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -218,14 +230,12 @@ fun StatisticsContent(
                             )
 
                             if (uiState.totalEntryCount == 0) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(300.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(stringResource(R.string.statistics_no_data_message), color = Color.Gray)
-                                }
+                                MinderEmptyView(
+                                    message = stringResource(R.string.statistics_no_data_message),
+                                    actionLabel = stringResource(R.string.common_go_to_write),
+                                    onActionClick = onNavigateToWrite,
+                                    modifier = Modifier.height(300.dp)
+                                )
                             } else {
                                 // 2. 요약 및 통합 분석 버튼
                                 SummarySection(
@@ -848,7 +858,7 @@ fun TimelineItem(
 @Composable
 fun StatisticsScreenPreview() {
     // Dummy Data for Preview
-    val dummyAnalysis = com.kminder.domain.model.EmotionAnalysis(
+    val dummyAnalysis = EmotionAnalysis(
         joy = 0.5f,
         trust = 0.3f,
         fear = 0.1f,
@@ -856,43 +866,43 @@ fun StatisticsScreenPreview() {
         anger = 0.2f
     )
 
-    val dummyTotalAnalysis = com.kminder.minder.ui.screen.statistics.TotalEmotionAnalysis(
+    val dummyTotalAnalysis = TotalEmotionAnalysis(
         top5ComplexEmotions = listOf(
-            com.kminder.domain.model.ComplexEmotionType.JOY to 12,
-            com.kminder.domain.model.ComplexEmotionType.LOVE to 8,
-            com.kminder.domain.model.ComplexEmotionType.ANTICIPATION to 5,
-            com.kminder.domain.model.ComplexEmotionType.OPTIMISM to 3,
-            com.kminder.domain.model.ComplexEmotionType.SERENITY to 2
+            ComplexEmotionType.JOY to 12,
+            ComplexEmotionType.LOVE to 8,
+            ComplexEmotionType.ANTICIPATION to 5,
+            ComplexEmotionType.OPTIMISM to 3,
+            ComplexEmotionType.SERENITY to 2
         ),
         mostFrequentBasicEmotion = com.kminder.domain.model.EmotionType.JOY to 20,
         highestScoredEmotion = com.kminder.domain.model.ComplexEmotionType.ECSTASY to 0.95f,
         mostFrequentTimeRange = "14:00 - 16:00",
         dominantEmotionByTime = mapOf(
-            "08:00 - 10:00" to com.kminder.domain.model.ComplexEmotionType.ANTICIPATION,
-            "12:00 - 14:00" to com.kminder.domain.model.ComplexEmotionType.JOY,
-            "18:00 - 20:00" to com.kminder.domain.model.ComplexEmotionType.SERENITY
+            "08:00 - 10:00" to ComplexEmotionType.ANTICIPATION,
+            "12:00 - 14:00" to ComplexEmotionType.JOY,
+            "18:00 - 20:00" to ComplexEmotionType.SERENITY
         )
     )
 
     val dummyStats = listOf(
-        com.kminder.domain.model.EmotionStatistics(
+        EmotionStatistics(
             date = java.time.LocalDate.now().minusDays(1),
             entries = emptyList() // Simplified for preview
         ),
-        com.kminder.domain.model.EmotionStatistics(
+        EmotionStatistics(
             date = java.time.LocalDate.now(),
             entries = listOf(
-                 com.kminder.domain.model.JournalEntry(
+                 JournalEntry(
                      id = 1,
                      content = "Preview Content",
-                     entryType = com.kminder.domain.model.EntryType.FREE_WRITING,
-                     createdAt = java.time.LocalDateTime.now(),
-                     updatedAt = java.time.LocalDateTime.now(),
-                     emotionResult = com.kminder.domain.model.EmotionResult(
-                         primaryEmotion = com.kminder.domain.model.EmotionType.JOY,
+                     entryType = EntryType.FREE_WRITING,
+                     createdAt = LocalDateTime.now(),
+                     updatedAt = LocalDateTime.now(),
+                     emotionResult = EmotionResult(
+                         primaryEmotion = EmotionType.JOY,
                          secondaryEmotion = null,
                          score = 0.8f,
-                         category = com.kminder.domain.model.ComplexEmotionType.Category.SINGLE_EMOTION,
+                         category = ComplexEmotionType.Category.SINGLE_EMOTION,
                          source = dummyAnalysis
                      )
                  )
@@ -903,15 +913,15 @@ fun StatisticsScreenPreview() {
     val dummyState = StatisticsUiState(
         isLoading = false,
         selectedPeriod = ChartPeriod.WEEKLY,
-        anchorDate = java.time.LocalDate.now(),
+        anchorDate = LocalDate.now(),
         statistics = dummyStats,
         keywords = listOf(
-            com.kminder.domain.model.EmotionKeyword("행복", com.kminder.domain.model.EmotionType.JOY, 0.8f),
-            com.kminder.domain.model.EmotionKeyword("즐거움", com.kminder.domain.model.EmotionType.JOY, 0.6f)
+            EmotionKeyword("행복", EmotionType.JOY, 0.8f),
+            EmotionKeyword("즐거움", com.kminder.domain.model.EmotionType.JOY, 0.6f)
         ),
 //        aggregatedAnalysis = dummyAnalysis,
         totalEmotionAnalysis = dummyTotalAnalysis,
-        totalEntryCount = 5
+        totalEntryCount = 0
     )
 
     MinderTheme {
@@ -922,7 +932,8 @@ fun StatisticsScreenPreview() {
             onPrevClick = {},
             onNextClick = {},
             onDateClick = {},
-            onMindBlossomClick = {}
+            onMindBlossomClick = {},
+            onNavigateToWrite = {},
         )
     }
 }
@@ -937,7 +948,7 @@ fun YearMonthPickerDialog(
     var selectedYear by remember { mutableStateOf(initialDate.year) }
     var selectedMonth by remember { mutableStateOf(initialDate.monthValue) }
 
-    androidx.compose.material3.AlertDialog(
+    AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text("월 선택") },
         text = {

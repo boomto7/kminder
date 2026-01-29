@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +40,7 @@ import com.kminder.domain.model.JournalEntry
 import com.kminder.minder.ui.component.NeoShadowBox
 import com.kminder.minder.ui.component.RetroLoadingIndicator
 import com.kminder.minder.ui.component.OutlinedDivider
+import com.kminder.minder.ui.component.MinderEmptyView
 import com.kminder.minder.ui.provider.AndroidEmotionStringProvider
 import com.kminder.minder.ui.screen.list.RetroIconButton
 import com.kminder.minder.ui.theme.MinderBackground
@@ -340,7 +342,13 @@ fun TimelineFeed(
 
             if (groupedEntries.isEmpty()) {
                 item {
-                    HomeEmptyView()
+                    MinderEmptyView(
+                        message = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_title),
+                        subMessage = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_desc),
+                        actionLabel = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.common_go_to_write),
+                        onActionClick = onWriteClick,
+                        modifier = Modifier.padding(top = 80.dp) // Push it down a bit
+                    )
                 }
             } else {
                 groupedEntries.forEach { (header, entries) ->
@@ -597,7 +605,8 @@ fun HomeFeedScreenPreview() {
         ) { paddingValues ->
             HomeFeedContent(
                 modifier = Modifier.padding(paddingValues),
-                uiState = HomeUiState.Success(groupedFeed = grouped),
+//                uiState = HomeUiState.Success(groupedFeed = emptyMap()),
+                uiState = HomeUiState.Success(groupedFeed = emptyMap()),
                 onEntryClick = {},
                 onWriteClick = {},
                 isRefreshing = false,
@@ -612,20 +621,3 @@ fun HomeFeedScreenPreview() {
     }
 }
 
-@Composable
-fun HomeEmptyView() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp), // Height to occupy some space
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_title) + "\n" +
-                    androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_empty_desc),
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.Gray,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-    }
-}

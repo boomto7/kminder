@@ -167,6 +167,9 @@ fun MinderNavGraph(
                 onNavigateToMindBlossom = { period, date ->
                     val dateMillis = date.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
                     navController.navigate(Screen.MindBlossom.createRoute(period.name, dateMillis))
+                },
+                onNavigateToWrite = {
+                    navController.navigate(Screen.WriteEntry.route)
                 }
             )
         }

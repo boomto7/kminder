@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,10 +15,13 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -31,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kminder.minder.ui.theme.MinderLavender
 import com.kminder.minder.ui.theme.MinderSkyBlue
@@ -57,38 +62,32 @@ fun MinderButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
-    // 클릭 시 눌림 효과 (Scale + Shadow Offset 감소)
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.97f else 1f,
-        label = "button_scale"
-    )
-    
-    val shadowOffset by animateDpAsState(
-        targetValue = if (isPressed) 0.dp else 4.dp, // 눌리면 그림자가 없어짐 (바닥에 붙음)
-        label = "shadow_offset"
+    // Physical Press Effect: Move the Surface DOWN to meet the Shadow
+    val pressOffset by animateDpAsState(
+        targetValue = if (isPressed) 4.dp else 0.dp,
+        label = "press_offset"
     )
 
     Box(
-        modifier = modifier
-            .scale(scale)
-            // 그림자가 짤리지 않도록 충분한 공간 확보 필요할 수 있음 (외부 padding 권장)
-            ,
-        contentAlignment = Alignment.Center
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+        propagateMinConstraints = true
     ) {
         if (enabled) {
-            // Shadow Layer (Hard Shadow)
+            // Shadow Layer (Static at 'Ground' Level)
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .offset(x = shadowOffset, y = shadowOffset)
+                    .offset(x = 4.dp, y = 4.dp) // Fixed Shadow Position
                     .background(shadowColor, shape)
             )
         }
 
-        // Main Surface Layer
+        // Main Surface Layer (Moves on Press)
         androidx.compose.material3.Surface(
             onClick = onClick,
-            modifier = Modifier,
+            modifier = Modifier
+                .offset(x = pressOffset, y = pressOffset), // Animate Position
             enabled = enabled,
             shape = shape,
             color = if (enabled) containerColor else Color.Gray.copy(alpha = 0.2f),
@@ -115,3 +114,13 @@ fun MinderButton(
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun PreviewMinderButton() {
+    MinderButton(
+        onClick = {},
+        modifier = Modifier.widthIn(min = 160.dp)
+    ) {
+        Text(text = "기록하러 가기")
+    }
+}

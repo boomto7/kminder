@@ -49,6 +49,7 @@
     <string name="common_back">Back</string>
     <string name="common_loading">Loading...</string>
     <string name="common_loading_data">Loading data...</string>
+    <string name="common_go_to_write">Record now</string>
     <string name="common_no_data">No Data</string>
     <string name="common_tip_prefix">💡 Tip</string>
 
