@@ -80,6 +80,13 @@ fun HomeFeedScreen(
     val isLastPage by viewModel.isLastPage.collectAsState()
     val groupingOption by viewModel.groupingOption.collectAsState()
 
+    // Handle back press to close drawer
+    androidx.activity.compose.BackHandler(enabled = drawerState.isOpen) {
+        scope.launch {
+            drawerState.close()
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
