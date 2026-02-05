@@ -55,8 +55,10 @@
 
     <string name="home_menu_list">목록</string>
     <string name="home_menu_stats">통계</string>
+    <string name="home_menu_about">앱 정보</string>
     <string name="home_menu_settings">설정</string>
     <string name="home_menu_add">새 일기</string>
+    
     
     <!-- Write Screen -->
     <string name="write_entry_title">일기 작성</string>
@@ -104,11 +106,22 @@
     <string name="statistics_highest_scored_emotion">가장 강렬했던 순간</string>
     <string name="statistics_score_format">%d점</string>
     <string name="statistics_emotional_time">나의 감성 시간</string>
-    <string name="statistics_dominant_emotion_in_time_format">주로 \'%s\'을(를) 느꼈어요.</string>
+    <string name="statistics_dominant_emotion_in_time_format">주로 느낀 감정: %s</string>
     <string name="statistics_emotion_timeline">감정 타임라인</string>
     <string name="statistics_no_emotions_recorded">기록된 감정이 없습니다.</string>
     <string name="statistics_diverse_emotions">다양한 감정</string>
     <string name="statistics_analysis_pending">분석 대기 중</string>
+
+    <!-- About Screen -->
+    <string name="about_title">앱 정보</string>
+    <string name="about_app_name">민더프</string>
+    <string name="about_version">버전 %s</string>
+        <string name="about_developer_message">개발자 메시지</string>
+    <string name="about_contact_title">연락처</string>
+    <string name="about_email">이메일</string>
+    <string name="about_github">GitHub</string>
+    <string name="about_copyright">© 2026 Minderf. All rights reserved.</string>
+
 
     <string name="period_daily">일간</string>
     <string name="period_weekly">주간</string>

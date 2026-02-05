@@ -62,6 +62,7 @@ fun HomeFeedScreen(
     onNavigateToList: () -> Unit,
     onNavigateToStatistics: (ChartPeriod?, Long?) -> Unit,
     onNavigateToDetail: (Long) -> Unit,
+    onNavigateToAbout: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -84,7 +85,8 @@ fun HomeFeedScreen(
         drawerContent = {
             HomeDrawerContent(
                 onNavigateToList = onNavigateToList,
-                onNavigateToStatistics = { onNavigateToStatistics(null, null) }
+                onNavigateToStatistics = { onNavigateToStatistics(null, null) },
+                onNavigateToAbout = onNavigateToAbout
             )
         }
     ) {
@@ -536,25 +538,34 @@ fun FeedEntryItem(
 @Composable
 fun HomeDrawerContent(
     onNavigateToList: () -> Unit,
-    onNavigateToStatistics: () -> Unit
+    onNavigateToStatistics: () -> Unit,
+    onNavigateToAbout: () -> Unit
 ) {
     ModalDrawerSheet(
         drawerContainerColor = MinderBackground,
         drawerContentColor = Color.Black
     ) {
         Spacer(Modifier.height(32.dp))
+//        NavigationDrawerItem(
+//            label = { Text(stringResource(com.kminder.minder.R.string.home_menu_list)) },
+//            selected = false,
+//            onClick = onNavigateToList,
+//            icon = { Icon(Icons.AutoMirrored.Filled.List, null) },
+//            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+//        )
         NavigationDrawerItem(
-            label = { Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_menu_list)) },
-            selected = false,
-            onClick = onNavigateToList,
-            icon = { Icon(Icons.AutoMirrored.Filled.List, null) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
-            label = { Text(androidx.compose.ui.res.stringResource(com.kminder.minder.R.string.home_menu_stats)) },
+            label = { Text(stringResource(com.kminder.minder.R.string.home_menu_stats)) },
             selected = false,
             onClick = onNavigateToStatistics,
             icon = { Icon(Icons.AutoMirrored.Filled.ShowChart, null) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+
+        NavigationDrawerItem(
+            label = { Text(stringResource(com.kminder.minder.R.string.home_menu_about)) },
+            selected = false,
+            onClick = onNavigateToAbout,
+            icon = { Icon(Icons.AutoMirrored.Filled.List, null) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
     }

@@ -69,4 +69,9 @@ sealed class Screen(val route: String) {
     data object MindBlossom : Screen("mind_blossom/{period}/{dateMillis}") {
         fun createRoute(period: String, dateMillis: Long) = "mind_blossom/$period/$dateMillis"
     }
+
+    /**
+     * About 화면 (앱 정보)
+     */
+    data object About : Screen("about")
 }

@@ -15,6 +15,7 @@ import com.kminder.minder.ui.screen.splash.SplashScreenV2
 import com.kminder.minder.ui.screen.statistics.MindBlossomScreen
 import com.kminder.minder.ui.screen.statistics.StatisticsScreen
 import com.kminder.minder.ui.screen.write.WriteEntryScreen
+import com.kminder.minder.ui.screen.about.AboutScreen
 
 /**
  * 앱의 Navigation Graph
@@ -59,6 +60,9 @@ fun MinderNavGraph(
                 },
                 onNavigateToDetail = { entryId ->
                     navController.navigate(Screen.EntryDetail.createRoute(entryId))
+                },
+                onNavigateToAbout = {
+                    navController.navigate(Screen.About.route)
                 }
             )
         }
@@ -183,6 +187,15 @@ fun MinderNavGraph(
             )
         ) {
             MindBlossomScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // About 화면
+        composable(Screen.About.route) {
+            AboutScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }
